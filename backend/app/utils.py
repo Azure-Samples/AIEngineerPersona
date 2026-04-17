@@ -3,6 +3,9 @@
 import json
 import re
 import logging
+from typing import Any
+
+from opentelemetry import trace
 
 logger = logging.getLogger(__name__)
 
@@ -31,3 +34,31 @@ def build_system_and_user_messages(system: str, user: str) -> list[dict]:
         {"role": "system", "content": system},
         {"role": "user", "content": user},
     ]
+
+
+def record_llm_usage(result: Any, **extra_attributes: str | int | float | bool) -> None:
+    """Record LLM token usage and any extra attributes on the current OTEL span.
+
+    Call this after any ``self._agent.run(prompt)`` call. Gracefully does nothing
+    if tracing is disabled or if the result carries no usage data.
+
+    Args:
+        result: The ``AgentRunResponse`` returned by ``agent.run()``.
+        **extra_attributes: Additional span attributes to set alongside the
+            token counts (e.g. ``title="My Story"``, ``approved=True``).
+    """
+    span = trace.get_current_span()
+    if not span.is_recording():
+        return
+
+    usage = getattr(result, "usage_details", None)
+    if usage:
+        if usage.input_token_count is not None:
+            span.set_attribute("llm.token_count.prompt", usage.input_token_count)
+        if usage.output_token_count is not None:
+            span.set_attribute("llm.token_count.completion", usage.output_token_count)
+        if usage.total_token_count is not None:
+            span.set_attribute("llm.token_count.total", usage.total_token_count)
+
+    for key, value in extra_attributes.items():
+        span.set_attribute(key, value)

@@ -17,7 +17,7 @@ from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import LookAndFindActivity, StoryResponse
 from ..prompts import LOOK_AND_FIND_INSTRUCTIONS
-from ..utils import extract_json_from_response
+from ..utils import extract_json_from_response, record_llm_usage
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,7 @@ class LookAndFindActivityExecutor(Executor):
         ))
 
         result = await self._agent.run(prompt)
+        record_llm_usage(result)
         raw_json = extract_json_from_response(result.text)
         activity = LookAndFindActivity.model_validate_json(raw_json)
 

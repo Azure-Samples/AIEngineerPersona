@@ -16,7 +16,7 @@ from azure.identity import DefaultAzureCredential
 from ..config import settings
 from ..models import StoryDraft, ReviewResult
 from ..prompts import STORY_REVIEWER_INSTRUCTIONS
-from ..utils import extract_json_from_response
+from ..utils import extract_json_from_response, record_llm_usage
 from ..events import ProgressDetailEvent
 
 logger = logging.getLogger(__name__)
@@ -73,6 +73,7 @@ class StoryReviewerExecutor(Executor):
         ))
 
         result = await self._agent.run(prompt)
+        record_llm_usage(result)
         raw_json = extract_json_from_response(result.text)
         review = ReviewResult.model_validate_json(raw_json)
 

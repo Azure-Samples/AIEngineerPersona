@@ -11,6 +11,7 @@ import logging
 from typing import Optional
 
 from agent_framework import ChatAgent, Executor, WorkflowContext, handler
+from opentelemetry import trace
 from agent_framework.azure import AzureOpenAIChatClient
 from azure.identity import DefaultAzureCredential
 
@@ -18,7 +19,7 @@ from ..config import settings
 from ..models import StoryRequest, StoryOutline
 from ..prompts import ORCHESTRATOR_INSTRUCTIONS
 from ..signals import RevisionSignal
-from ..utils import extract_json_from_response
+from ..utils import extract_json_from_response, record_llm_usage
 from ..events import ProgressDetailEvent
 from ..wikipedia import fetch_wikipedia
 
@@ -54,6 +55,14 @@ class OrchestratorExecutor(Executor):
         """Called once with the user's form input on the very first run."""
         logger.info("[Orchestrator] Received initial story request for: %s", request.main_character)
 
+        span = trace.get_current_span()
+        span.set_attribute("orchestrator.mode", "initial")
+        span.set_attribute("orchestrator.main_character", request.main_character)
+        span.set_attribute("orchestrator.setting", request.setting or "")
+        span.set_attribute("orchestrator.moral", request.moral or "")
+        if request.wikipedia_topic:
+            span.set_attribute("orchestrator.wikipedia_topic", request.wikipedia_topic)
+
         await ctx.add_event(ProgressDetailEvent(
             executor_id="orchestrator",
             detail_type="executor_started",
@@ -75,6 +84,11 @@ class OrchestratorExecutor(Executor):
 
         outline = await self._create_outline(request, revision_instructions=None, ctx=ctx)
         logger.info("[Orchestrator] Outline created: '%s' (%d pages)", outline.title, outline.target_pages)
+        span.add_event("outline_created", {
+            "title": outline.title,
+            "page_count": outline.target_pages,
+            "plot_summary": outline.plot_summary or "",
+        })
 
         await ctx.send_message(outline)
 
@@ -91,6 +105,10 @@ class OrchestratorExecutor(Executor):
         await ctx.set_shared_state("revision_count", revision_count)
         logger.info("[Orchestrator] Starting revision round %d", revision_count)
 
+        span = trace.get_current_span()
+        span.set_attribute("orchestrator.mode", "revision")
+        span.set_attribute("orchestrator.revision_number", revision_count)
+
         await ctx.add_event(ProgressDetailEvent(
             executor_id="orchestrator",
             detail_type="revision_started",
@@ -105,6 +123,10 @@ class OrchestratorExecutor(Executor):
 
         outline = await self._create_outline(request, revision_instructions=signal.revision_instructions, ctx=ctx)
         logger.info("[Orchestrator] Revised outline ready: '%s'", outline.title)
+        span.add_event("revised_outline_ready", {
+            "title": outline.title,
+            "page_count": outline.target_pages,
+        })
 
         await ctx.send_message(outline)
 
@@ -209,6 +231,8 @@ class OrchestratorExecutor(Executor):
         raw_json = extract_json_from_response(result.text)
         outline = StoryOutline.model_validate_json(raw_json)
         outline.revision_instructions = revision_instructions
+
+        record_llm_usage(result)
 
         await ctx.add_event(ProgressDetailEvent(
             executor_id="orchestrator",
