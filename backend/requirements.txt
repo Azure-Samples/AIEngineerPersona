@@ -1,0 +1,19 @@
+# Web framework & server
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+sse-starlette>=2.1.0
+
+# Configuration & validation
+# Note: mcp (transitive via agent-framework-core) requires pydantic>=2.11.0
+pydantic>=2.11.0
+pydantic-settings>=2.7.0
+python-dotenv>=1.0.0
+
+# Microsoft Agent Framework
+agent-framework-core==1.0.0b260107
+agent-framework-azure-ai==1.0.0b260107
+
+# Azure auth & OpenAI client
+# Note: agent-framework-core requires openai>=1.99.0
+azure-identity>=1.21.0
+openai>=1.99.0

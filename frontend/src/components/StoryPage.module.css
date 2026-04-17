@@ -1,0 +1,215 @@
+/* StoryPage.module.css */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+}
+
+/* ─── Illustration area ───────────────────────────────────────────────────── */
+
+.imageWrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 720px;
+  background: linear-gradient(135deg, #E8E1FF 0%, #DFF7F4 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Placeholder shown when image_url is null */
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  padding: 20px;
+  text-align: center;
+}
+
+.imagePlaceholder span:first-child {
+  font-size: 3.5rem;
+}
+
+/* Page number badge */
+.pageBadge {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(4px);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* ─── Cover page ──────────────────────────────────────────────────────────── */
+
+.coverPage {
+  width: 100%;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Image area — fills the top portion like a real book cover */
+.coverImageArea {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(160deg, #F6F2FF 0%, #E8E1FF 50%, #DFF7F4 100%);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.coverImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.coverImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6rem;
+}
+
+/* Title + characters overlay at the bottom of the image */
+.coverOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%);
+  padding: 40px 24px 20px;
+  text-align: center;
+}
+
+.coverTitle {
+  font-size: 1.8rem;
+  color: #fff;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  margin: 0 0 6px;
+}
+
+.coverCharacters {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.85);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  margin: 0;
+}
+
+/* Moral tagline area below the image */
+.coverMoralArea {
+  padding: 18px 32px 22px;
+  background: var(--color-surface);
+  display: flex;
+  justify-content: center;
+}
+
+.coverMoral {
+  background: var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  max-width: 480px;
+  text-align: center;
+}
+
+/* ─── Final page ("The End") ───────────────────────────────────────────────── */
+
+.finalPage {
+  width: 100%;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Image-based "The End" — full bleed */
+.finalImageArea {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: linear-gradient(160deg, #DFF7F4 0%, #c5f0eb 100%);
+}
+
+.finalImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Fallback (no image) */
+.finalEmoji  { font-size: 4rem; text-align: center; padding-top: 48px; }
+.finalTitle  { font-size: 1.6rem; color: var(--color-success); text-align: center; padding: 8px 0; }
+.finalMoral  {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--color-text);
+  max-width: 520px;
+  line-height: 1.7;
+  text-align: center;
+  margin: 0 auto;
+  padding: 0 32px 24px;
+}
+
+.finalNotes {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  max-width: 480px;
+  text-align: center;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ─── Story text ──────────────────────────────────────────────────────────── */
+
+.textArea {
+  padding: 28px 32px;
+  flex: 1;
+}
+
+.storyText {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--color-text);
+}
+
+.characterTags {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: #F6F2FF;
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #E8E1FF;
+}

@@ -1,0 +1,53 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backend: Install Python deps",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/backend && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: Start (uvicorn)",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000",
+      "group": "build",
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "INFO:.*Uvicorn running",
+          "endsPattern":   "Application startup complete"
+        }
+      }
+    },
+    {
+      "label": "Frontend: Install npm deps",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/frontend && npm install",
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: Start (Vite dev)",
+      "type": "shell",
+      "command": "cd ${workspaceFolder}/frontend && npm run dev",
+      "group": "build",
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE",
+          "endsPattern":   "ready in"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,661 @@
+/* ProgressTracker.module.css */
+
+/* ─── Base container ──────────────────────────────────────────────────────── */
+
+.container {
+  width: 100%;
+}
+
+.title {
+  font-size: 1.8rem;
+  color: var(--color-primary);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+/* ─── Sidebar container ───────────────────────────────────────────────────── */
+
+.containerSidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+/* Always-visible vertical toggle tab on the left edge of sidebar */
+.toggleTab {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 80px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 6px 0 0 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.toggleTab:hover {
+  background: var(--color-primary-dark, #6A4CE0);
+}
+
+.toggleTabLabel {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Scrollable panel inner area */
+.panelContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px 32px;
+}
+
+/* ─── Sidebar header ──────────────────────────────────────────────────────── */
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.sidebarTitle {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+}
+
+.collapseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.collapseBtn:hover {
+  background: var(--color-border);
+}
+
+/* ─── Workflow diagram ────────────────────────────────────────────────────── */
+
+.workflow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.containerSidebar .workflow {
+  max-width: 100%;
+  margin: 0;
+}
+
+/* ─── Step ────────────────────────────────────────────────────────────────── */
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+
+/* Icon column — holds circle + connector line */
+.iconCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 40px;
+}
+
+/* Connector line between steps */
+.connector {
+  width: 2px;
+  flex: 1;
+  min-height: 24px;
+  background: var(--color-border);
+  margin: 2px 0;
+}
+
+.connectorDone {
+  background: var(--color-success);
+}
+
+/* Icon circle */
+.icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  border: 3px solid var(--color-border);
+  background: var(--color-bg);
+  z-index: 1;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.step.active .icon {
+  border-color: var(--color-primary);
+  background: #F6F2FF;
+  box-shadow: 0 0 0 4px rgba(123, 92, 245, 0.15);
+}
+
+.step.completed .icon {
+  border-color: var(--color-success);
+  background: #DFF7F4;
+}
+
+.step.revision .icon {
+  border-color: var(--color-revision);
+  background: #F6F2FF;
+}
+
+/* Text content area */
+.content {
+  padding: 8px 0 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepLabel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  transition: color 0.3s;
+}
+
+.step.active .stepLabel    { color: var(--color-primary); }
+.step.completed .stepLabel { color: var(--color-success); }
+.step.revision .stepLabel  { color: var(--color-revision); }
+
+.checkmark {
+  color: var(--color-success);
+  font-size: 1rem;
+}
+
+.stepMessage {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  min-height: 1.1em;
+}
+
+/* Active step spinner + text row */
+.activeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Detail panel ────────────────────────────────────────────────────────── */
+
+.stepDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding-left: 2px;
+}
+
+.detailLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+/* ─── Prompt block ────────────────────────────────────────────────────────── */
+
+.promptBlock {
+  background: #F6F2FF;
+  border-left: 3px solid var(--color-primary);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+}
+
+.promptText {
+  font-family: 'Menlo', 'Consolas', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #444;
+  margin: 6px 0 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.toggleBtn:hover {
+  opacity: 0.75;
+}
+
+/* ─── Response block ──────────────────────────────────────────────────────── */
+
+.responseBlock {
+  background: #F6F2FF;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.responseBlock.approved {
+  background: #DFF7F4;
+  border-color: #7adbc9;
+}
+
+.responseBlock.rejected {
+  background: #FFF4F6;
+  border-color: #f5aaaa;
+}
+
+.responseRow {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.responseKey {
+  font-weight: 700;
+  color: var(--color-text-muted);
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.issueRow {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+.issueCategory {
+  background: #FFE3EC;
+  color: #c4447a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 30px;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+.revisionInstructions {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-top: 4px;
+  border-top: 1px dashed var(--color-border);
+  padding-top: 6px;
+}
+
+/* ─── Page content block ──────────────────────────────────────────────────── */
+
+.pagesBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pageCard {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #FDFBFF;
+}
+
+.pageCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.pageNum {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.pageTone {
+  font-size: 0.68rem;
+  background: #E8E1FF;
+  color: #7B5CF5;
+  border-radius: 30px;
+  padding: 1px 8px;
+  font-weight: 600;
+}
+
+.pageText {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  font-style: italic;
+  color: #333;
+  margin: 0 0 6px;
+}
+
+.pageImagePromptLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.pageImagePrompt {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ─── Image grid ──────────────────────────────────────────────────────────── */
+
+.imageGridBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  gap: 8px;
+}
+
+.imageSlot {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: #EFEAFD;
+  border: 2px solid var(--color-border);
+  transition: border-color 0.25s, background 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imageSlotDone {
+  border-color: var(--color-success);
+  background: #DFF7F4;
+}
+
+.imageSlotFail {
+  border-color: var(--color-error);
+  background: #fff0f0;
+}
+
+.imageSlotLoading {
+  border-color: #FF8FAB;
+  background: #FFF4F6;
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.imageSlotQueued {
+  border-color: #C4B5FD;
+  background: #EFEAFD;
+  opacity: 0.7;
+}
+
+.imageSlotClickable {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.imageSlotClickable:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+.imageThumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imageSlotError {
+  font-size: 1.3rem;
+  color: var(--color-error);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.imageSlotSpinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.imageSlotPending {
+  width: 100%;
+  height: 100%;
+  background: #EFEAFD;
+}
+
+.imageSlotQueuedIcon {
+  font-size: 1.1rem;
+  opacity: 0.55;
+}
+
+.imageSlotLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  padding: 1px 0 2px;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Lightbox ────────────────────────────────────────────────────────────── */
+
+.lightboxBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.18s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lightboxContent {
+  position: relative;
+  max-width: min(90vw, 800px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: -44px;
+  right: 0;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.lightboxClose:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: calc(90vh - 60px);
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  display: block;
+}
+
+.lightboxLabel {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Revision badge ──────────────────────────────────────────────────────── */
+
+.revisionBadge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #EFEAFD;
+  color: var(--color-revision, #7B5CF5);
+  border: 1px solid #c4b5fd;
+  border-radius: 20px;
+  padding: 2px 9px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ─── Revision rounds (within StepDetailPanel) ────────────────────────────── */
+
+.revisionRound {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0 4px;
+  border-top: 1px dashed var(--color-border);
+  margin-top: 4px;
+}
+
+.revisionRound:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.roundLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-revision, #7c3aed);
+  margin-bottom: 2px;
+}
+
+/* ─── Error box ───────────────────────────────────────────────────────────── */
+
+.errorBox {
+  background: #fff0f0;
+  border: 2px solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-top: 24px;
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.errorBox p:first-child {
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+}
+
+.errorBox p + p {
+  font-weight: 400;
+  font-size: 0.9rem;
+}
