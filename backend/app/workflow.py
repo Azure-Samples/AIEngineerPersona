@@ -1,7 +1,7 @@
 """
 workflow.py — Constructs the children's story multi-agent workflow.
 
-Graph topology:
+Base graph topology (always present):
 
             ┌─────────────────────────────────────────────┐
             │  (RevisionSignal — revision loop back-edge)  │
@@ -27,7 +27,23 @@ Graph topology:
    ┌─────────────────┐                                     │
    │    Decision     │────────────────────────────────────►┘
    └────────┬────────┘
-            │ yield_output(StoryResponse)
+            │ StoryResponse (approved)
+            ▼
+     Bonus agent fan-out (0, 1, or 2 agents depending on request flags):
+
+   ─── No bonus agents ─────────────────────────────────────────────────────────
+   Decision → FinalAssembly
+
+   ─── Look & Find only ────────────────────────────────────────────────────────
+   Decision → LookAndFind → FinalAssembly
+
+   ─── Character Glossary only ─────────────────────────────────────────────────
+   Decision → CharacterGlossary → FinalAssembly
+
+   ─── Both bonus agents (fan-out / fan-in) ───────────────────────────────────
+   Decision ──fan-out──► LookAndFind ──┐
+                     └► CharacterGlossary ──┤
+                                       fan-in ──► FinalAssembly → yield_output
 
 NOTE: build_story_workflow() is called per-request so the graph topology can vary
 based on the flags in StoryRequest. There is no module-level singleton.
@@ -41,6 +57,10 @@ from .agents.story_architect import StoryArchitectExecutor
 from .agents.art_director import ArtDirectorExecutor
 from .agents.story_reviewer import StoryReviewerExecutor
 from .agents.decision import DecisionExecutor
+from .agents.approval_gateway import ApprovalGatewayExecutor
+from .agents.look_and_find import LookAndFindActivityExecutor
+from .agents.character_glossary import CharacterGlossaryExecutor
+from .agents.final_assembly import FinalAssemblyExecutor
 
 
 def build_story_workflow(request: StoryRequest) -> Workflow:
@@ -48,7 +68,7 @@ def build_story_workflow(request: StoryRequest) -> Workflow:
     Build and return a Workflow for the given request.
 
     The graph topology varies per-request based on flags in StoryRequest
-    (enable_story_reviewer).
+    (enable_story_reviewer, include_look_and_find, include_character_glossary).
 
     Args:
         request: The story generation request containing all user options.
@@ -61,6 +81,8 @@ def build_story_workflow(request: StoryRequest) -> Workflow:
     art_director       = ArtDirectorExecutor()
     story_reviewer     = StoryReviewerExecutor()
     decision           = DecisionExecutor()
+    approval_gateway   = ApprovalGatewayExecutor()
+    final_assembly     = FinalAssemblyExecutor()
 
     builder = (
         WorkflowBuilder()
@@ -90,6 +112,45 @@ def build_story_workflow(request: StoryRequest) -> Workflow:
     # Orchestrator.  The framework routes by message type so this edge is
     # only traversed for RevisionSignal messages.
     builder = builder.add_edge(decision, orchestrator)
+
+    # ── Approval gateway ──────────────────────────────────────────────────
+    # DecisionExecutor outputs two types: StoryResponse (approved) and
+    # RevisionSignal (rejected).  The framework type validator requires ALL
+    # output types of a source to be compatible with every target's inputs.
+    # ApprovalGatewayExecutor accepts only StoryResponse, making the edge
+    # decision → approval_gateway type-safe, and then fans out to bonus agents.
+    builder = builder.add_edge(decision, approval_gateway)
+
+    # ── Bonus agent fan-out / fan-in ───────────────────────────────────────
+    if request.include_look_and_find and request.include_character_glossary:
+        # Both agents enabled — true parallel fan-out / fan-in
+        look_and_find      = LookAndFindActivityExecutor()
+        character_glossary = CharacterGlossaryExecutor()
+        builder = (
+            builder
+            .add_fan_out_edges(approval_gateway, [look_and_find, character_glossary])
+            .add_fan_in_edges([look_and_find, character_glossary], final_assembly)
+        )
+
+    elif request.include_look_and_find:
+        look_and_find = LookAndFindActivityExecutor()
+        builder = (
+            builder
+            .add_edge(approval_gateway, look_and_find)
+            .add_edge(look_and_find, final_assembly)
+        )
+
+    elif request.include_character_glossary:
+        character_glossary = CharacterGlossaryExecutor()
+        builder = (
+            builder
+            .add_edge(approval_gateway, character_glossary)
+            .add_edge(character_glossary, final_assembly)
+        )
+
+    else:
+        # No bonus agents — gateway forwards StoryResponse directly to FinalAssembly
+        builder = builder.add_edge(approval_gateway, final_assembly)
 
     return builder.build()
 

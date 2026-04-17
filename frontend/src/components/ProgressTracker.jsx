@@ -3,13 +3,25 @@ import styles from './ProgressTracker.module.css';
 
 /* ─── Static step definitions ─────────────────────────────────────────────── */
 
-const WORKFLOW_STEPS = [
+const BASE_WORKFLOW_STEPS = [
   { id: 'orchestrator',    icon: '📋', label: 'Orchestrator',    hint: 'Planning the story outline...' },
   { id: 'story_architect', icon: '✍️',  label: 'Story Architect', hint: 'Writing the story pages...' },
   { id: 'art_director',    icon: '🎨', label: 'Art Director',    hint: 'Generating illustrations...' },
   { id: 'story_reviewer',  icon: '🔍', label: 'Story Reviewer',  hint: 'Reviewing for quality...' },
   { id: 'decision',        icon: '⚖️',  label: 'Decision',       hint: 'Finalising the story...' },
 ];
+
+const LOOK_AND_FIND_STEP    = { id: 'look_and_find',      icon: '🔎', label: 'Look & Find',       hint: 'Creating the Look & Find activity page...' };
+const CHARACTER_GLOSSARY_STEP = { id: 'character_glossary', icon: '📖', label: 'Character Glossary', hint: 'Writing the Character Glossary...' };
+const FINAL_ASSEMBLY_STEP   = { id: 'final_assembly',      icon: '📦', label: 'Final Assembly',    hint: 'Assembling the final story...' };
+
+function buildWorkflowSteps(bonusAgents) {
+  const steps = [...BASE_WORKFLOW_STEPS];
+  if (bonusAgents?.lookAndFind)      steps.push(LOOK_AND_FIND_STEP);
+  if (bonusAgents?.characterGlossary) steps.push(CHARACTER_GLOSSARY_STEP);
+  steps.push(FINAL_ASSEMBLY_STEP);
+  return steps;
+}
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -24,7 +36,7 @@ function resolveStepStatus(stepId, progress, details = []) {
   const stepDetails = details.filter(d => d.executor_id === stepId);
   if (stepDetails.length > 0) {
     const lastDetail = stepDetails.at(-1);
-    const activeTypes    = new Set(['executor_started', 'revision_started', 'prompt_sent', 'page_content', 'image_started', 'image_queued', 'images_batch_started']);
+    const activeTypes    = new Set(['executor_started', 'revision_started', 'prompt_sent', 'page_content', 'image_started', 'image_queued', 'images_batch_started', 'wikipedia_fetched', 'wikipedia_not_found']);
     const completedTypes = new Set(['response_received', 'image_completed', 'image_failed', 'auto_approved']);
     if (activeTypes.has(lastDetail.detail_type)) {
       return lastDetail.detail_type === 'revision_started' ? 'revision' : 'active';
@@ -108,21 +120,93 @@ function ResponseBlock({ data, executorId }) {
       </div>
     );
   }
+  if (executorId === 'look_and_find') {
+    return (
+      <div className={styles.responseBlock}>
+        <div className={styles.detailLabel}>🔎 Activity created — {data.item_count} items to find</div>
+        {data.items?.map((item, i) => (
+          <div key={i} className={styles.responseRow}>
+            <span className={styles.responseKey}>Page {item.page}</span>
+            <span>{item.name}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (executorId === 'character_glossary') {
+    return (
+      <div className={styles.responseBlock}>
+        <div className={styles.detailLabel}>📖 Glossary complete — {data.entry_count} characters</div>
+        {data.characters?.map((name, i) => (
+          <div key={i} className={styles.responseRow}>
+            <span className={styles.responseKey}>{name}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
   return null;
 }
 
 function ExecutorStartedBlock({ data }) {
   if (!data) return null;
+  const isFullMode = data.wikipedia_mode === 'full';
   return (
     <div className={styles.responseBlock}>
       <div className={styles.detailLabel}>📥 Story request received</div>
-      <div className={styles.responseRow}><span className={styles.responseKey}>Hero</span><span>{data.main_character}</span></div>
-      {data.supporting_characters?.length > 0 && (
-        <div className={styles.responseRow}><span className={styles.responseKey}>Also</span><span>{data.supporting_characters.join(', ')}</span></div>
+      {isFullMode ? (
+        <div className={styles.responseRow}>
+          <span className={styles.responseKey}>Mode</span>
+          <span>📖 Full Wikipedia Story — characters, setting &amp; plot derived from article</span>
+        </div>
+      ) : (
+        <>
+          <div className={styles.responseRow}><span className={styles.responseKey}>Hero</span><span>{data.main_character}</span></div>
+          {data.supporting_characters?.length > 0 && (
+            <div className={styles.responseRow}><span className={styles.responseKey}>Also</span><span>{data.supporting_characters.join(', ')}</span></div>
+          )}
+          <div className={styles.responseRow}><span className={styles.responseKey}>Setting</span><span>{data.setting}</span></div>
+          <div className={styles.responseRow}><span className={styles.responseKey}>Moral</span><span>{data.moral}</span></div>
+          <div className={styles.responseRow}><span className={styles.responseKey}>Problem</span><span>{data.main_problem}</span></div>
+        </>
       )}
-      <div className={styles.responseRow}><span className={styles.responseKey}>Setting</span><span>{data.setting}</span></div>
-      <div className={styles.responseRow}><span className={styles.responseKey}>Moral</span><span>{data.moral}</span></div>
-      <div className={styles.responseRow}><span className={styles.responseKey}>Problem</span><span>{data.main_problem}</span></div>
+    </div>
+  );
+}
+
+function WikipediaFetchedBlock({ data }) {
+  if (!data) return null;
+  const isFullMode = data.mode === 'full';
+  return (
+    <div className={styles.responseBlock}>
+      <div className={styles.detailLabel}>🌐 Wikipedia content retrieved</div>
+      <div className={styles.responseRow}>
+        <span className={styles.responseKey}>Topic</span>
+        <span>{data.resolved_title}</span>
+      </div>
+      <div className={styles.responseRow}>
+        <span className={styles.responseKey}>Mode</span>
+        <span>{isFullMode
+          ? '📖 Full — story created entirely from Wikipedia'
+          : '✨ Influence — blended with your story details'}
+        </span>
+      </div>
+      <div className={styles.responseRow}>
+        <span className={styles.responseKey}>Content</span>
+        <span>{data.extract_length?.toLocaleString()} characters fetched</span>
+      </div>
+    </div>
+  );
+}
+
+function WikipediaNotFoundBlock({ data }) {
+  if (!data) return null;
+  return (
+    <div className={`${styles.responseBlock} ${styles.rejected}`}>
+      <div className={styles.detailLabel}>🌐 Wikipedia topic not found: &quot;{data.topic}&quot;</div>
+      <div className={styles.revisionInstructions}>
+        The story will be generated without Wikipedia content.
+      </div>
     </div>
   );
 }
@@ -324,6 +408,8 @@ function StepDetailPanel({ stepId, details }) {
         const autoApprovedEvt    = round.find(d => d.detail_type === 'auto_approved');
         const executorStartedEvt = round.find(d => d.detail_type === 'executor_started');
         const revisionStartedEvt = round.find(d => d.detail_type === 'revision_started');
+        const wikiFetchedEvt     = round.find(d => d.detail_type === 'wikipedia_fetched');
+        const wikiNotFoundEvt    = round.find(d => d.detail_type === 'wikipedia_not_found');
 
         // Deduplicate pages by page_number — last event wins
         const pageMap = {};
@@ -349,6 +435,8 @@ function StepDetailPanel({ stepId, details }) {
             )}
             {autoApprovedEvt     && <AutoApprovedBlock />}
             {executorStartedEvt  && <ExecutorStartedBlock data={executorStartedEvt.data} />}
+            {wikiFetchedEvt      && <WikipediaFetchedBlock data={wikiFetchedEvt.data} />}
+            {wikiNotFoundEvt     && <WikipediaNotFoundBlock data={wikiNotFoundEvt.data} />}
             {revisionStartedEvt  && <RevisionStartedBlock data={revisionStartedEvt.data} />}
             {promptEvt   && <PromptBlock text={promptEvt.data?.prompt} />}
             {pageEvts.length  > 0 && <PageContentBlock pages={pageEvts} />}
@@ -370,11 +458,12 @@ export default function ProgressTracker({
   mode = 'full',
   isCollapsed = false,
   onToggle,
+  bonusAgents = { lookAndFind: true, characterGlossary: true },
   reviewNotes,
 }) {
   const revisionEvents = progress.filter(p => p.executor_id === 'revision');
   const isSidebar = mode === 'sidebar';
-  const workflowSteps = WORKFLOW_STEPS;
+  const workflowSteps = useMemo(() => buildWorkflowSteps(bonusAgents), [bonusAgents]);
 
   return (
     <div className={`${styles.container} ${isSidebar ? styles.containerSidebar : ''}`}>

@@ -52,6 +52,32 @@ OUTPUT FORMAT: Return a valid JSON object matching the StoryOutline schema:
 
 If you receive revision_instructions, incorporate the feedback into an improved outline.
 Do not simply restate the same outline — genuinely address each issue raised.
+
+WIKIPEDIA CONTEXT (when provided):
+Sometimes the prompt will include a "WIKIPEDIA CONTEXT" section with real-world factual
+content about a person, event, or concept. There are two modes:
+
+FULL MODE ("WIKIPEDIA CONTEXT (FULL MODE)"):
+The entire story must be derived from the Wikipedia content. You must:
+- Invent appropriate characters with vivid visual descriptions based on the real people,
+  animals, or concepts described.
+- Choose a setting that matches the real-world context.
+- Derive a moral lesson naturally from the factual content.
+- Build a plot that retells the key facts as a compelling narrative for children.
+- The user has NOT provided characters, setting, or moral — you create everything.
+
+INFLUENCE MODE ("WIKIPEDIA CONTEXT (INFLUENCE MODE)"):
+The Wikipedia content should inspire and enrich the story, but the user's provided
+characters, setting, moral, and plot parameters take priority. You should:
+- Weave factual details from Wikipedia into the user's story framework.
+  For example, if the topic is "Marie Curie" and the user's main character is a bunny,
+  the bunny might discover something glowing in a lab, mirroring Curie's discoveries.
+- Use the real-world content as background flavour and inspiration, not as the sole driver.
+
+In both modes:
+- Simplify and adapt the content for children aged 5–8.
+- The story should feel like a children's book, not an encyclopedia entry.
+- Focus on the most interesting, relatable, and age-appropriate facts.
 """
 
 STORY_ARCHITECT_INSTRUCTIONS = """

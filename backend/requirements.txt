@@ -19,4 +19,10 @@ agent-framework-azure-ai==1.0.0b260107
 azure-identity>=1.21.0
 openai>=1.99.0
 
+# Azure Speech SDK (TTS)
+azure-cognitiveservices-speech>=1.40.0
 
+# OpenTelemetry (api + sdk are already included via agent-framework-core)
+opentelemetry-exporter-otlp-proto-grpc>=1.41.0
+opentelemetry-exporter-otlp-proto-http>=1.41.0
+opentelemetry-instrumentation-fastapi>=0.62b0

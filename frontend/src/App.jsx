@@ -18,6 +18,7 @@ function App() {
   const [view, setView] = useState('form');
   const [formTab, setFormTab] = useState('create'); // 'create' | 'saved'
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [bonusAgents, setBonusAgents] = useState({ lookAndFind: true, characterGlossary: true });
 
   const { story, progress, details, isGenerating, error, generate, reset, loadDemoStory } =
     useStoryGeneration();
@@ -30,6 +31,10 @@ function App() {
   }, [story, view]);
 
   async function handleSubmit(formData) {
+    setBonusAgents({
+      lookAndFind:      !!formData.include_look_and_find,
+      characterGlossary: !!formData.include_character_glossary,
+    });
     setSidebarOpen(true);
     setView('generating');
     await generate(formData);
@@ -38,6 +43,7 @@ function App() {
   function handleReset() {
     reset();
     setView('form');
+    setBonusAgents({ lookAndFind: true, characterGlossary: true });
   }
 
   async function handleLoadDemo(storyId) {
@@ -114,6 +120,7 @@ function App() {
               details={details}
               error={error}
               mode="full"
+              bonusAgents={bonusAgents}
             />
             {error && (
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
@@ -136,6 +143,7 @@ function App() {
                 mode="sidebar"
                 isCollapsed={!sidebarOpen}
                 onToggle={() => setSidebarOpen(o => !o)}
+                bonusAgents={bonusAgents}
                 reviewNotes={story.review_notes}
               />
             </aside>

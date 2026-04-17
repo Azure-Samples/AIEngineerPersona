@@ -2,9 +2,12 @@
 DecisionExecutor — Routing node in the workflow.
 
 Receives the ReviewResult and decides:
-  - If approved OR max revision cycles reached → assemble StoryResponse and
-    yield_output to end the workflow
+  - If approved OR max revision cycles reached → assemble StoryResponse and send_message
+    downstream to FinalAssemblyExecutor (or fan-out to bonus agents)
   - If rejected AND revision budget remains → send RevisionSignal back to OrchestratorExecutor
+
+NOTE: This node no longer calls ctx.yield_output() directly. The terminal yield_output
+call has moved to FinalAssemblyExecutor, which is always the last node in the graph.
 """
 
 import logging
@@ -72,7 +75,10 @@ class DecisionExecutor(Executor):
                 )
 
             story_response = await self._assemble_story(review, revision_count, ctx)
-            await ctx.yield_output(story_response)
+            # Persist the approved StoryResponse so FinalAssemblyExecutor can always
+            # read it from shared state, regardless of which bonus agents executed.
+            await ctx.set_shared_state("approved_story", story_response.model_dump_json())
+            await ctx.send_message(story_response)
 
         else:
             logger.info(

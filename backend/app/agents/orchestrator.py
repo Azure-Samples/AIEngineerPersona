@@ -20,6 +20,7 @@ from ..prompts import ORCHESTRATOR_INSTRUCTIONS
 from ..signals import RevisionSignal
 from ..utils import extract_json_from_response
 from ..events import ProgressDetailEvent
+from ..wikipedia import fetch_wikipedia
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,8 @@ class OrchestratorExecutor(Executor):
             detail_type="executor_started",
             detail_data={
                 "mode": "initial",
+                "wikipedia_topic": request.wikipedia_topic,
+                "wikipedia_mode": request.wikipedia_mode if request.wikipedia_topic else None,
                 "main_character": request.main_character,
                 "supporting_characters": request.supporting_characters or [],
                 "setting": request.setting,
@@ -116,15 +119,74 @@ class OrchestratorExecutor(Executor):
         characters_str = ", ".join(request.supporting_characters) if request.supporting_characters else "none"
         additional = request.additional_details or "No additional details provided."
 
-        prompt_parts = [
-            "Create a story outline based on these parameters:",
-            f"- Main character: {request.main_character}",
-            f"- Supporting characters: {characters_str}",
-            f"- Setting: {request.setting}",
-            f"- Moral of the story: {request.moral}",
-            f"- Main problem: {request.main_problem}",
-            f"- Additional details: {additional}",
-        ]
+        # ── Optional Wikipedia RAG context ────────────────────────────────────
+        wikipedia_context_parts: list[str] = []
+        wiki_full_mode = False
+        if request.wikipedia_topic and request.wikipedia_topic.strip():
+            wiki = await fetch_wikipedia(request.wikipedia_topic.strip())
+            if wiki:
+                wiki_full_mode = request.wikipedia_mode == "full"
+                await ctx.add_event(ProgressDetailEvent(
+                    executor_id="orchestrator",
+                    detail_type="wikipedia_fetched",
+                    detail_data={
+                        "topic": request.wikipedia_topic,
+                        "resolved_title": wiki.title,
+                        "url": wiki.url,
+                        "extract_length": len(wiki.extract),
+                        "mode": request.wikipedia_mode,
+                    },
+                ))
+                if wiki_full_mode:
+                    wikipedia_context_parts = [
+                        "",
+                        "WIKIPEDIA CONTEXT (FULL MODE) — The entire story must be based on this content.",
+                        "Invent appropriate characters, setting, moral, and plot entirely from",
+                        "this real-world information. Retell it as a children's story.",
+                        f"Topic: {wiki.title}",
+                        f"Source: {wiki.url}",
+                        "",
+                        wiki.extract,
+                    ]
+                else:
+                    wikipedia_context_parts = [
+                        "",
+                        "WIKIPEDIA CONTEXT (INFLUENCE MODE) — Use this real-world information as",
+                        "background inspiration, blended with the user's characters, setting,",
+                        "moral, and plot parameters listed above.",
+                        f"Topic: {wiki.title}",
+                        f"Source: {wiki.url}",
+                        "",
+                        wiki.extract,
+                    ]
+            else:
+                await ctx.add_event(ProgressDetailEvent(
+                    executor_id="orchestrator",
+                    detail_type="wikipedia_not_found",
+                    detail_data={"topic": request.wikipedia_topic},
+                ))
+
+        if wiki_full_mode:
+            # Full mode: user's manual story fields are ignored; prompt is built
+            # purely from the Wikipedia content.
+            prompt_parts = [
+                "Create a children's story outline based entirely on the Wikipedia",
+                "content provided below. Invent appropriate characters (with vivid",
+                "visual descriptions), a setting, a moral lesson, and a plot that",
+                "faithfully retells the real-world information for young readers.",
+            ]
+        else:
+            prompt_parts = [
+                "Create a story outline based on these parameters:",
+                f"- Main character: {request.main_character}",
+                f"- Supporting characters: {characters_str}",
+                f"- Setting: {request.setting}",
+                f"- Moral of the story: {request.moral}",
+                f"- Main problem: {request.main_problem}",
+                f"- Additional details: {additional}",
+            ]
+
+        prompt_parts += wikipedia_context_parts
 
         if revision_instructions:
             prompt_parts += [
