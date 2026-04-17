@@ -1,0 +1,217 @@
+/* StoryForm.module.css */
+
+.container {
+  width: 100%;
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.titleIcon {
+  height: 2rem;
+  width: auto;
+  object-fit: contain;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: 36px;
+  font-size: 1rem;
+}
+
+/* ─── Field ────────────────────────────────────────────────────────────────── */
+
+.field {
+  margin-bottom: 24px;
+}
+
+.hint {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.label {
+  display: block;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.required {
+  color: var(--color-primary);
+  margin-left: 3px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  transition: border-color 0.18s, box-shadow 0.18s;
+  outline: none;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(24, 61, 76, 0.15);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* ─── Supporting characters ─────────────────────────────────────────────── */
+
+.characterList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.characterRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.characterRow .input {
+  flex: 1;
+}
+
+.btnRemove {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: white;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.18s;
+}
+
+.btnRemove:hover {
+  background: #8B4040;
+}
+
+.btnAdd {
+  align-self: flex-start;
+  background: transparent;
+  color: var(--color-secondary);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border: 2px solid var(--color-secondary);
+  border-radius: var(--radius-xl);
+  margin-top: 6px;
+  transition: background 0.18s, color 0.18s;
+}
+
+.btnAdd:hover {
+  background: var(--color-secondary);
+  color: white;
+}
+
+/* ─── Submit row ────────────────────────────────────────────────────────── */
+
+.submitRow {
+  display: flex;
+  justify-content: center;
+  margin-top: 36px;
+}
+
+/* ─── Divider ─────────────────────────────────────────────────────────────── */
+
+.divider {
+  border: none;
+  border-top: 2px dashed var(--color-border);
+  margin: 8px 0 24px;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── Bonus content checkboxes ────────────────────────────────────────── */
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  padding: 14px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.checkboxLabel:hover {
+  border-color: var(--color-primary);
+  background: rgba(24, 61, 76, 0.04);
+}
+
+.checkboxInput {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  margin-top: 2px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.checkboxText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.checkboxHint {
+  font-size: 0.83rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* ─── Fieldset ─────────────────────────────────────────────────────────── */
+
+.fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}

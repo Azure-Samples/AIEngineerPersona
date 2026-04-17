@@ -1,0 +1,312 @@
+/* ─────────────────────────────────────────────────────────────────────────── */
+/* Global styles — child-friendly palette, soft rounded UI                     */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Zava Brand Palette */
+  --color-bg:              #F0F3F5;
+  --color-surface:         #FFFFFF;
+  --color-primary:         #183D4C;   /* deep muted blue */
+  --color-primary-hover:   #3D7288;   /* medium teal-blue */
+  --color-primary-dark:    #0A0C0C;   /* near-black */
+  --color-primary-light:   #E0EDF2;   /* soft blue tint */
+  --color-secondary:       #3D7288;   /* medium teal-blue */
+  --color-secondary-hover: #183D4C;
+  --color-accent:          #BBD5E1;   /* soft blue accent */
+  --color-bg-section:      #EAF0F4;   /* light blue-gray sections */
+  --color-text:            #0A0C0C;
+  --color-text-muted:      #696E6F;
+  --color-border:          #BBD5E1;   /* soft blue border */
+  --color-divider:         #D5E3EA;
+  --color-success:         #4A8F7F;   /* muted teal-green */
+  --color-success-check:   #3D7A6B;
+  --color-error:           #A05050;   /* muted red */
+  --color-revision:        #585751;   /* dark warm gray */
+
+  /* Typography */
+  --font-body:   'Nunito', 'Segoe UI', Arial, sans-serif;
+  --font-heading:'Nunito', 'Segoe UI', Arial, sans-serif;
+
+  /* Spacing */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 36px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(24, 61, 76, 0.08);
+  --shadow-md: 0 4px 18px rgba(24, 61, 76, 0.10);
+  --shadow-lg: 0 8px 36px rgba(24, 61, 76, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  overflow: auto;
+}
+
+html, body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+#root {
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  line-height: 1.2;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+  border: none;
+  outline: none;
+}
+
+/* ─── App shell ─────────────────────────────────────────────────────────── */
+
+.app-header {
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #183D4C 0%, #3D7288 100%);
+  color: white;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.app-header h1 {
+  font-size: 1.6rem;
+  color: white;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-header .header-brand {
+  height: 2.2rem;
+  width: auto;
+  display: inline-block;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.app-header .header-icon {
+  height: 40px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 80px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Split layout used in storybook view */
+.app-main--split {
+  max-width: 100%;
+  flex-direction: row;
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0; /* critical: lets flex children shrink below content size */
+}
+
+/* Collapsible left sidebar holding the ProgressTracker */
+.tracker-sidebar {
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  transition: width 0.3s ease, min-width 0.3s ease;
+  height: 100%;
+  background: var(--color-surface);
+  border-right: 2px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.tracker-sidebar--open {
+  width: 380px;
+  min-width: 380px;
+}
+
+/* Right area that holds the storybook */
+.storybook-area {
+  flex: 1;
+  overflow-y: auto;
+  height: 100%;
+  padding: 32px 24px 80px;
+  position: relative;
+}
+
+/* Floating reopen tab on the left edge of the viewport when sidebar is closed */
+.sidebar-reopener {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 7px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.18);
+  transition: background 0.2s, padding-left 0.2s;
+}
+.sidebar-reopener:hover {
+  background: var(--color-primary-dark, #0A0C0C);
+  padding-left: 12px;
+}
+
+/* ─── Generic card ───────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 36px;
+  width: 100%;
+}
+
+/* ─── Tab bar ────────────────────────────────────────────────────────────── */
+
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin: -36px -36px 28px -36px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: var(--color-bg-section);
+  border: none;
+  cursor: pointer;
+  transition: color 0.18s, background 0.18s, box-shadow 0.18s;
+  position: relative;
+}
+
+.tab-btn:first-child {
+  border-radius: var(--radius-lg) 0 0 0;
+}
+
+.tab-btn:last-child {
+  border-radius: 0 var(--radius-lg) 0 0;
+}
+
+.tab-btn:hover:not(.tab-btn--active) {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.tab-btn--active {
+  color: var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: inset 0 -3px 0 var(--color-primary);
+}
+
+/* ─── Primary button ─────────────────────────────────────────────────────── */
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 14px 36px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: background 0.18s, transform 0.12s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Secondary button ───────────────────────────────────────────────────── */
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--color-primary);
+  transition: background 0.18s, color 0.18s;
+}
+
+.btn-secondary:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* ─── Spinner ────────────────────────────────────────────────────────────── */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+.spinner--dark {
+  border-color: rgba(61,47,30,0.2);
+  border-top-color: var(--color-primary);
+}

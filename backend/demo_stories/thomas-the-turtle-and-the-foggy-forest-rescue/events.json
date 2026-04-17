@@ -1,0 +1,967 @@
+[
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "orchestrator",
+      "status": "completed",
+      "label": "Orchestrator",
+      "message": "Orchestrator finished.",
+      "timestamp": 1776358699252
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "story_architect",
+      "status": "completed",
+      "label": "Story Architect",
+      "message": "Story Architect finished.",
+      "timestamp": 1776358699255
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "art_director",
+      "status": "completed",
+      "label": "Art Director",
+      "message": "Art Director finished.",
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "story_reviewer",
+      "status": "completed",
+      "label": "Story Reviewer",
+      "message": "Story Reviewer finished.",
+      "timestamp": 1776358909763
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "decision",
+      "status": "completed",
+      "label": "Decision",
+      "message": "Decision finished.",
+      "timestamp": 1776358911231
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "approval_gateway",
+      "status": "completed",
+      "label": "Approval Gateway",
+      "message": "Approval Gateway finished.",
+      "timestamp": 1776358911282
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "look_and_find",
+      "status": "completed",
+      "label": "Look & Find",
+      "message": "Look & Find finished.",
+      "timestamp": 1776358911344
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "character_glossary",
+      "status": "completed",
+      "label": "Character Glossary",
+      "message": "Character Glossary finished.",
+      "timestamp": 1776358911344
+    }
+  },
+  {
+    "type": "progress",
+    "data": {
+      "executor_id": "final_assembly",
+      "status": "completed",
+      "label": "Final Assembly",
+      "message": "Final Assembly finished.",
+      "timestamp": 1776358918154
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "orchestrator",
+      "detail_type": "executor_started",
+      "data": {
+        "mode": "initial",
+        "wikipedia_topic": null,
+        "wikipedia_mode": null,
+        "main_character": "Thomas the Turtle",
+        "supporting_characters": [
+          "Oliver the Wise Owl",
+          "Benny the Bunny"
+        ],
+        "setting": "A magical forest",
+        "moral": "True courage means helping others even when you're scared",
+        "main_problem": "A mysterious fog has covered the forest and Thomas' friend, Benny the Bunny, is lost inside it. Thomas must find Benny and bring him back safely."
+      },
+      "timestamp": 1776358699252
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "orchestrator",
+      "detail_type": "prompt_sent",
+      "data": {
+        "prompt": "Create a story outline based on these parameters:\n- Main character: Thomas the Turtle\n- Supporting characters: Oliver the Wise Owl, Benny the Bunny\n- Setting: A magical forest\n- Moral of the story: True courage means helping others even when you're scared\n- Main problem: A mysterious fog has covered the forest and Thomas' friend, Benny the Bunny, is lost inside it. Thomas must find Benny and bring him back safely.\n- Additional details: No additional details provided.",
+        "is_revision": false
+      },
+      "timestamp": 1776358699252
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "orchestrator",
+      "detail_type": "response_received",
+      "data": {
+        "title": "Thomas the Turtle and the Foggy Forest Rescue",
+        "page_count": 10,
+        "plot_summary": "In a magical forest filled with glowing flowers and whispering trees, Thomas the Turtle enjoys a peaceful day with his friends Oliver the Wise Owl and Benny the Bunny. But when a mysterious fog rolls in and Benny disappears inside it, Thomas feels frightened. Guided by Oliver's calm advice, Thomas sets off into the foggy forest to find his friend. Along the way, Thomas faces spooky sounds, confusing paths, and his own fears, but he keeps going because Benny needs help. At last, Thomas finds Benny stuck and scared near a fallen log. By staying calm and helping his friend step by step, Thomas leads Benny safely home. In the end, Thomas learns that true courage does not mean never feeling afraid\u2014it means helping others even when you are scared.",
+        "characters": [
+          "Thomas the Turtle",
+          "Oliver the Wise Owl",
+          "Benny the Bunny"
+        ]
+      },
+      "timestamp": 1776358699252
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "prompt_sent",
+      "data": {
+        "prompt": "Write the complete story for 'Thomas the Turtle and the Foggy Forest Rescue'.\n\nIMPORTANT \u2014 use these EXACT character visual descriptions in every image prompt:\n  - Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest\n  - Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck\n  - Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons\n\nProduce exactly the following pages:\n  Page 1: Introduction of Thomas, his friends, and the magical forest setting\n    Scene: In the heart of the magical forest, Thomas the Turtle walks along a sparkling mossy path under glowing treetops. He greets his friends and enjoys the peaceful beauty of their woodland home.\n    Characters: Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny\n    Tone: warm and cheerful\n  Page 2: The mysterious fog appears and the danger begins\n    Scene: As the friends play near a ring of glowing mushrooms, a strange silver-gray fog begins curling between the trees. The forest grows quieter, and Benny wanders a little too far while chasing a fluttering light.\n    Characters: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\n    Tone: curious turning uneasy\n  Page 3: Main problem is revealed: Benny is lost in the fog\n    Scene: The fog thickens until Benny's yellow vest disappears from sight. Thomas calls for his friend, but only soft echoes answer. Oliver listens carefully from a branch and realizes Benny is lost inside the fog.\n    Characters: Thomas the Turtle, Oliver the Wise Owl\n    Tone: worried and tense\n  Page 4: Thomas chooses to begin the rescue with Oliver's guidance\n    Scene: Thomas feels his legs tremble as he stares into the mist. Oliver gently reminds him to move slowly, listen closely, and follow Benny's tiny pawprints near the damp ground. Thomas decides to go in, even though he is scared.\n    Characters: Thomas the Turtle, Oliver the Wise Owl\n    Tone: nervous but determined\n  Page 5: The conflict deepens as Thomas faces frightening obstacles in the fog\n    Scene: Inside the fog, shapes of trees seem to twist and shadows look larger than they are. Thomas hears rustling bushes and dripping leaves, but he keeps following the faint pawprints and calls out gently for Benny.\n    Characters: Thomas the Turtle\n    Tone: spooky and brave\n  Page 6: Climax begins as Thomas nears Benny but the path becomes most confusing\n    Scene: Thomas reaches a fork in the path where the pawprints vanish in muddy puddles. He almost turns back, but then he hears a small frightened voice calling his name from deeper in the mist.\n    Characters: Thomas the Turtle, Benny the Bunny\n    Tone: tense and hopeful\n  Page 7: Climax peaks as Thomas reaches Benny in the most dangerous moment\n    Scene: Thomas finds Benny trapped behind a fallen log beside a bubbling stream, too frightened to jump across the slippery stones. The fog swirls thickly around them, and Thomas must stay calm and think of a safe way to help.\n    Characters: Thomas the Turtle, Benny the Bunny\n    Tone: urgent and courageous\n  Page 8: Falling action begins as the friends work together to escape the fog\n    Scene: Thomas uses his red satchel strap and a sturdy vine to make a safe guide for Benny to hold. Step by step, Thomas encourages Benny across the stones while Oliver's distant hoot helps guide them through the fog.\n    Characters: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\n    Tone: supportive and relieved\n  Page 9: The rescue succeeds and the danger fades\n    Scene: The friends follow Oliver's hoots and slowly make their way back toward the glowing mushrooms. As they leave the thickest mist behind, the fog begins to thin and the warm lights of home shine through the trees.\n    Characters: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\n    Tone: hopeful and comforting\n  Page 10: Resolution and moral: true courage is helping others even when you're scared\n    Scene: Back in their cozy clearing, Benny thanks Thomas for coming into the fog to help him. Thomas admits he felt scared the whole time, and Oliver smiles proudly as the friends share a quiet moment under the glowing trees, knowing that bravery means helping others even when fear is still in your heart.\n    Characters: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\n    Tone: gentle, proud, and reassuring\n\nPlot summary for guiding narrative continuity:\nIn a magical forest filled with glowing flowers and whispering trees, Thomas the Turtle enjoys a peaceful day with his friends Oliver the Wise Owl and Benny the Bunny. But when a mysterious fog rolls in and Benny disappears inside it, Thomas feels frightened. Guided by Oliver's calm advice, Thomas sets off into the foggy forest to find his friend. Along the way, Thomas faces spooky sounds, confusing paths, and his own fears, but he keeps going because Benny needs help. At last, Thomas finds Benny stuck and scared near a fallen log. By staying calm and helping his friend step by step, Thomas leads Benny safely home. In the end, Thomas learns that true courage does not mean never feeling afraid\u2014it means helping others even when you are scared.\n\nReturn a complete StoryDraft JSON object. Each page must include: page_number, text, scene_description, characters_present, emotional_tone, and image_prompt.",
+        "title": "Thomas the Turtle and the Foggy Forest Rescue",
+        "page_count": 10
+      },
+      "timestamp": 1776358699255
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 1,
+        "total_pages": 10,
+        "text": "In the heart of the magical forest, Thomas the Turtle walked along a sparkling mossy path. The treetops above him glowed softly, painting the leaves in golden-green light. Tiny flowers shimmered beside the path, and the air smelled sweet and fresh. Thomas smiled when he saw Oliver the Wise Owl perched on a low branch and Benny the Bunny hopping through the ferns. He greeted his friends happily, and they all admired the peaceful beauty of their woodland home. It felt like a perfect day in the warm, whispering forest.",
+        "emotional_tone": "warm and cheerful",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Oliver the Wise Owl",
+          "Benny the Bunny"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, in the heart of a magical forest on a sparkling mossy path beneath glowing treetops, Thomas walking happily, Oliver perched on a low branch, Benny hopping through ferns, glowing flowers, warm enchanted woodland atmosphere. Only Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 2,
+        "total_pages": 10,
+        "text": "Soon the friends played beside a ring of glowing mushrooms that shone like little lanterns. Benny the Bunny chased a fluttering light, laughing as it danced between the trees. Thomas the Turtle watched with a grin, while Oliver the Wise Owl looked up at the air around them. A strange silver-gray fog began curling low across the ground and slipping around the tree trunks. The forest, which had been full of gentle sounds, grew quieter and quieter. While the others noticed the change, Benny wandered a little too far after the flickering light.",
+        "emotional_tone": "curious turning uneasy",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Benny the Bunny",
+          "Oliver the Wise Owl"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, near a ring of glowing mushrooms in the magical forest, Benny chasing a fluttering light toward the trees, Thomas watching with growing concern, Oliver alert on a branch, silver-gray fog curling between trunks, playful scene turning uneasy. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 3,
+        "total_pages": 10,
+        "text": "The fog thickened until it wrapped the trees in a soft, cold blanket. Thomas caught one last glimpse of Benny's yellow vest, and then it vanished from sight. \"Benny!\" Thomas called, his voice shaking as it drifted into the mist. Only soft echoes came back, bouncing faintly through the silent forest. Oliver the Wise Owl listened carefully from his branch, his amber eyes wide and focused. At last he understood the terrible truth\u2014Benny was lost inside the fog.",
+        "emotional_tone": "worried and tense",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Oliver the Wise Owl"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, thick silver-gray fog filling the magical forest, Thomas on the path calling worriedly into the mist, Oliver perched on a branch listening carefully, fading trees, dimmed glowing forest, tense empty atmosphere. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 4,
+        "total_pages": 10,
+        "text": "Thomas stared into the swirling fog, and his little legs began to tremble. The mist looked deep and strange, and every shadow inside it made his heart thump faster. Oliver flew down to a lower branch and spoke in a calm, gentle voice. He reminded Thomas to move slowly, listen closely, and follow Benny's tiny pawprints near the damp ground. Thomas took a deep breath and looked down at the small prints pressed into the moss. Even though he felt scared, he lifted his head and decided to go into the fog to rescue his friend.",
+        "emotional_tone": "nervous but determined",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Oliver the Wise Owl"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, at the edge of a swirling fog in the magical forest, Thomas looking nervous but determined, Oliver on a low branch offering calm guidance, tiny bunny pawprints in damp moss leading into the mist, soft glowing forest behind them. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 5,
+        "total_pages": 10,
+        "text": "Inside the fog, everything looked bigger and stranger than before. Twisting tree shapes reached through the mist, and dark shadows seemed to stretch across the path. Thomas heard rustling bushes nearby and drops of water plinking from leaf to leaf. His shell felt cold, but he kept his eyes on the faint pawprints pressed into the muddy ground. \"Benny,\" he called gently, hoping his friend could hear him. Though the fog felt spooky all around him, Thomas kept moving forward one brave step at a time.",
+        "emotional_tone": "spooky and brave",
+        "characters_present": [
+          "Thomas the Turtle"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, alone inside a thick foggy forest, following faint bunny pawprints on a muddy path, twisted tree shapes and enlarged shadows in the mist, rustling bushes, dripping leaves, Thomas looking scared but brave as he moves forward carefully. Only Thomas the Turtle should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 6,
+        "total_pages": 10,
+        "text": "After a while, Thomas reached a fork in the path. The tiny pawprints stopped where muddy puddles spread over the ground, and he could not tell which way Benny had gone. Thomas looked left and right, and for one scared moment, he almost turned back. Then a small voice floated through the mist. \"Thomas!\" it called, thin and frightened from somewhere deeper in the fog. Thomas's heart leaped with hope, and he hurried toward the sound as carefully as he could.",
+        "emotional_tone": "tense and hopeful",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Benny the Bunny"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, at a fork in a foggy forest path with muddy puddles where pawprints vanish, Thomas listening with tense hope, Benny faintly visible deeper in the mist calling for help, silvery haze, confusing woodland paths. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 7,
+        "total_pages": 10,
+        "text": "Thomas pushed through the fog and found Benny at last. Benny was trapped behind a fallen log beside a bubbling stream, and the slippery stones in the water looked too dangerous to cross alone. His long ears drooped, and his paws shook with fear. The fog swirled thickly around them, but Thomas stayed as calm as he could. He looked carefully at the stream, the log, and the stones, thinking of a safe way to help. Benny watched him with wide, worried eyes, trusting his brave friend.",
+        "emotional_tone": "urgent and courageous",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Benny the Bunny"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, beside a bubbling forest stream in thick fog, Benny trapped behind a fallen log and afraid to cross slippery stones, Thomas staying calm and studying a safe way to help, swirling mist, urgent magical woodland rescue scene. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 8,
+        "total_pages": 10,
+        "text": "Thomas opened his little red satchel and used the strap with a sturdy vine to make a safe guide for Benny to hold. \"Slowly,\" he said, keeping his voice steady and kind. Step by step, Benny moved over the slippery stones while Thomas stayed close and encouraged him. Far away in the fog, Oliver the Wise Owl gave a clear hoot to guide them. The sound helped them know which way to go through the swirling mist. At last Benny reached Thomas's side, and both friends breathed a shaky sigh of relief.",
+        "emotional_tone": "supportive and relieved",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Benny the Bunny",
+          "Oliver the Wise Owl"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, foggy forest stream rescue, Thomas using his red satchel strap and a sturdy vine as a safe guide, Benny carefully stepping across slippery stones, Oliver distant in the mist giving a guiding hoot, supportive teamwork, relieved expressions. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 9,
+        "total_pages": 10,
+        "text": "Together the friends followed Oliver's hoots through the foggy forest. Thomas walked beside Benny so he would not feel alone, and Benny stayed close to his brave friend. Little by little, the mist grew thinner around the trees. Soon they saw the soft glow of the mushroom ring shining ahead like a welcome light. Warm golden colors began to return to the forest, and the path felt familiar again. Safe and tired, the friends made their way home.",
+        "emotional_tone": "hopeful and comforting",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Benny the Bunny",
+          "Oliver the Wise Owl"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, returning through a thinning foggy forest, Thomas and Benny walking side by side, Oliver guiding them with hoots, glowing mushroom ring shining ahead, warm lights of home returning through the trees, comforting hopeful mood. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "page_content",
+      "data": {
+        "page_number": 10,
+        "total_pages": 10,
+        "text": "Back in their cozy clearing, Benny thanked Thomas for coming into the fog to help him. Thomas smiled softly and admitted that he had felt scared the whole time. Oliver the Wise Owl looked at him proudly from his branch above. The glowing trees shimmered gently around them, and the forest felt peaceful once more. Thomas understood something important then. True courage did not mean never being afraid\u2014it meant helping others even when fear was still in his heart.",
+        "emotional_tone": "gentle, proud, and reassuring",
+        "characters_present": [
+          "Thomas the Turtle",
+          "Benny the Bunny",
+          "Oliver the Wise Owl"
+        ],
+        "image_prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, in a cozy magical forest clearing under glowing trees, Benny thanking Thomas, Thomas smiling shyly and proudly, Oliver perched above with a proud gentle expression, peaceful warm woodland light, reassuring ending. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_architect",
+      "detail_type": "response_received",
+      "data": {
+        "title": "Thomas the Turtle and the Foggy Forest Rescue",
+        "page_count": 10,
+        "moral_summary": "True courage does not mean never feeling scared. It means helping others even when fear is still in your heart."
+      },
+      "timestamp": 1776358787490
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "images_batch_started",
+      "data": {
+        "total_images": 12,
+        "total_pages": 10
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 0,
+        "total_pages": 10,
+        "label": "Cover"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 1,
+        "total_pages": 10,
+        "label": "Page 1"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 2,
+        "total_pages": 10,
+        "label": "Page 2"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 3,
+        "total_pages": 10,
+        "label": "Page 3"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 4,
+        "total_pages": 10,
+        "label": "Page 4"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 5,
+        "total_pages": 10,
+        "label": "Page 5"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 6,
+        "total_pages": 10,
+        "label": "Page 6"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 7,
+        "total_pages": 10,
+        "label": "Page 7"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 8,
+        "total_pages": 10,
+        "label": "Page 8"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 9,
+        "total_pages": 10,
+        "label": "Page 9"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 10,
+        "total_pages": 10,
+        "label": "Page 10"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_queued",
+      "data": {
+        "page_number": 11,
+        "total_pages": 10,
+        "label": "The End"
+      },
+      "timestamp": 1776358790546
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 0,
+        "total_pages": 10,
+        "label": "Cover",
+        "prompt": "A beautiful, full-bleed children's book cover illustration for a story titled \"Thomas the Turtle and the Foggy Forest Rescue\". The scene should prominently feature Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny in a warm, inviting composition that captures the spirit of the story. Use the same artistic style as the interior pages: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eye. The image should feel like a classic picture book cover \u2014 colourful, engaging, and suitable for young children. Do NOT include any text or lettering in the image."
+      },
+      "timestamp": 1776358790558
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 1,
+        "total_pages": 10,
+        "label": "Page 1",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, in the heart of a magical forest on a sparkling mossy path beneath glowing treetops, Thomas walking happily, Oliver perched on a low branch, Benny hopping through ferns, glowing flowers, warm enchanted woodland atmosphere. Only Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358790558
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 2,
+        "total_pages": 10,
+        "label": "Page 2",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, near a ring of glowing mushrooms in the magical forest, Benny chasing a fluttering light toward the trees, Thomas watching with growing concern, Oliver alert on a branch, silver-gray fog curling between trunks, playful scene turning uneasy. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358790558
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 3,
+        "total_pages": 10,
+        "label": "Page 3",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, thick silver-gray fog filling the magical forest, Thomas on the path calling worriedly into the mist, Oliver perched on a branch listening carefully, fading trees, dimmed glowing forest, tense empty atmosphere. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358790558
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 4,
+        "total_pages": 10,
+        "label": "Page 4",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, at the edge of a swirling fog in the magical forest, Thomas looking nervous but determined, Oliver on a low branch offering calm guidance, tiny bunny pawprints in damp moss leading into the mist, soft glowing forest behind them. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358790558
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 1,
+        "total_pages": 10,
+        "label": "Page 1",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_1.png"
+      },
+      "timestamp": 1776358826851
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 5,
+        "total_pages": 10,
+        "label": "Page 5",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, alone inside a thick foggy forest, following faint bunny pawprints on a muddy path, twisted tree shapes and enlarged shadows in the mist, rustling bushes, dripping leaves, Thomas looking scared but brave as he moves forward carefully. Only Thomas the Turtle should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358826851
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 4,
+        "total_pages": 10,
+        "label": "Page 4",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_4.png"
+      },
+      "timestamp": 1776358828525
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 6,
+        "total_pages": 10,
+        "label": "Page 6",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, at a fork in a foggy forest path with muddy puddles where pawprints vanish, Thomas listening with tense hope, Benny faintly visible deeper in the mist calling for help, silvery haze, confusing woodland paths. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358828525
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 3,
+        "total_pages": 10,
+        "label": "Page 3",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_3.png"
+      },
+      "timestamp": 1776358828616
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 7,
+        "total_pages": 10,
+        "label": "Page 7",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, beside a bubbling forest stream in thick fog, Benny trapped behind a fallen log and afraid to cross slippery stones, Thomas staying calm and studying a safe way to help, swirling mist, urgent magical woodland rescue scene. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358828616
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 2,
+        "total_pages": 10,
+        "label": "Page 2",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_2.png"
+      },
+      "timestamp": 1776358830320
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 8,
+        "total_pages": 10,
+        "label": "Page 8",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, foggy forest stream rescue, Thomas using his red satchel strap and a sturdy vine as a safe guide, Benny carefully stepping across slippery stones, Oliver distant in the mist giving a guiding hoot, supportive teamwork, relieved expressions. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358830320
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 0,
+        "total_pages": 10,
+        "label": "Cover",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_cover.png"
+      },
+      "timestamp": 1776358831634
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 9,
+        "total_pages": 10,
+        "label": "Page 9",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, returning through a thinning foggy forest, Thomas and Benny walking side by side, Oliver guiding them with hoots, glowing mushroom ring shining ahead, warm lights of home returning through the trees, comforting hopeful mood. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358831634
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 6,
+        "total_pages": 10,
+        "label": "Page 6",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_6.png"
+      },
+      "timestamp": 1776358869160
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 10,
+        "total_pages": 10,
+        "label": "Page 10",
+        "prompt": "children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, in a cozy magical forest clearing under glowing trees, Benny thanking Thomas, Thomas smiling shyly and proudly, Oliver perched above with a proud gentle expression, peaceful warm woodland light, reassuring ending. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters."
+      },
+      "timestamp": 1776358869160
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 5,
+        "total_pages": 10,
+        "label": "Page 5",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_5.png"
+      },
+      "timestamp": 1776358869187
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_started",
+      "data": {
+        "page_number": 11,
+        "total_pages": 10,
+        "label": "The End",
+        "prompt": "A beautiful children's book closing page illustration with the words \"The End\" rendered in large, elegant, decorative hand-lettered calligraphy as the focal point. The lettering should be warm and celebratory. Surround the text with soft, colourful illustrated motifs (stars, flowers, swirls, or gentle sparkles) consistent with the visual style of the story: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eye. The overall feeling should be warm, satisfying, and conclusive. The text 'The End' must be clearly legible and the dominant element of the composition."
+      },
+      "timestamp": 1776358869187
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 7,
+        "total_pages": 10,
+        "label": "Page 7",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_7.png"
+      },
+      "timestamp": 1776358871438
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 8,
+        "total_pages": 10,
+        "label": "Page 8",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_8.png"
+      },
+      "timestamp": 1776358872600
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 9,
+        "total_pages": 10,
+        "label": "Page 9",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_9.png"
+      },
+      "timestamp": 1776358892239
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 10,
+        "total_pages": 10,
+        "label": "Page 10",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_page_10.png"
+      },
+      "timestamp": 1776358909047
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "art_director",
+      "detail_type": "image_completed",
+      "data": {
+        "page_number": 11,
+        "total_pages": 10,
+        "label": "The End",
+        "image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/evt_the_end.png"
+      },
+      "timestamp": 1776358909670
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_reviewer",
+      "detail_type": "prompt_sent",
+      "data": {
+        "prompt": "Please review this complete children's story titled 'Thomas the Turtle and the Foggy Forest Rescue'.\n\nPAGES:\n--- PAGE 1 ---\nText: In the heart of the magical forest, Thomas the Turtle walked along a sparkling mossy path. The treetops above him glowed softly, painting the leaves in golden-green light. Tiny flowers shimmered beside the path, and the air smelled sweet and fresh. Thomas smiled when he saw Oliver the Wise Owl perched on a low branch and Benny the Bunny hopping through the ferns. He greeted his friends happily, and they all admired the peaceful beauty of their woodland home. It felt like a perfect day in the warm, whispering forest.\nCharacters present: Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny\nEmotional tone: warm and cheerful\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, in the heart of a magical forest on a sparkling mossy path beneath glowing treetops, Thomas walking happily, Oliver perched on a low branch, Benny hopping through ferns, glowing flowers, warm enchanted woodland atmosphere. Only Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 2 ---\nText: Soon the friends played beside a ring of glowing mushrooms that shone like little lanterns. Benny the Bunny chased a fluttering light, laughing as it danced between the trees. Thomas the Turtle watched with a grin, while Oliver the Wise Owl looked up at the air around them. A strange silver-gray fog began curling low across the ground and slipping around the tree trunks. The forest, which had been full of gentle sounds, grew quieter and quieter. While the others noticed the change, Benny wandered a little too far after the flickering light.\nCharacters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\nEmotional tone: curious turning uneasy\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, near a ring of glowing mushrooms in the magical forest, Benny chasing a fluttering light toward the trees, Thomas watching with growing concern, Oliver alert on a branch, silver-gray fog curling between trunks, playful scene turning uneasy. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 3 ---\nText: The fog thickened until it wrapped the trees in a soft, cold blanket. Thomas caught one last glimpse of Benny's yellow vest, and then it vanished from sight. \"Benny!\" Thomas called, his voice shaking as it drifted into the mist. Only soft echoes came back, bouncing faintly through the silent forest. Oliver the Wise Owl listened carefully from his branch, his amber eyes wide and focused. At last he understood the terrible truth\u2014Benny was lost inside the fog.\nCharacters present: Thomas the Turtle, Oliver the Wise Owl\nEmotional tone: worried and tense\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, thick silver-gray fog filling the magical forest, Thomas on the path calling worriedly into the mist, Oliver perched on a branch listening carefully, fading trees, dimmed glowing forest, tense empty atmosphere. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 4 ---\nText: Thomas stared into the swirling fog, and his little legs began to tremble. The mist looked deep and strange, and every shadow inside it made his heart thump faster. Oliver flew down to a lower branch and spoke in a calm, gentle voice. He reminded Thomas to move slowly, listen closely, and follow Benny's tiny pawprints near the damp ground. Thomas took a deep breath and looked down at the small prints pressed into the moss. Even though he felt scared, he lifted his head and decided to go into the fog to rescue his friend.\nCharacters present: Thomas the Turtle, Oliver the Wise Owl\nEmotional tone: nervous but determined\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, at the edge of a swirling fog in the magical forest, Thomas looking nervous but determined, Oliver on a low branch offering calm guidance, tiny bunny pawprints in damp moss leading into the mist, soft glowing forest behind them. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 5 ---\nText: Inside the fog, everything looked bigger and stranger than before. Twisting tree shapes reached through the mist, and dark shadows seemed to stretch across the path. Thomas heard rustling bushes nearby and drops of water plinking from leaf to leaf. His shell felt cold, but he kept his eyes on the faint pawprints pressed into the muddy ground. \"Benny,\" he called gently, hoping his friend could hear him. Though the fog felt spooky all around him, Thomas kept moving forward one brave step at a time.\nCharacters present: Thomas the Turtle\nEmotional tone: spooky and brave\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, alone inside a thick foggy forest, following faint bunny pawprints on a muddy path, twisted tree shapes and enlarged shadows in the mist, rustling bushes, dripping leaves, Thomas looking scared but brave as he moves forward carefully. Only Thomas the Turtle should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 6 ---\nText: After a while, Thomas reached a fork in the path. The tiny pawprints stopped where muddy puddles spread over the ground, and he could not tell which way Benny had gone. Thomas looked left and right, and for one scared moment, he almost turned back. Then a small voice floated through the mist. \"Thomas!\" it called, thin and frightened from somewhere deeper in the fog. Thomas's heart leaped with hope, and he hurried toward the sound as carefully as he could.\nCharacters present: Thomas the Turtle, Benny the Bunny\nEmotional tone: tense and hopeful\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, at a fork in a foggy forest path with muddy puddles where pawprints vanish, Thomas listening with tense hope, Benny faintly visible deeper in the mist calling for help, silvery haze, confusing woodland paths. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 7 ---\nText: Thomas pushed through the fog and found Benny at last. Benny was trapped behind a fallen log beside a bubbling stream, and the slippery stones in the water looked too dangerous to cross alone. His long ears drooped, and his paws shook with fear. The fog swirled thickly around them, but Thomas stayed as calm as he could. He looked carefully at the stream, the log, and the stones, thinking of a safe way to help. Benny watched him with wide, worried eyes, trusting his brave friend.\nCharacters present: Thomas the Turtle, Benny the Bunny\nEmotional tone: urgent and courageous\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, beside a bubbling forest stream in thick fog, Benny trapped behind a fallen log and afraid to cross slippery stones, Thomas staying calm and studying a safe way to help, swirling mist, urgent magical woodland rescue scene. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 8 ---\nText: Thomas opened his little red satchel and used the strap with a sturdy vine to make a safe guide for Benny to hold. \"Slowly,\" he said, keeping his voice steady and kind. Step by step, Benny moved over the slippery stones while Thomas stayed close and encouraged him. Far away in the fog, Oliver the Wise Owl gave a clear hoot to guide them. The sound helped them know which way to go through the swirling mist. At last Benny reached Thomas's side, and both friends breathed a shaky sigh of relief.\nCharacters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\nEmotional tone: supportive and relieved\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, foggy forest stream rescue, Thomas using his red satchel strap and a sturdy vine as a safe guide, Benny carefully stepping across slippery stones, Oliver distant in the mist giving a guiding hoot, supportive teamwork, relieved expressions. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 9 ---\nText: Together the friends followed Oliver's hoots through the foggy forest. Thomas walked beside Benny so he would not feel alone, and Benny stayed close to his brave friend. Little by little, the mist grew thinner around the trees. Soon they saw the soft glow of the mushroom ring shining ahead like a welcome light. Warm golden colors began to return to the forest, and the path felt familiar again. Safe and tired, the friends made their way home.\nCharacters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\nEmotional tone: hopeful and comforting\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, returning through a thinning foggy forest, Thomas and Benny walking side by side, Oliver guiding them with hoots, glowing mushroom ring shining ahead, warm lights of home returning through the trees, comforting hopeful mood. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\n--- PAGE 10 ---\nText: Back in their cozy clearing, Benny thanked Thomas for coming into the fog to help him. Thomas smiled softly and admitted that he had felt scared the whole time. Oliver the Wise Owl looked at him proudly from his branch above. The glowing trees shimmered gently around them, and the forest felt peaceful once more. Thomas understood something important then. True courage did not mean never being afraid\u2014it meant helping others even when fear was still in his heart.\nCharacters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl\nEmotional tone: gentle, proud, and reassuring\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, in a cozy magical forest clearing under glowing trees, Benny thanking Thomas, Thomas smiling shyly and proudly, Oliver perched above with a proud gentle expression, peaceful warm woodland light, reassuring ending. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\nImage generated: Yes\n\nMORAL SUMMARY (final page closing): True courage does not mean never feeling scared. It means helping others even when fear is still in your heart.\n\nCANONICAL CHARACTER DESCRIPTIONS (the ONLY characters that should ever appear in any image prompt):\n  - Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest\n  - Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck\n  - Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons\n\nFor every page, verify that the image_prompt describes ONLY characters listed above. Any person, animal, or creature not in this list must be flagged as a character_consistency / art_text_alignment error.\n\nReturn a ReviewResult JSON object with: approved (bool), issues (list of {page_number, category, description}), and revision_instructions (string \u2014 empty string if approved).",
+        "title": "Thomas the Turtle and the Foggy Forest Rescue",
+        "page_count": 10
+      },
+      "timestamp": 1776358909763
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "story_reviewer",
+      "detail_type": "response_received",
+      "data": {
+        "approved": true,
+        "issue_count": 0,
+        "issues": [],
+        "revision_instructions": ""
+      },
+      "timestamp": 1776358911115
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "look_and_find",
+      "detail_type": "prompt_sent",
+      "data": {
+        "prompt": "Story title: Thomas the Turtle and the Foggy Forest Rescue\n\nHere are all the story pages with their scene descriptions and image prompts.\nPlease select 3\u20135 visually interesting items spread across different pages for the Look & Find activity.\n\n--- Page 1 ---\nText: In the heart of the magical forest, Thomas the Turtle walked along a sparkling mossy path. The treetops above him glowed softly, painting the leaves in golden-green light. Tiny flowers shimmered beside the path, and the air smelled sweet and fresh. Thomas smiled when he saw Oliver the Wise Owl perched on a low branch and Benny the Bunny hopping through the ferns. He greeted his friends happily, and they all admired the peaceful beauty of their woodland home. It felt like a perfect day in the warm, whispering forest.\nScene description: A warm, cheerful forest scene in the center of a magical woodland. Thomas the Turtle is walking along a bright moss-covered path that sparkles with tiny flecks of light. He is near the center foreground, looking happy and relaxed. Oliver the Wise Owl is perched on a low curved branch above and slightly beside Thomas, wings tucked in, with a wise but friendly expression. Benny the Bunny is on the path nearby, mid-hop through soft green ferns, looking excited and playful. The treetops glow with soft magical light, and small luminous flowers and curling plants line the path. The whole setting feels safe, welcoming, and enchanted, with warm golden light filtering through the trees.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, in the heart of a magical forest on a sparkling mossy path beneath glowing treetops, Thomas walking happily, Oliver perched on a low branch, Benny hopping through ferns, glowing flowers, warm enchanted woodland atmosphere. Only Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 2 ---\nText: Soon the friends played beside a ring of glowing mushrooms that shone like little lanterns. Benny the Bunny chased a fluttering light, laughing as it danced between the trees. Thomas the Turtle watched with a grin, while Oliver the Wise Owl looked up at the air around them. A strange silver-gray fog began curling low across the ground and slipping around the tree trunks. The forest, which had been full of gentle sounds, grew quieter and quieter. While the others noticed the change, Benny wandered a little too far after the flickering light.\nScene description: The scene shows the three friends near a circular cluster of softly glowing mushrooms in a magical forest clearing. Thomas is close to the mushrooms, smiling at first but beginning to look uncertain. Benny is farther away, hopping after a small fluttering light and moving toward the edge of the trees, his yellow vest clearly visible. Oliver is positioned above them on a branch, alert and watchful, his head turned toward the strange fog. Silver-gray mist curls between the tree trunks and spreads across the forest floor. The lighting is shifting from warm and playful to dimmer and uneasy, with the glowing mushrooms standing out against the growing fog.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, near a ring of glowing mushrooms in the magical forest, Benny chasing a fluttering light toward the trees, Thomas watching with growing concern, Oliver alert on a branch, silver-gray fog curling between trunks, playful scene turning uneasy. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 3 ---\nText: The fog thickened until it wrapped the trees in a soft, cold blanket. Thomas caught one last glimpse of Benny's yellow vest, and then it vanished from sight. \"Benny!\" Thomas called, his voice shaking as it drifted into the mist. Only soft echoes came back, bouncing faintly through the silent forest. Oliver the Wise Owl listened carefully from his branch, his amber eyes wide and focused. At last he understood the terrible truth\u2014Benny was lost inside the fog.\nScene description: A tense forest scene filled with heavy silver-gray fog. Thomas stands on the mossy path below, looking frightened and calling into the mist, his body small against the thick haze. The last trace of Benny is only implied by a faint disappearing flash of yellow deep in the fog, not a visible character. Oliver is perched overhead on a branch, leaning forward with intense concentration as he listens for sounds in the forest. Tree trunks fade into the mist, and the glowing forest colors are dulled and muted. The composition should emphasize emptiness, distance, and the sudden absence of Benny.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, thick silver-gray fog filling the magical forest, Thomas on the path calling worriedly into the mist, Oliver perched on a branch listening carefully, fading trees, dimmed glowing forest, tense empty atmosphere. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 4 ---\nText: Thomas stared into the swirling fog, and his little legs began to tremble. The mist looked deep and strange, and every shadow inside it made his heart thump faster. Oliver flew down to a lower branch and spoke in a calm, gentle voice. He reminded Thomas to move slowly, listen closely, and follow Benny's tiny pawprints near the damp ground. Thomas took a deep breath and looked down at the small prints pressed into the moss. Even though he felt scared, he lifted his head and decided to go into the fog to rescue his friend.\nScene description: Thomas is at the edge of the fog, facing into it with visible nervousness. His posture is hesitant, with one foot slightly raised as if deciding whether to step forward. On a low branch beside him, Oliver leans down supportively, speaking calmly and offering guidance. Near Thomas's feet, small bunny pawprints are visible in damp moss and soft earth, leading into the mist. The fog swirls ahead in pale layers, while the clearer forest behind them glows faintly. The scene should balance fear and resolve, showing Thomas's trembling worry and growing determination.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, at the edge of a swirling fog in the magical forest, Thomas looking nervous but determined, Oliver on a low branch offering calm guidance, tiny bunny pawprints in damp moss leading into the mist, soft glowing forest behind them. Only Thomas the Turtle, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 5 ---\nText: Inside the fog, everything looked bigger and stranger than before. Twisting tree shapes reached through the mist, and dark shadows seemed to stretch across the path. Thomas heard rustling bushes nearby and drops of water plinking from leaf to leaf. His shell felt cold, but he kept his eyes on the faint pawprints pressed into the muddy ground. \"Benny,\" he called gently, hoping his friend could hear him. Though the fog felt spooky all around him, Thomas kept moving forward one brave step at a time.\nScene description: A spooky interior view of the foggy forest with Thomas alone. He is moving carefully along a muddy path, low to the ground, peering at faint bunny pawprints. The trees around him appear distorted by the fog, with bent trunks and oversized shadows that feel unsettling but not dangerous in a frightening way for children. Bushes rustle at the edge of the frame, and large water drops hang from leaves and fall through the mist. Thomas looks small but steadfast, his bright eyes focused and his red satchel visible as a spot of color in the gray haze. The mood is eerie yet brave, with Thomas continuing despite fear.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, alone inside a thick foggy forest, following faint bunny pawprints on a muddy path, twisted tree shapes and enlarged shadows in the mist, rustling bushes, dripping leaves, Thomas looking scared but brave as he moves forward carefully. Only Thomas the Turtle should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 6 ---\nText: After a while, Thomas reached a fork in the path. The tiny pawprints stopped where muddy puddles spread over the ground, and he could not tell which way Benny had gone. Thomas looked left and right, and for one scared moment, he almost turned back. Then a small voice floated through the mist. \"Thomas!\" it called, thin and frightened from somewhere deeper in the fog. Thomas's heart leaped with hope, and he hurried toward the sound as carefully as he could.\nScene description: Thomas stands at a confusing fork in the forest path, surrounded by fog and shallow muddy puddles that have washed away the bunny pawprints. He is in the foreground, looking uncertain, his head turned as he listens closely. In the deeper mist beyond one path, Benny is only faintly visible or partially obscured, enough to show that the voice is coming from ahead while still emphasizing the fog. The forest is dim and silvery, with split paths curving into the haze. Thomas's expression shifts from worry to hopeful determination. The composition should make the forked path and the vanished tracks clear.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, at a fork in a foggy forest path with muddy puddles where pawprints vanish, Thomas listening with tense hope, Benny faintly visible deeper in the mist calling for help, silvery haze, confusing woodland paths. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 7 ---\nText: Thomas pushed through the fog and found Benny at last. Benny was trapped behind a fallen log beside a bubbling stream, and the slippery stones in the water looked too dangerous to cross alone. His long ears drooped, and his paws shook with fear. The fog swirled thickly around them, but Thomas stayed as calm as he could. He looked carefully at the stream, the log, and the stones, thinking of a safe way to help. Benny watched him with wide, worried eyes, trusting his brave friend.\nScene description: A dramatic rescue scene beside a narrow bubbling forest stream. Benny is stuck behind a mossy fallen log on one side of the water, looking frightened and unable to cross the slick stepping stones. Thomas stands on the safer side near the stream bank, close enough to help, studying the situation with concentration. The stream bubbles around rounded wet stones, and the heavy fog curls through the trees and low over the water. Benny's posture is tense and trapped, while Thomas appears small but steady and courageous. The environment should feel urgent but still child-friendly, with magical forest colors muted by the mist.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, beside a bubbling forest stream in thick fog, Benny trapped behind a fallen log and afraid to cross slippery stones, Thomas staying calm and studying a safe way to help, swirling mist, urgent magical woodland rescue scene. Only Thomas the Turtle, Benny the Bunny should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 8 ---\nText: Thomas opened his little red satchel and used the strap with a sturdy vine to make a safe guide for Benny to hold. \"Slowly,\" he said, keeping his voice steady and kind. Step by step, Benny moved over the slippery stones while Thomas stayed close and encouraged him. Far away in the fog, Oliver the Wise Owl gave a clear hoot to guide them. The sound helped them know which way to go through the swirling mist. At last Benny reached Thomas's side, and both friends breathed a shaky sigh of relief.\nScene description: The scene shows Thomas and Benny crossing the dangerous stream together in the fog. Thomas is positioned near the stepping stones, holding or anchoring the red satchel strap tied with a sturdy vine to create a handhold for Benny. Benny carefully steps from stone to stone, gripping the guide with a nervous but focused expression. In the distance, partly obscured by fog and high among the trees, Oliver is visible or implied on a branch, hooting to guide them onward. The stream bubbles below, and the fallen log remains nearby. The mood is supportive and relieved, with teamwork and trust as the focus.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, foggy forest stream rescue, Thomas using his red satchel strap and a sturdy vine as a safe guide, Benny carefully stepping across slippery stones, Oliver distant in the mist giving a guiding hoot, supportive teamwork, relieved expressions. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 9 ---\nText: Together the friends followed Oliver's hoots through the foggy forest. Thomas walked beside Benny so he would not feel alone, and Benny stayed close to his brave friend. Little by little, the mist grew thinner around the trees. Soon they saw the soft glow of the mushroom ring shining ahead like a welcome light. Warm golden colors began to return to the forest, and the path felt familiar again. Safe and tired, the friends made their way home.\nScene description: A hopeful return scene in the forest as the fog begins to lift. Thomas and Benny move side by side along the path, both looking tired but comforted. Oliver flies or perches ahead, guiding them with confidence. The ring of glowing mushrooms is visible in the near distance, shining warmly through thinning silver mist. Tree trunks and flowers become clearer, and the enchanted forest's original warmth and color begin to return. The image should show transition from danger to safety, with home just within reach.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, returning through a thinning foggy forest, Thomas and Benny walking side by side, Oliver guiding them with hoots, glowing mushroom ring shining ahead, warm lights of home returning through the trees, comforting hopeful mood. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.\n\n--- Page 10 ---\nText: Back in their cozy clearing, Benny thanked Thomas for coming into the fog to help him. Thomas smiled softly and admitted that he had felt scared the whole time. Oliver the Wise Owl looked at him proudly from his branch above. The glowing trees shimmered gently around them, and the forest felt peaceful once more. Thomas understood something important then. True courage did not mean never being afraid\u2014it meant helping others even when fear was still in his heart.\nScene description: A peaceful resolution in the cozy forest clearing. Thomas and Benny are together near the center, close and safe, with Benny looking grateful and Thomas looking modest but proud. Oliver is perched above them on a friendly branch, smiling warmly. The glowing trees and flowers surround the clearing with soft golden and green light, and the fog is gone. The mood is calm, reassuring, and reflective, showing the friends reunited after the rescue. The composition should emphasize closeness, safety, and the gentle lesson learned.\nImage prompt: children's storybook illustration, watercolor style, warm colors, Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest, Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons, Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck, in a cozy magical forest clearing under glowing trees, Benny thanking Thomas, Thomas smiling shyly and proudly, Oliver perched above with a proud gentle expression, peaceful warm woodland light, reassuring ending. Only Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl should appear as prominent characters in this image. Do NOT include any other people, animals, or prominent creatures \u2014 no bystanders, background figures, or unnamed characters. Small, insignificant background creatures such as butterflies, birds, insects, or fish are acceptable as ambient scenery. ONLY the following character(s) must appear in this image: Thomas the Turtle (a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest); Benny the Bunny (a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons); Oliver the Wise Owl (a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck). Do NOT include any other people, animals, or living creatures of any kind. No bystanders, background figures, or unnamed characters.",
+        "title": "Thomas the Turtle and the Foggy Forest Rescue"
+      },
+      "timestamp": 1776358911344
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "character_glossary",
+      "detail_type": "prompt_sent",
+      "data": {
+        "prompt": "Story title: Thomas the Turtle and the Foggy Forest Rescue\nMoral: True courage does not mean never feeling scared. It means helping others even when fear is still in your heart.\n\nVisual character descriptions from the illustrator:\n  - Thomas the Turtle: a small green turtle with a smooth round shell patterned with golden swirls, bright curious eyes, and a tiny red satchel strapped across his chest\n  - Oliver the Wise Owl: a large speckled brown owl with wide amber eyes, soft feathered wings, and a little silver moon pendant around his neck\n  - Benny the Bunny: a fluffy white bunny with long pink-lined ears, a twitching nose, and a yellow vest with shiny wooden buttons\n\nStory pages:\nPage 1 (characters present: Thomas the Turtle, Oliver the Wise Owl, Benny the Bunny): In the heart of the magical forest, Thomas the Turtle walked along a sparkling mossy path. The treetops above him glowed softly, painting the leaves in golden-green light. Tiny flowers shimmered beside the path, and the air smelled sweet and fresh. Thomas smiled when he saw Oliver the Wise Owl perched on a low branch and Benny the Bunny hopping through the ferns. He greeted his friends happily, and they all admired the peaceful beauty of their woodland home. It felt like a perfect day in the warm, whispering forest.\n\nPage 2 (characters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl): Soon the friends played beside a ring of glowing mushrooms that shone like little lanterns. Benny the Bunny chased a fluttering light, laughing as it danced between the trees. Thomas the Turtle watched with a grin, while Oliver the Wise Owl looked up at the air around them. A strange silver-gray fog began curling low across the ground and slipping around the tree trunks. The forest, which had been full of gentle sounds, grew quieter and quieter. While the others noticed the change, Benny wandered a little too far after the flickering light.\n\nPage 3 (characters present: Thomas the Turtle, Oliver the Wise Owl): The fog thickened until it wrapped the trees in a soft, cold blanket. Thomas caught one last glimpse of Benny's yellow vest, and then it vanished from sight. \"Benny!\" Thomas called, his voice shaking as it drifted into the mist. Only soft echoes came back, bouncing faintly through the silent forest. Oliver the Wise Owl listened carefully from his branch, his amber eyes wide and focused. At last he understood the terrible truth\u2014Benny was lost inside the fog.\n\nPage 4 (characters present: Thomas the Turtle, Oliver the Wise Owl): Thomas stared into the swirling fog, and his little legs began to tremble. The mist looked deep and strange, and every shadow inside it made his heart thump faster. Oliver flew down to a lower branch and spoke in a calm, gentle voice. He reminded Thomas to move slowly, listen closely, and follow Benny's tiny pawprints near the damp ground. Thomas took a deep breath and looked down at the small prints pressed into the moss. Even though he felt scared, he lifted his head and decided to go into the fog to rescue his friend.\n\nPage 5 (characters present: Thomas the Turtle): Inside the fog, everything looked bigger and stranger than before. Twisting tree shapes reached through the mist, and dark shadows seemed to stretch across the path. Thomas heard rustling bushes nearby and drops of water plinking from leaf to leaf. His shell felt cold, but he kept his eyes on the faint pawprints pressed into the muddy ground. \"Benny,\" he called gently, hoping his friend could hear him. Though the fog felt spooky all around him, Thomas kept moving forward one brave step at a time.\n\nPage 6 (characters present: Thomas the Turtle, Benny the Bunny): After a while, Thomas reached a fork in the path. The tiny pawprints stopped where muddy puddles spread over the ground, and he could not tell which way Benny had gone. Thomas looked left and right, and for one scared moment, he almost turned back. Then a small voice floated through the mist. \"Thomas!\" it called, thin and frightened from somewhere deeper in the fog. Thomas's heart leaped with hope, and he hurried toward the sound as carefully as he could.\n\nPage 7 (characters present: Thomas the Turtle, Benny the Bunny): Thomas pushed through the fog and found Benny at last. Benny was trapped behind a fallen log beside a bubbling stream, and the slippery stones in the water looked too dangerous to cross alone. His long ears drooped, and his paws shook with fear. The fog swirled thickly around them, but Thomas stayed as calm as he could. He looked carefully at the stream, the log, and the stones, thinking of a safe way to help. Benny watched him with wide, worried eyes, trusting his brave friend.\n\nPage 8 (characters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl): Thomas opened his little red satchel and used the strap with a sturdy vine to make a safe guide for Benny to hold. \"Slowly,\" he said, keeping his voice steady and kind. Step by step, Benny moved over the slippery stones while Thomas stayed close and encouraged him. Far away in the fog, Oliver the Wise Owl gave a clear hoot to guide them. The sound helped them know which way to go through the swirling mist. At last Benny reached Thomas's side, and both friends breathed a shaky sigh of relief.\n\nPage 9 (characters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl): Together the friends followed Oliver's hoots through the foggy forest. Thomas walked beside Benny so he would not feel alone, and Benny stayed close to his brave friend. Little by little, the mist grew thinner around the trees. Soon they saw the soft glow of the mushroom ring shining ahead like a welcome light. Warm golden colors began to return to the forest, and the path felt familiar again. Safe and tired, the friends made their way home.\n\nPage 10 (characters present: Thomas the Turtle, Benny the Bunny, Oliver the Wise Owl): Back in their cozy clearing, Benny thanked Thomas for coming into the fog to help him. Thomas smiled softly and admitted that he had felt scared the whole time. Oliver the Wise Owl looked at him proudly from his branch above. The glowing trees shimmered gently around them, and the forest felt peaceful once more. Thomas understood something important then. True courage did not mean never being afraid\u2014it meant helping others even when fear was still in his heart.\n\nPlease write a child-friendly glossary entry for every named character who appears in the story.",
+        "title": "Thomas the Turtle and the Foggy Forest Rescue"
+      },
+      "timestamp": 1776358911344
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "character_glossary",
+      "detail_type": "response_received",
+      "data": {
+        "entry_count": 3,
+        "characters": [
+          "Thomas the Turtle",
+          "Oliver the Wise Owl",
+          "Benny the Bunny"
+        ]
+      },
+      "timestamp": 1776358917601
+    }
+  },
+  {
+    "type": "detail",
+    "data": {
+      "executor_id": "look_and_find",
+      "detail_type": "response_received",
+      "data": {
+        "item_count": 5,
+        "items": [
+          {
+            "page": 1,
+            "name": "Oliver's silver moon pendant"
+          },
+          {
+            "page": 2,
+            "name": "ring of glowing mushrooms"
+          },
+          {
+            "page": 4,
+            "name": "tiny bunny pawprints"
+          },
+          {
+            "page": 7,
+            "name": "mossy fallen log"
+          },
+          {
+            "page": 8,
+            "name": "red satchel strap tied to a vine"
+          }
+        ]
+      },
+      "timestamp": 1776358917898
+    }
+  }
+]
