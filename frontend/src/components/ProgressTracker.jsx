@@ -428,15 +428,23 @@ function Lightbox({ images, currentIndex, onClose, onPrev, onNext }) {
   );
 }
 
-function ImageGrid({ imageEvents, totalPages }) {
+function ImageGrid({ imageEvents, totalPages, batchEvt }) {
   const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const isPartial = batchEvt?.data?.partial === true;
+  const affectedSlots = isPartial
+    ? new Set(
+        (batchEvt?.data?.affected_slots ?? [])
+          .filter(n => typeof n === 'number')
+      )
+    : null;
+  const revisionRound = batchEvt?.data?.revision_round;
 
   const imageMap = useMemo(() => {
     const map = {};
     for (const ev of imageEvents) {
       const pn = ev.data?.page_number;
       if (pn != null) {
-        // Later events always win, preserving completed over started over queued
         const priority = { image_queued: 0, image_started: 1, image_completed: 2, image_failed: 2 };
         const cur = map[pn];
         if (!cur || (priority[ev.detail_type] ?? -1) >= (priority[cur.detail_type] ?? -1)) {
@@ -447,22 +455,38 @@ function ImageGrid({ imageEvents, totalPages }) {
     return map;
   }, [imageEvents]);
 
-  if (!imageEvents.length) return null;
+  if (!imageEvents.length && !isPartial) return null;
 
-  const count = totalPages || Math.max(...imageEvents.map(e => e.data?.total_pages ?? 0), 0);
+  const count = totalPages
+    || batchEvt?.data?.total_pages
+    || Math.max(...imageEvents.map(e => e.data?.total_pages ?? 0), 0);
 
-  // Slots: cover (0), story pages (1..count), "The End" (count+1)
-  const slots = count > 0
-    ? [0, ...Array.from({ length: count }, (_, i) => i + 1), count + 1]
-    : [...new Set(imageEvents.map(e => e.data?.page_number).filter(n => n != null))].sort((a, b) => a - b);
+  let slots;
+  if (isPartial) {
+    // Partial revision: only render the slots that are actually being
+    // regenerated. Prefer the batch event's `affected_slots` (authoritative,
+    // present at round-start) and fall back to event-derived slots if the
+    // backend ever omits it.
+    if (affectedSlots && affectedSlots.size > 0) {
+      slots = [...affectedSlots].sort((a, b) => a - b);
+    } else {
+      slots = [...new Set(imageEvents.map(e => e.data?.page_number).filter(n => n != null))]
+        .sort((a, b) => a - b);
+    }
+  } else if (count > 0) {
+    // Full pass: cover (0), story pages (1..count), "The End" (count+1)
+    slots = [0, ...Array.from({ length: count }, (_, i) => i + 1), count + 1];
+  } else {
+    slots = [...new Set(imageEvents.map(e => e.data?.page_number).filter(n => n != null))]
+      .sort((a, b) => a - b);
+  }
 
   const slotLabel = (n) => {
     if (n === 0) return 'Cover';
-    if (n === count + 1) return 'The End';
+    if (count > 0 && n === count + 1) return 'The End';
     return `Page ${n}`;
   };
 
-  // Build ordered list of completed images for lightbox paging
   const completedImages = useMemo(() =>
     slots
       .filter(pn => imageMap[pn]?.detail_type === 'image_completed' && imageMap[pn]?.data?.image_url)
@@ -473,12 +497,14 @@ function ImageGrid({ imageEvents, totalPages }) {
   const completedCount = Object.values(imageMap).filter(e => e.detail_type === 'image_completed').length;
   const activeCount = Object.values(imageMap).filter(e => e.detail_type === 'image_started').length;
 
+  const headerLabel = isPartial
+    ? `🖼 Partial revision${revisionRound != null ? ` (round ${revisionRound})` : ''} — ${completedCount}/${slots.length} regenerated${activeCount > 0 ? `, ${activeCount} in progress` : ''}`
+    : `🖼 Illustrations (${completedCount}/${slots.length} done${activeCount > 0 ? `, ${activeCount} generating` : ''})`;
+
   return (
     <>
       <div className={styles.imageGridBlock}>
-        <div className={styles.detailLabel}>
-          🖼 Illustrations ({completedCount}/{slots.length} done{activeCount > 0 ? `, ${activeCount} generating` : ''})
-        </div>
+        <div className={styles.detailLabel}>{headerLabel}</div>
         <div className={styles.imageGrid}>
           {slots.map(pageNum => {
             const ev = imageMap[pageNum];
@@ -594,6 +620,7 @@ function StepDetailPanel({ stepId, details }) {
           d.detail_type === 'image_completed' ||
           d.detail_type === 'image_failed'
         );
+        const batchEvt = round.find(d => d.detail_type === 'images_batch_started');
         const reviewerCallEvts = round.filter(d =>
           d.detail_type === 'review_call_started'   ||
           d.detail_type === 'review_call_completed' ||
@@ -615,7 +642,7 @@ function StepDetailPanel({ stepId, details }) {
             {revisionStartedEvt  && <RevisionStartedBlock data={revisionStartedEvt.data} />}
             {promptEvt   && <PromptBlock text={promptEvt.data?.prompt} />}
             {pageEvts.length  > 0 && <PageContentBlock pages={pageEvts} />}
-            {imageEvts.length > 0 && <ImageGrid imageEvents={imageEvts} totalPages={totalPages} />}
+            {imageEvts.length > 0 && <ImageGrid imageEvents={imageEvts} totalPages={totalPages} batchEvt={batchEvt} />}
             {stepId === 'story_reviewer' && promptEvt?.data?.calls && (
               <ReviewerCallList
                 promptEvt={promptEvt}

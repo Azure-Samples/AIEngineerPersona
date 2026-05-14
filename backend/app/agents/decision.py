@@ -17,7 +17,7 @@ from agent_framework import Executor, WorkflowContext, handler
 from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import ReviewResult, StoryDraft, StoryResponse
-from ..signals import RevisionSignal
+from ..signals import ImageRevisionSignal, RevisionSignal
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class DecisionExecutor(Executor):
     async def handle_review(
         self,
         review: ReviewResult,
-        ctx: WorkflowContext[StoryResponse | RevisionSignal],
+        ctx: WorkflowContext[StoryResponse | RevisionSignal | ImageRevisionSignal],
     ) -> None:
         revision_count = ctx.get_state("revision_count") or 0
         budget_exhausted = revision_count >= MAX_REVISION_ROUNDS
@@ -80,9 +80,43 @@ class DecisionExecutor(Executor):
             ctx.set_state("approved_story", story_response.model_dump_json())
             await ctx.send_message(story_response)
 
-        else:
+        elif (
+            review.revision_scope == "images_only"
+            and review.image_revision_targets
+        ):
+            # Selective revision: only specific images need to be regenerated.
+            # Route directly to ArtDirector — skip Orchestrator + StoryArchitect
+            # because the story text and overall structure are fine.
             logger.info(
-                "[Decision] Story rejected — sending revision signal "
+                "[Decision] Story rejected — partial image revision "
+                "(round %d/%d). Targets: %d image(s) [%s]",
+                revision_count + 1,
+                MAX_REVISION_ROUNDS,
+                len(review.image_revision_targets),
+                ", ".join(t.label for t in review.image_revision_targets),
+            )
+            image_signal = ImageRevisionSignal(
+                revision_round=revision_count + 1,
+                targets=list(review.image_revision_targets),
+            )
+            await ctx.send_message(image_signal)
+
+        else:
+            # Defensive: revision_scope == "images_only" with empty targets is
+            # treated as a full regen so we never get stuck without forward
+            # progress. (The aggregator already applies this fallback, but the
+            # belt-and-braces guard here protects against future drift.)
+            if (
+                review.revision_scope == "images_only"
+                and not review.image_revision_targets
+            ):
+                logger.warning(
+                    "[Decision] revision_scope='images_only' but no targets "
+                    "supplied — falling back to full regen."
+                )
+
+            logger.info(
+                "[Decision] Story rejected — full revision signal "
                 "(round %d/%d). Issues: %d",
                 revision_count + 1,
                 MAX_REVISION_ROUNDS,

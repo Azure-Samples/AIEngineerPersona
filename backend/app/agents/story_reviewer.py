@@ -50,6 +50,7 @@ from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import (
     CrossPageConsistencyResult,
+    ImageRevisionTarget,
     PageReviewResult,
     ReviewIssue,
     ReviewResult,
@@ -304,7 +305,12 @@ class StoryReviewerExecutor(Executor):
         results = await asyncio.gather(*tasks)
 
         # ── Sort results by type ─────────────────────────────────────────
-        per_image_results: list[PageReviewResult] = []
+        # NOTE: per_image_results carries (descriptor, PageReviewResult)
+        # pairs so the aggregator can derive each image's slot from the
+        # dispatcher's descriptor (call_kind + page_number) rather than
+        # trusting the LLM-emitted `location`. Untrusted LLM fields stay
+        # out of the routing decision.
+        per_image_results: list[tuple[dict[str, Any], PageReviewResult]] = []
         text_result: StoryTextReviewResult | None = None
         cross_page_result: CrossPageConsistencyResult | None = None
         infra_failures: list[str] = []
@@ -317,19 +323,31 @@ class StoryReviewerExecutor(Executor):
                 )
                 continue
             if kind == "page_image":
-                per_image_results.append(value)
+                per_image_results.append((descriptor, value))
             elif kind == "text":
                 text_result = value
             elif kind == "cross_page":
                 cross_page_result = value
 
         # ── Aggregate ────────────────────────────────────────────────────
+        # If the text subcall somehow returned None without raising (so it
+        # missed the infra_failures list above), classify it as infra here
+        # so it routes through the technical-failure branch rather than
+        # silently turning into a creative full-regen request.
+        if text_result is None and not any(
+            f.startswith("Story text") for f in infra_failures
+        ):
+            infra_failures.append(
+                "Story text: subcall produced no result (unexpected None)."
+            )
+
         review = self._aggregate_review(
             per_image_results=per_image_results,
             text_result=text_result,
             cross_page_result=cross_page_result,
             synthetic_issues=synthetic_issues,
             infra_failures=infra_failures,
+            page_count=len(draft.pages),
         )
 
         # Stash this round's instructions so the next review can verify them
@@ -462,11 +480,12 @@ class StoryReviewerExecutor(Executor):
     def _aggregate_review(
         self,
         *,
-        per_image_results: list[PageReviewResult],
+        per_image_results: list[tuple[dict[str, Any], PageReviewResult]],
         text_result: StoryTextReviewResult | None,
         cross_page_result: CrossPageConsistencyResult | None,
         synthetic_issues: list[ReviewIssue],
         infra_failures: list[str],
+        page_count: int,
     ) -> ReviewResult:
         """Merge focused subcall results into the single ReviewResult contract.
 
@@ -477,8 +496,18 @@ class StoryReviewerExecutor(Executor):
           - 4+ medium-severity issues → reject
           - any infrastructure failure → fail closed (technical retry)
 
+        Also stamps the selective-revision routing fields:
+          - ``revision_scope`` ∈ {"none", "images_only", "full"}
+          - ``image_revision_targets`` — the slot list for ArtDirector when
+            ``revision_scope == "images_only"`` (empty otherwise)
+
         Cross-page DRIFT is enforced via the dedicated CrossPageConsistencyResult,
         not by transitivity through canonical descriptions (which is unsound).
+
+        ``per_image_results`` is a list of ``(descriptor, PageReviewResult)``
+        pairs. The descriptor carries the canonical ``call_kind`` and
+        ``page_number`` so we can target image revisions by SLOT
+        deterministically — never trusting the LLM-emitted ``location``.
         """
         issues: list[ReviewIssue] = list(synthetic_issues)
 
@@ -486,7 +515,7 @@ class StoryReviewerExecutor(Executor):
         art_text_values: list[bool] = []
         char_consist_values: list[bool] = []
         age_appro_values: list[bool] = []
-        for r in per_image_results:
+        for _descriptor, r in per_image_results:
             if r.art_text_alignment_pass is not None:
                 art_text_values.append(r.art_text_alignment_pass)
             char_consist_values.append(r.character_consistency_pass)
@@ -517,6 +546,9 @@ class StoryReviewerExecutor(Executor):
         age_appropriateness_pass = all(age_appro_values) if age_appro_values else True
 
         if infra_failures:
+            # Technical failure during review: fail closed and request a full
+            # retry. Routes as `full` (existing behaviour) — see the plan's
+            # "Out of scope" section for the deferred `review_retry` idea.
             return ReviewResult(
                 approved=False,
                 issues=[
@@ -544,6 +576,8 @@ class StoryReviewerExecutor(Executor):
                 age_appropriateness_pass=age_appropriateness_pass,
                 moral_integration_pass=moral_integration_pass,
                 art_text_alignment_pass=art_text_alignment_pass,
+                revision_scope="full",
+                image_revision_targets=[],
             )
 
         # Count actionable issues (drop "low" severity per legacy policy)
@@ -567,6 +601,24 @@ class StoryReviewerExecutor(Executor):
             "" if approved else self._synthesize_revision_instructions(issues)
         )
 
+        # ── Selective-revision routing ───────────────────────────────────
+        revision_scope: str
+        image_revision_targets: list[ImageRevisionTarget] = []
+        if approved:
+            revision_scope = "none"
+        elif self._text_has_issues(text_result) or self._cross_page_has_issues(cross_page_result):
+            revision_scope = "full"
+        else:
+            image_revision_targets = self._build_image_revision_targets(
+                per_image_results=per_image_results,
+                synthetic_issues=synthetic_issues,
+                page_count=page_count,
+            )
+            # Defensive: if we somehow rejected with no targetable images
+            # (e.g. only low-severity issues that tripped a category boolean
+            # somewhere unexpected), fall back to a full regen.
+            revision_scope = "images_only" if image_revision_targets else "full"
+
         return ReviewResult(
             approved=approved,
             issues=issues,
@@ -576,7 +628,130 @@ class StoryReviewerExecutor(Executor):
             age_appropriateness_pass=age_appropriateness_pass,
             moral_integration_pass=moral_integration_pass,
             art_text_alignment_pass=art_text_alignment_pass,
+            revision_scope=revision_scope,
+            image_revision_targets=image_revision_targets,
         )
+
+    @staticmethod
+    def _text_has_issues(text_result: StoryTextReviewResult | None) -> bool:
+        """Whether the story-text subcall flagged anything that requires text revision."""
+        if text_result is None:
+            return True  # fail closed — text call never produced a result
+        if not (
+            text_result.narrative_coherence_pass
+            and text_result.moral_integration_pass
+            and text_result.age_appropriateness_pass
+        ):
+            return True
+        return any(i.severity in ("high", "medium") for i in text_result.issues)
+
+    @staticmethod
+    def _cross_page_has_issues(
+        cross_page_result: CrossPageConsistencyResult | None,
+    ) -> bool:
+        """Whether the cross-page subcall flagged character drift across pages."""
+        if cross_page_result is None:
+            return False  # not dispatched (≤1 char image) is not a failure
+        if not cross_page_result.character_consistency_pass:
+            return True
+        return any(i.severity in ("high", "medium") for i in cross_page_result.issues)
+
+    def _build_image_revision_targets(
+        self,
+        *,
+        per_image_results: list[tuple[dict[str, Any], PageReviewResult]],
+        synthetic_issues: list[ReviewIssue],
+        page_count: int,
+    ) -> list[ImageRevisionTarget]:
+        """Group actionable per-image issues into ImageRevisionTargets.
+
+        Targets are keyed by SLOT (0 = cover, 1..N = page N, N+1 = "The End"),
+        derived from the dispatcher's descriptor. Two cases produce a target:
+
+          1. The per-image result has at least one high/medium issue.
+          2. The per-image result's `_is_call_passed` returned False even
+             though the issue list is empty (the LLM tripped a category
+             boolean without explaining). A generic fallback note is added
+             so ArtDirector still gets actionable instructions.
+
+        Synthetic ``missing image`` issues are folded in as ``is_retry_only``
+        targets — ArtDirector reuses the original prompt verbatim for those.
+        """
+        targets_by_slot: dict[int, dict[str, Any]] = {}
+
+        def _record(slot: int, label: str, notes_lines: list[str], retry_only: bool) -> None:
+            entry = targets_by_slot.get(slot)
+            if entry is None:
+                targets_by_slot[slot] = {
+                    "label": label,
+                    "notes": list(notes_lines),
+                    "is_retry_only": retry_only,
+                }
+            else:
+                entry["notes"].extend(notes_lines)
+                # If ANY observation provides real revision notes, the target
+                # is no longer retry-only — ArtDirector should refine.
+                if not retry_only:
+                    entry["is_retry_only"] = False
+
+        for descriptor, result in per_image_results:
+            kind = descriptor.get("call_kind")
+            page_number = descriptor.get("page_number")
+            actionable = [i for i in result.issues if i.severity in ("high", "medium")]
+            is_failed = not self._is_call_passed(result)
+            if not actionable and not is_failed:
+                continue
+
+            if kind == "cover":
+                slot, label = 0, "Cover"
+            elif kind == "the_end":
+                slot, label = page_count + 1, "The End"
+            elif kind == "page" and isinstance(page_number, int):
+                slot, label = page_number, f"Page {page_number}"
+            else:
+                # Unrecognized descriptor — shouldn't happen, skip rather
+                # than crash. The aggregator's defensive fallback will turn
+                # an empty target list into a full regen.
+                logger.warning(
+                    "[StoryReviewer] Skipping per-image result with unrecognized "
+                    "descriptor (kind=%r, page_number=%r).",
+                    kind, page_number,
+                )
+                continue
+
+            notes_lines = [i.description for i in actionable]
+            if not notes_lines:
+                notes_lines = [
+                    "The reviewer flagged a category for this image but did "
+                    "not enumerate specific issues. Regenerate this image "
+                    "with extra care for character consistency and image-text "
+                    "alignment."
+                ]
+            _record(slot, label, notes_lines, retry_only=False)
+
+        for issue in synthetic_issues:
+            if issue.location == "cover":
+                slot, label = 0, "Cover"
+            elif issue.location == "the_end":
+                slot, label = page_count + 1, "The End"
+            elif issue.location == "page" and isinstance(issue.page_number, int):
+                slot, label = issue.page_number, f"Page {issue.page_number}"
+            else:
+                continue
+            # Missing-image synthetic issues are retry-only — appending their
+            # description ("Page 3 image was not generated.") to the prompt
+            # would be noise. ArtDirector ignores notes when is_retry_only.
+            _record(slot, label, [issue.description], retry_only=True)
+
+        return [
+            ImageRevisionTarget(
+                slot=slot,
+                label=entry["label"],
+                revision_notes="\n".join(entry["notes"]),
+                is_retry_only=entry["is_retry_only"],
+            )
+            for slot, entry in sorted(targets_by_slot.items())
+        ]
 
     @staticmethod
     def _synthesize_revision_instructions(issues: list[ReviewIssue]) -> str:

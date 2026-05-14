@@ -109,10 +109,18 @@ def build_story_workflow(request: StoryRequest) -> Workflow:
     )
 
     # ── Revision back-edge (always present) ───────────────────────────────
-    # When Decision rejects the story, it sends a RevisionSignal back to
-    # Orchestrator.  The framework routes by message type so this edge is
-    # only traversed for RevisionSignal messages.
-    builder = builder.add_edge(decision, orchestrator)
+    # When Decision rejects the story, it sends one of two signals:
+    #   * RevisionSignal → Orchestrator (full regen: text + cross-page
+    #     issues, or empty-targets fallback)
+    #   * ImageRevisionSignal → ArtDirector (selective: only specific
+    #     image slots need to be regenerated)
+    # The framework routes by message type, so each edge only fires for
+    # its matching signal type.
+    builder = (
+        builder
+        .add_edge(decision, orchestrator)
+        .add_edge(decision, art_director)
+    )
 
     # ── Approval gateway ──────────────────────────────────────────────────
     # DecisionExecutor outputs two types: StoryResponse (approved) and
