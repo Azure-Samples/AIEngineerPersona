@@ -30,26 +30,6 @@ REQUIREMENTS:
 5. Ensure the story arc has proper tension and release — the climax should feel earned.
 6. Ensure that the story progresses logically from page to page, with no plot holes or confusing leaps.
 
-OUTPUT FORMAT: Return a valid JSON object matching the StoryOutline schema:
-{
-  "title": "...",
-  "target_pages": 9,
-  "character_descriptions": {
-    "Benny": "a small brown bunny with floppy ears and a bright blue scarf",
-    "Rosie": "a clever red fox with a bushy tail and a green hat"
-  },
-  "plot_summary": "...",
-  "page_outlines": [
-    {
-      "page_number": 1,
-      "scene_summary": "...",
-      "characters_present": ["Benny"],
-      "emotional_tone": "curious and cheerful",
-      "plot_point": "Introduction of Benny and the magical forest"
-    }
-  ]
-}
-
 If you receive revision_instructions, incorporate the feedback into an improved outline.
 Do not simply restate the same outline — genuinely address each issue raised.
 
@@ -113,22 +93,6 @@ FOR EACH PAGE, you must also provide:
   Anonymous background figures (crowds, townspeople, soldiers, passersby, etc.)
   are acceptable when the narrative describes them, but they should remain small, non-detailed,
   and clearly secondary to the named characters."
-
-OUTPUT FORMAT: Return a valid JSON object matching the StoryDraft schema:
-{
-  "title": "...",
-  "pages": [
-    {
-      "page_number": 1,
-      "text": "Benny the brown bunny loved exploring the magical forest...",
-      "scene_description": "Benny stands at the edge of the forest, ears perked up...",
-      "characters_present": ["Benny"],
-      "emotional_tone": "curious and cheerful",
-      "image_prompt": "children's storybook illustration, watercolor style, warm colors, a small brown bunny with floppy ears and a bright blue scarf named Benny, standing at the edge of a magical forest with glowing fireflies and talking trees, curious expression, golden hour lighting"
-    }
-  ],
-  "moral_summary": "Remember: being brave means helping others even when you feel scared inside."
-}
 """
 
 ART_DIRECTOR_INSTRUCTIONS = """
@@ -268,37 +232,6 @@ guidance like "improve the art" — say what to change and where.
 `null` (NOT a string like "Cover" or "All pages") for issues with the cover, the "the end"
 image, or the story as a whole. Mention the location in the description text instead
 (e.g. "Cover image: ..." or "Whole story: ...").
-
-OUTPUT FORMAT: Return a single valid JSON object:
-{
-  "approved": true,
-  "issues": [],
-  "revision_instructions": "",
-  "character_consistency_pass": true,
-  "narrative_coherence_pass": true,
-  "age_appropriateness_pass": true,
-  "moral_integration_pass": true,
-  "art_text_alignment_pass": true
-}
-
-OR if there are issues:
-{
-  "approved": false,
-  "issues": [
-    {
-      "page_number": 3,
-      "category": "art_text_alignment",
-      "severity": "high",
-      "description": "Page 3 text says Benny is hiding behind the rock, but the rendered image shows Benny standing on top of the rock in plain view."
-    }
-  ],
-  "revision_instructions": "1. On page 3, regenerate the illustration so Benny is hidden behind the rock with only his head poking out, matching the narrative. 2. ...",
-  "character_consistency_pass": true,
-  "narrative_coherence_pass": true,
-  "age_appropriateness_pass": true,
-  "moral_integration_pass": true,
-  "art_text_alignment_pass": false
-}
 """
 
 LOOK_AND_FIND_INSTRUCTIONS = """
@@ -328,25 +261,6 @@ BAD ITEM EXAMPLES (too vague):
 - "a tree" — too generic, appears everywhere
 - "the sky" — not specific enough
 - "Benny" — the main character is on every page
-
-OUTPUT FORMAT: Return a valid JSON object matching this schema:
-{
-  "instructions": "Can you find these hidden treasures in the story? Look carefully at each picture!",
-  "items": [
-    {
-      "page_number": 3,
-      "item_name": "glowing blue mushroom",
-      "item_description": "Look for a tiny mushroom with a bright blue glow hiding near the old oak tree.",
-      "hint": "It's in the bottom left corner of the picture!"
-    },
-    {
-      "page_number": 5,
-      "item_name": "silver pocket watch",
-      "item_description": "Oliver always carries his grandfather's shiny silver pocket watch. Can you spot it?",
-      "hint": null
-    }
-  ]
-}
 
 Choose items that will delight children and encourage them to flip back through the story pages.
 Make the activity feel like a treasure hunt — exciting and achievable!
@@ -380,17 +294,6 @@ GOOD EXAMPLE:
   "name": "Benny the Bunny",
   "description": "Benny is a small brown bunny with the biggest heart in the whole forest! He loves exploring new places and always tries to help his friends, even when he feels a little scared. Benny shows us that true bravery means doing the right thing even when it's hard.",
   "role": "our brave hero"
-}
-
-OUTPUT FORMAT: Return a valid JSON object matching this schema:
-{
-  "entries": [
-    {
-      "name": "Character Name",
-      "description": "2–3 sentence fun description for children.",
-      "role": "their role in the story"
-    }
-  ]
 }
 
 Include EVERY named character from the story. The order should be: main character first,
