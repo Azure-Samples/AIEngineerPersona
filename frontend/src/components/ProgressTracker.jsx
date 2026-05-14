@@ -229,19 +229,19 @@ function RevisionStartedBlock({ data }) {
  * `pending` state immediately) and walks review_call_started /
  * review_call_completed / review_call_failed events to update each row.
  * One row per call_id; the latest event for a row wins.
+ *
+ * Visuals:
+ * - Cover, Page N, and "The End" rows use a tiny thumbnail of the actual
+ *   generated image (looked up by page_number slot: cover=0, page=N,
+ *   the_end=page_count+1).
+ * - Story text and Cross-page consistency rows have no icon at all.
  */
-const REVIEWER_CALL_KIND_ICONS = {
-  cover:      '🖼',
-  page:       '📄',
-  the_end:    '🏁',
-  text:       '📝',
-  cross_page: '🔄',
-};
-
-function ReviewerCallList({ promptEvt, callEvts }) {
+function ReviewerCallList({ promptEvt, callEvts, imageUrlByPageNumber = {} }) {
   const [expandedCallId, setExpandedCallId] = useState(null);
   const seedCalls = promptEvt?.data?.calls;
   if (!Array.isArray(seedCalls) || seedCalls.length === 0) return null;
+
+  const pageCount = promptEvt?.data?.page_count ?? 0;
 
   // Walk lifecycle events in order; latest event for a call_id wins.
   const stateByCallId = {};
@@ -299,6 +299,32 @@ function ReviewerCallList({ promptEvt, callEvts }) {
     return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallIssues}`}>⚠️ {row.issue_count} {row.issue_count === 1 ? 'issue' : 'issues'}</span>;
   };
 
+  const renderLeading = (row) => {
+    // Cover / page / the_end → render a tiny thumbnail of the actual image.
+    // Story text / cross_page → no icon at all (per design).
+    let slot = null;
+    if (row.call_kind === 'cover') slot = 0;
+    else if (row.call_kind === 'page' && row.page_number != null) slot = row.page_number;
+    else if (row.call_kind === 'the_end') slot = pageCount + 1;
+    else return null;
+
+    const url = imageUrlByPageNumber[slot];
+    if (url) {
+      return (
+        <img
+          src={url}
+          alt={row.call_label}
+          className={styles.reviewerCallThumb}
+          loading="lazy"
+        />
+      );
+    }
+    // Image slot exists for this kind but the URL isn't available — leave a
+    // neutral placeholder so the row stays aligned with siblings that do have
+    // thumbnails.
+    return <span className={`${styles.reviewerCallThumb} ${styles.reviewerCallThumbMissing}`} aria-hidden="true" />;
+  };
+
   return (
     <div className={styles.reviewerCallList}>
       <div className={styles.reviewerCallListHeader}>
@@ -313,7 +339,7 @@ function ReviewerCallList({ promptEvt, callEvts }) {
       </div>
       <div className={styles.reviewerCallRows}>
         {rows.map(row => {
-          const icon = REVIEWER_CALL_KIND_ICONS[row.call_kind] || '•';
+          const leading = renderLeading(row);
           const hasDetails = (row.issues && row.issues.length > 0) || row.error;
           const isExpanded = expandedCallId === row.call_id;
           return (
@@ -322,7 +348,7 @@ function ReviewerCallList({ promptEvt, callEvts }) {
                 className={hasDetails ? styles.reviewerCallRowHeaderClickable : styles.reviewerCallRowHeader}
                 onClick={hasDetails ? () => setExpandedCallId(isExpanded ? null : row.call_id) : undefined}
               >
-                <span className={styles.reviewerCallIcon}>{icon}</span>
+                {leading}
                 <span className={styles.reviewerCallLabel}>{row.call_label}</span>
                 {renderStatus(row)}
                 {hasDetails && (
@@ -509,6 +535,18 @@ function StepDetailPanel({ stepId, details }) {
   const stepEvts = details.filter(d => d.executor_id === stepId);
   if (!stepEvts.length) return null;
 
+  // Reviewer thumbnails: pull the latest completed image_url per page_number
+  // out of the FULL details stream (image events are emitted by art_director,
+  // not story_reviewer, so they aren't in stepEvts above).
+  const imageUrlByPageNumber = {};
+  if (stepId === 'story_reviewer') {
+    for (const ev of details) {
+      if (ev.detail_type === 'image_completed' && ev.data?.page_number != null && ev.data?.image_url) {
+        imageUrlByPageNumber[ev.data.page_number] = ev.data.image_url;
+      }
+    }
+  }
+
   // Group events into rounds.
   // orchestrator rounds pivot on executor_started / revision_started.
   // art_director rounds pivot on images_batch_started.
@@ -579,7 +617,11 @@ function StepDetailPanel({ stepId, details }) {
             {pageEvts.length  > 0 && <PageContentBlock pages={pageEvts} />}
             {imageEvts.length > 0 && <ImageGrid imageEvents={imageEvts} totalPages={totalPages} />}
             {stepId === 'story_reviewer' && promptEvt?.data?.calls && (
-              <ReviewerCallList promptEvt={promptEvt} callEvts={reviewerCallEvts} />
+              <ReviewerCallList
+                promptEvt={promptEvt}
+                callEvts={reviewerCallEvts}
+                imageUrlByPageNumber={imageUrlByPageNumber}
+              />
             )}
             {responseEvt && <ResponseBlock data={responseEvt.data} executorId={stepId} />}
           </div>
