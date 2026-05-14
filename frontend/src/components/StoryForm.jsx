@@ -276,8 +276,6 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
           </div>
         </fieldset>
 
-        <hr className={styles.divider} />
-
         {/* ── Wikipedia RAG section (optional, collapsible — collapsed by default) ── */}
         <button
           type="button"
