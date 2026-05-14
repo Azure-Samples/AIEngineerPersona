@@ -188,8 +188,15 @@ REVIEW CHECKLIST — set the matching `<category>_pass` boolean to false if the 
      a face is partially obscured. Only flag emotion mismatches when the image actively
      contradicts the text (e.g. text says "everyone laughed" and the image shows everyone
      crying).
-   - Text rendered inside images (signs, books) is legible and spelled correctly. Garbled
-     letters are a failure unless the prompt explicitly avoided text.
+   - Text rendered inside images (signs, books, speech bubbles, dialogue lettering)
+     is acceptable as long as it stays thematically aligned with what the page text
+     describes — paraphrases, shortened versions, or rewordings of the page's
+     dialogue/narration are fine. Only flag in-image text when it (a) is garbled or
+     unreadable letterforms, OR (b) actively contradicts the spirit of the page
+     (e.g. text says "Benny hugged Rosie" and the in-image speech bubble says
+     "Get away!"). Do NOT flag in-image text merely because the prompt did not
+     explicitly request it or because the wording differs from the page text
+     verbatim.
    - Anonymous background figures described in the narrative ARE expected in the
      illustration and should NOT be flagged as mismatches.
 
@@ -202,12 +209,19 @@ DO NOT FLAG (these are normal illustration choices, not failures):
      the character is recognizably the same character.
    - Background details that are present in the image but not mentioned in the text
      (a stylized sun, decorative flowers, atmospheric mist).
+   - In-image dialogue or lettering whose wording differs from the page text but
+     conveys the same idea (e.g. page text "Thomas called out, 'Benny, where are you?'"
+     and the speech bubble in the art reads "Benny!" or "Where are you, Benny?").
+     Paraphrases, abbreviated versions, or reordered phrasings of the page's
+     dialogue/narration are explicitly OK.
 
 ISSUE SEVERITY — every issue must be classified:
   - "high"   → ships a broken or harmful experience: image directly contradicts page text
                (text says "hiding," image shows in plain view), a named character is
                drawn as a different species/color across pages, scary/unsuitable content,
-               garbled in-image text, missing moral, plot hole that confuses the ending.
+               garbled or unreadable in-image text, in-image text that contradicts the
+               spirit of the page (e.g. friendly scene with hostile speech bubble),
+               missing moral, plot hole that confuses the ending.
   - "medium" → noticeable quality problem but not catastrophic: a named character's
                accessory (hat, scarf) is missing on one page, vocabulary slightly above
                level, awkward phrasing, weak transition between pages.
