@@ -1,13 +1,38 @@
 """
 StoryReviewerExecutor — Fourth node in the workflow.
 
-Receives the fully illustrated StoryDraft and performs a comprehensive
-quality review, producing a ReviewResult that the DecisionExecutor uses
-to either approve or request revisions.
+Receives the fully illustrated StoryDraft and performs a multi-call quality
+review, then aggregates the per-call results into a single ReviewResult that
+the DecisionExecutor uses to either approve or request revisions.
+
+Architecture (replaces the legacy single mega-call design):
+
+    StoryDraft
+        │
+        ├── per-page reviewer × N (one image, scoped prompt)
+        ├── cover reviewer (one image, scoped prompt)
+        ├── "The End" reviewer (one image, scoped prompt)
+        ├── story-text reviewer (text only, no images)
+        └── cross-page consistency reviewer (all character images, narrow prompt)
+                │
+                ▼  asyncio.gather, behind a semaphore
+        per-call results
+                │
+                ▼  deterministic aggregator (no extra LLM call)
+        ReviewResult  → DecisionExecutor
+
+Why fan out: a single mega-call (one prompt with ~12 images + ~12 pages of
+metadata + a 5-category checklist) consistently primed the vision model to
+hallucinate non-existent visual defects ("opaque rectangles obscuring
+characters"). Splitting the work into focused, narrow-scope calls reduces
+per-call surface area and gives each call a job small enough that "ZERO
+issues" is a believable answer.
 """
 
+import asyncio
 import json
 import logging
+from typing import Any
 from urllib.parse import urlparse
 
 from agent_framework import (
@@ -22,32 +47,76 @@ from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
-from ..models import StoryDraft, ReviewResult
-from ..prompts import STORY_REVIEWER_INSTRUCTIONS
+from ..events import ProgressDetailEvent
+from ..models import (
+    CrossPageConsistencyResult,
+    PageReviewResult,
+    ReviewIssue,
+    ReviewResult,
+    StoryDraft,
+    StoryPage,
+    StoryTextReviewResult,
+)
+from ..prompts import (
+    COVER_REVIEWER_INSTRUCTIONS,
+    CROSS_PAGE_CONSISTENCY_INSTRUCTIONS,
+    PER_PAGE_REVIEWER_INSTRUCTIONS,
+    STORY_TEXT_REVIEWER_INSTRUCTIONS,
+    THE_END_REVIEWER_INSTRUCTIONS,
+)
 from ..storage import get_backend
 from ..utils import record_llm_usage
-from ..events import ProgressDetailEvent
 
 logger = logging.getLogger(__name__)
 
 
+# Severity thresholds preserved from the legacy single-call reviewer policy
+# (see prompts.py:261-267 in the legacy STORY_REVIEWER_INSTRUCTIONS).
+_REJECT_ON_HIGH = 1            # 1+ high-severity issue → reject
+_REJECT_ON_MEDIUM = 4          # 4+ medium-severity issues → reject
+
+
 class StoryReviewerExecutor(Executor):
     """
-    Reviews the complete illustrated story for character consistency,
-    narrative coherence, age-appropriateness, moral integration, and
-    art-text alignment.
+    Reviews the illustrated story by fanning out into N+3 focused LLM calls
+    (per-page + cover + "The End" + story-text + cross-page consistency)
+    and aggregates the per-call results into a single ReviewResult.
     """
 
     def __init__(self) -> None:
         super().__init__(id="story_reviewer")
-        self._agent = Agent(
+        self._per_page_agent = self._build_agent(
+            PER_PAGE_REVIEWER_INSTRUCTIONS, "PerPageReviewerAgent"
+        )
+        self._cover_agent = self._build_agent(
+            COVER_REVIEWER_INSTRUCTIONS, "CoverReviewerAgent"
+        )
+        self._the_end_agent = self._build_agent(
+            THE_END_REVIEWER_INSTRUCTIONS, "TheEndReviewerAgent"
+        )
+        self._text_agent = self._build_agent(
+            STORY_TEXT_REVIEWER_INSTRUCTIONS, "StoryTextReviewerAgent"
+        )
+        self._cross_page_agent = self._build_agent(
+            CROSS_PAGE_CONSISTENCY_INSTRUCTIONS, "CrossPageConsistencyAgent"
+        )
+
+        # Bursting through Azure OpenAI RPM limits would amplify retries and
+        # latency; cap the number of concurrent reviewer subcalls.
+        self._semaphore = asyncio.Semaphore(
+            max(1, settings.story_reviewer_max_concurrent_calls)
+        )
+
+    @staticmethod
+    def _build_agent(instructions: str, name: str) -> Agent:
+        return Agent(
             client=OpenAIChatClient(
                 model=settings.foundry_model_deployment_name,
                 azure_endpoint=settings.foundry_project_endpoint,
                 credential=DefaultAzureCredential(),
             ),
-            instructions=STORY_REVIEWER_INSTRUCTIONS,
-            name="StoryReviewerAgent",
+            instructions=instructions,
+            name=name,
         )
 
     @handler
@@ -62,65 +131,209 @@ class StoryReviewerExecutor(Executor):
             len(draft.pages),
         )
 
-        # Retrieve the canonical character list from shared state so the reviewer can
-        # cross-check every image_prompt against the officially defined characters.
+        # ── Resolve shared state ──────────────────────────────────────────
         character_descriptions: dict[str, str] = {}
+        plot_summary: str = ""
         outline_json = ctx.get_state("outline")
         if outline_json:
             try:
                 outline_data = json.loads(outline_json)
                 character_descriptions = outline_data.get("character_descriptions", {})
+                plot_summary = outline_data.get("plot_summary", "") or ""
             except Exception:
-                pass  # graceful degradation — review still proceeds without it
+                pass  # graceful degradation — review still proceeds
 
-        # On revision rounds, surface the previous round's instructions so the
-        # reviewer can verify the requested fixes actually landed. ``get_state``
-        # returns the default (None / 0 / "") when the key is absent — both
-        # reads are absent on the very first review pass.
         revision_count = ctx.get_state("revision_count", default=0) or 0
         prior_revision_instructions = (
             ctx.get_state("last_revision_instructions", default="") or ""
         )
+        revision_section = self._build_revision_section(
+            revision_count, prior_revision_instructions
+        )
 
         session_id = ctx.get_state("session_id", default=None)
 
-        prompt_text = self._build_review_prompt(
-            draft,
-            character_descriptions,
-            revision_count=revision_count,
-            prior_revision_instructions=prior_revision_instructions,
-        )
+        # ── Pre-flight: fetch image bytes once, detect missing images ─────
+        # Doing this upfront avoids double-fetches and produces deterministic
+        # synthetic high issues for any image we can't review.
+        cover_bytes = self._fetch_image_bytes(draft.cover_image_url, session_id)
+        end_bytes = self._fetch_image_bytes(draft.the_end_image_url, session_id)
+        page_bytes_by_number: dict[int, bytes | None] = {
+            p.page_number: self._fetch_image_bytes(p.image_url, session_id)
+            for p in draft.pages
+        }
 
-        # Build a multimodal user message: text intro + per-page (text header + image),
-        # then cover and "the end" images at the end.
-        review_message = self._build_review_message(draft, prompt_text, session_id)
+        # ── Build the call descriptors and message payloads ───────────────
+        # `descriptors` is the canonical checklist surfaced to the frontend
+        # via the `prompt_sent` event so the UI can pre-render every row in
+        # `pending` state immediately.
+        descriptors: list[dict[str, Any]] = []
+        dispatch_specs: list[
+            tuple[dict[str, Any], Agent, Message, type, str]
+        ] = []  # (descriptor, agent, message, response_format, kind_tag)
+        synthetic_issues: list[ReviewIssue] = []
+        deferred_failed_events: list[tuple[dict[str, Any], str]] = []
 
+        # Cover ----------------------------------------------------------------
+        cover_desc = self._descriptor("cover", "cover", "Cover", page_number=None)
+        descriptors.append(cover_desc)
+        if cover_bytes:
+            dispatch_specs.append((
+                cover_desc,
+                self._cover_agent,
+                self._build_cover_message(
+                    draft, cover_bytes, character_descriptions,
+                    plot_summary, revision_section,
+                ),
+                PageReviewResult,
+                "page_image",
+            ))
+        else:
+            synthetic_issues.append(self._missing_image_issue("cover", None))
+            deferred_failed_events.append((cover_desc, "Cover image was not generated."))
+
+        # Story pages ----------------------------------------------------------
+        for page in draft.pages:
+            page_desc = self._descriptor(
+                f"page-{page.page_number}", "page",
+                f"Page {page.page_number}", page_number=page.page_number,
+            )
+            descriptors.append(page_desc)
+            png_bytes = page_bytes_by_number.get(page.page_number)
+            if png_bytes:
+                dispatch_specs.append((
+                    page_desc,
+                    self._per_page_agent,
+                    self._build_page_message(
+                        page, png_bytes, character_descriptions, revision_section,
+                    ),
+                    PageReviewResult,
+                    "page_image",
+                ))
+            else:
+                synthetic_issues.append(
+                    self._missing_image_issue("page", page.page_number)
+                )
+                deferred_failed_events.append((
+                    page_desc, f"Page {page.page_number} image was not generated.",
+                ))
+
+        # The End --------------------------------------------------------------
+        end_desc = self._descriptor("the-end", "the_end", "The End", page_number=None)
+        descriptors.append(end_desc)
+        if end_bytes:
+            dispatch_specs.append((
+                end_desc,
+                self._the_end_agent,
+                self._build_the_end_message(
+                    end_bytes, character_descriptions, revision_section,
+                ),
+                PageReviewResult,
+                "page_image",
+            ))
+        else:
+            synthetic_issues.append(self._missing_image_issue("the_end", None))
+            deferred_failed_events.append((end_desc, "\"The End\" image was not generated."))
+
+        # Story-text -----------------------------------------------------------
+        text_desc = self._descriptor("text", "text", "Story text", page_number=None)
+        descriptors.append(text_desc)
+        dispatch_specs.append((
+            text_desc,
+            self._text_agent,
+            self._build_text_message(
+                draft, character_descriptions, revision_section,
+            ),
+            StoryTextReviewResult,
+            "text",
+        ))
+
+        # Cross-page consistency ----------------------------------------------
+        # Only worth running when we have enough character images to compare.
+        cross_page_inputs: list[tuple[str, bytes]] = []
+        if cover_bytes:
+            cross_page_inputs.append(("Cover", cover_bytes))
+        for page in draft.pages:
+            if page.characters_present:
+                pb = page_bytes_by_number.get(page.page_number)
+                if pb:
+                    cross_page_inputs.append((f"Page {page.page_number}", pb))
+
+        if len(cross_page_inputs) >= 2:
+            cross_desc = self._descriptor(
+                "cross-page", "cross_page", "Cross-page consistency",
+                page_number=None,
+            )
+            descriptors.append(cross_desc)
+            dispatch_specs.append((
+                cross_desc,
+                self._cross_page_agent,
+                self._build_cross_page_message(
+                    cross_page_inputs, character_descriptions,
+                ),
+                CrossPageConsistencyResult,
+                "cross_page",
+            ))
+
+        # ── Emit prompt_sent FIRST so the UI sees the full checklist up front
         await ctx.add_event(ProgressDetailEvent(
             executor_id="story_reviewer",
             detail_type="prompt_sent",
             detail_data={
-                "prompt": prompt_text,
                 "title": draft.title,
                 "page_count": len(draft.pages),
                 "revision_round": revision_count,
-                "image_count": sum(
-                    1 for c in review_message.contents
-                    if isinstance(c, Content) and c.type == "data"
-                ),
+                "total_call_count": len(descriptors),
+                "calls": descriptors,
             },
         ))
 
-        result = await self._agent.run(
-            review_message,
-            options={"response_format": ReviewResult},
-        )
-        record_llm_usage(result)
-        review: ReviewResult = result.value
+        # ── Emit deferred missing-image failed events so the UI marks them
+        for descriptor, error_msg in deferred_failed_events:
+            await ctx.add_event(ProgressDetailEvent(
+                executor_id="story_reviewer",
+                detail_type="review_call_failed",
+                detail_data={**descriptor, "error": error_msg},
+            ))
 
-        # Stash this round's instructions so the next review can verify them.
-        ctx.set_state(
-            "last_revision_instructions", review.revision_instructions
+        # ── Dispatch all calls in parallel ───────────────────────────────
+        tasks = [
+            self._dispatch_call(ctx, desc, agent, message, response_format)
+            for (desc, agent, message, response_format, _kind) in dispatch_specs
+        ]
+        results = await asyncio.gather(*tasks)
+
+        # ── Sort results by type ─────────────────────────────────────────
+        per_image_results: list[PageReviewResult] = []
+        text_result: StoryTextReviewResult | None = None
+        cross_page_result: CrossPageConsistencyResult | None = None
+        infra_failures: list[str] = []
+        for (descriptor, _agent, _message, _rf, kind), (_call_id, value) in zip(
+            dispatch_specs, results, strict=True,
+        ):
+            if isinstance(value, Exception):
+                infra_failures.append(
+                    f"{descriptor['call_label']}: {type(value).__name__}: {value}"
+                )
+                continue
+            if kind == "page_image":
+                per_image_results.append(value)
+            elif kind == "text":
+                text_result = value
+            elif kind == "cross_page":
+                cross_page_result = value
+
+        # ── Aggregate ────────────────────────────────────────────────────
+        review = self._aggregate_review(
+            per_image_results=per_image_results,
+            text_result=text_result,
+            cross_page_result=cross_page_result,
+            synthetic_issues=synthetic_issues,
+            infra_failures=infra_failures,
         )
+
+        # Stash this round's instructions so the next review can verify them
+        ctx.set_state("last_revision_instructions", review.revision_instructions)
 
         await ctx.add_event(ProgressDetailEvent(
             executor_id="story_reviewer",
@@ -131,6 +344,7 @@ class StoryReviewerExecutor(Executor):
                 "issues": [
                     {
                         "page": i.page_number,
+                        "location": i.location,
                         "category": i.category,
                         "severity": i.severity,
                         "description": i.description,
@@ -154,8 +368,9 @@ class StoryReviewerExecutor(Executor):
         if not review.approved:
             for issue in review.issues:
                 logger.info(
-                    "[StoryReviewer]   Issue (page %s, %s, severity=%s): %s",
-                    issue.page_number or "whole story",
+                    "[StoryReviewer]   Issue (loc=%s page=%s, %s, severity=%s): %s",
+                    issue.location,
+                    issue.page_number or "—",
                     issue.category,
                     issue.severity,
                     issue.description,
@@ -163,109 +378,521 @@ class StoryReviewerExecutor(Executor):
 
         await ctx.send_message(review)
 
-    # ─── Internal helpers ─────────────────────────────────────────────────────
+    # ─── Dispatch wrapper ────────────────────────────────────────────────
 
-    def _build_review_prompt(
+    async def _dispatch_call(
         self,
-        draft: StoryDraft,
-        character_descriptions: dict[str, str] | None = None,
-        *,
-        revision_count: int = 0,
-        prior_revision_instructions: str = "",
-    ) -> str:
-        pages_summary = "\n\n".join(
-            (
-                f"--- PAGE {p.page_number} ---\n"
-                f"Text: {p.text}\n"
-                f"Characters present: {', '.join(p.characters_present)}\n"
-                f"Emotional tone: {p.emotional_tone}\n"
-                f"Image prompt: {p.image_prompt}\n"
-                f"Image generated: {'Yes (attached below page metadata)' if p.image_url else 'No (generation failed — flag this as a high-severity art_text_alignment issue)'}"
+        ctx: WorkflowContext[ReviewResult],
+        descriptor: dict[str, Any],
+        agent: Agent,
+        message: Message,
+        response_format: type,
+    ) -> tuple[str, Any]:
+        """Run one focused review subcall, emitting started/completed/failed
+        ProgressDetailEvents and returning ``(call_id, parsed_result | Exception)``.
+
+        Per-subcall ``record_llm_usage`` is called inside the success branch so
+        OTEL token telemetry doesn't regress with the fan-out.
+        """
+        await ctx.add_event(ProgressDetailEvent(
+            executor_id="story_reviewer",
+            detail_type="review_call_started",
+            detail_data=dict(descriptor),
+        ))
+        try:
+            async with self._semaphore:
+                result = await agent.run(
+                    message, options={"response_format": response_format}
+                )
+            record_llm_usage(result)
+            parsed = result.value
+            passed = self._is_call_passed(parsed)
+            issues = list(getattr(parsed, "issues", []))
+            await ctx.add_event(ProgressDetailEvent(
+                executor_id="story_reviewer",
+                detail_type="review_call_completed",
+                detail_data={
+                    **descriptor,
+                    "passed": passed,
+                    "issue_count": len(issues),
+                    "issues": [
+                        {
+                            "category": i.category,
+                            "severity": i.severity,
+                            "description": i.description,
+                        }
+                        for i in issues
+                    ],
+                },
+            ))
+            return (descriptor["call_id"], parsed)
+        except Exception as e:  # noqa: BLE001 — converted to a failed event
+            logger.exception(
+                "[StoryReviewer] %s call failed", descriptor["call_label"]
             )
-            for p in draft.pages
+            await ctx.add_event(ProgressDetailEvent(
+                executor_id="story_reviewer",
+                detail_type="review_call_failed",
+                detail_data={**descriptor, "error": str(e)[:200]},
+            ))
+            return (descriptor["call_id"], e)
+
+    @staticmethod
+    def _is_call_passed(parsed: Any) -> bool:
+        """Pass/fail summary for the per-call UI chip."""
+        if isinstance(parsed, PageReviewResult):
+            atxt = parsed.art_text_alignment_pass
+            return (
+                parsed.character_consistency_pass
+                and parsed.age_appropriateness_pass
+                and (atxt is None or atxt is True)
+            )
+        if isinstance(parsed, StoryTextReviewResult):
+            return (
+                parsed.narrative_coherence_pass
+                and parsed.moral_integration_pass
+                and parsed.age_appropriateness_pass
+            )
+        if isinstance(parsed, CrossPageConsistencyResult):
+            return parsed.character_consistency_pass
+        return True
+
+    # ─── Aggregator ──────────────────────────────────────────────────────
+
+    def _aggregate_review(
+        self,
+        *,
+        per_image_results: list[PageReviewResult],
+        text_result: StoryTextReviewResult | None,
+        cross_page_result: CrossPageConsistencyResult | None,
+        synthetic_issues: list[ReviewIssue],
+        infra_failures: list[str],
+    ) -> ReviewResult:
+        """Merge focused subcall results into the single ReviewResult contract.
+
+        Approval policy MATCHES the legacy single-call reviewer (see legacy
+        prompt at ``prompts.py:261-270`` in STORY_REVIEWER_INSTRUCTIONS):
+          - any category boolean is False → reject
+          - any high-severity issue → reject
+          - 4+ medium-severity issues → reject
+          - any infrastructure failure → fail closed (technical retry)
+
+        Cross-page DRIFT is enforced via the dedicated CrossPageConsistencyResult,
+        not by transitivity through canonical descriptions (which is unsound).
+        """
+        issues: list[ReviewIssue] = list(synthetic_issues)
+
+        # Per-image axes
+        art_text_values: list[bool] = []
+        char_consist_values: list[bool] = []
+        age_appro_values: list[bool] = []
+        for r in per_image_results:
+            if r.art_text_alignment_pass is not None:
+                art_text_values.append(r.art_text_alignment_pass)
+            char_consist_values.append(r.character_consistency_pass)
+            age_appro_values.append(r.age_appropriateness_pass)
+            issues.extend(r.issues)
+
+        # Text-only axes
+        if text_result is not None:
+            issues.extend(text_result.issues)
+            narrative_coherence_pass = text_result.narrative_coherence_pass
+            moral_integration_pass = text_result.moral_integration_pass
+            age_appro_values.append(text_result.age_appropriateness_pass)
+        else:
+            # The text call failed (or wasn't dispatched). Fail those axes
+            # closed rather than silently passing them.
+            narrative_coherence_pass = False
+            moral_integration_pass = False
+
+        # Cross-page consistency
+        if cross_page_result is not None:
+            issues.extend(cross_page_result.issues)
+            char_consist_values.append(cross_page_result.character_consistency_pass)
+        # If cross-page wasn't dispatched (only 1 character image), don't
+        # synthesize a False — there's genuinely nothing to compare.
+
+        art_text_alignment_pass = all(art_text_values) if art_text_values else True
+        character_consistency_pass = all(char_consist_values) if char_consist_values else True
+        age_appropriateness_pass = all(age_appro_values) if age_appro_values else True
+
+        if infra_failures:
+            return ReviewResult(
+                approved=False,
+                issues=[
+                    *issues,
+                    ReviewIssue(
+                        location="whole_story",
+                        page_number=None,
+                        category="art_text_alignment",
+                        severity="high",
+                        description=(
+                            "Reviewer encountered technical failures and could "
+                            "not complete the review: "
+                            + "; ".join(infra_failures)
+                        ),
+                    ),
+                ],
+                revision_instructions=(
+                    "TECHNICAL FAILURE during reviewer subcalls — please "
+                    "retry the review. No story changes are required from "
+                    "the creative agents.\nDetails:\n- "
+                    + "\n- ".join(infra_failures)
+                ),
+                character_consistency_pass=character_consistency_pass,
+                narrative_coherence_pass=narrative_coherence_pass,
+                age_appropriateness_pass=age_appropriateness_pass,
+                moral_integration_pass=moral_integration_pass,
+                art_text_alignment_pass=art_text_alignment_pass,
+            )
+
+        # Count actionable issues (drop "low" severity per legacy policy)
+        high_count = sum(1 for i in issues if i.severity == "high")
+        medium_count = sum(1 for i in issues if i.severity == "medium")
+
+        all_pass = (
+            art_text_alignment_pass
+            and character_consistency_pass
+            and age_appropriateness_pass
+            and narrative_coherence_pass
+            and moral_integration_pass
+        )
+        approved = (
+            all_pass
+            and high_count < _REJECT_ON_HIGH
+            and medium_count < _REJECT_ON_MEDIUM
         )
 
-        char_desc_section = ""
-        if character_descriptions:
-            char_lines = "\n".join(
-                f"  - {name}: {desc}"
-                for name, desc in character_descriptions.items()
-            )
-            char_desc_section = (
-                "\nCANONICAL CHARACTER DESCRIPTIONS "
-                "(the ONLY characters that should ever appear in any image prompt):\n"
-                + char_lines
+        revision_instructions = (
+            "" if approved else self._synthesize_revision_instructions(issues)
+        )
+
+        return ReviewResult(
+            approved=approved,
+            issues=issues,
+            revision_instructions=revision_instructions,
+            character_consistency_pass=character_consistency_pass,
+            narrative_coherence_pass=narrative_coherence_pass,
+            age_appropriateness_pass=age_appropriateness_pass,
+            moral_integration_pass=moral_integration_pass,
+            art_text_alignment_pass=art_text_alignment_pass,
+        )
+
+    @staticmethod
+    def _synthesize_revision_instructions(issues: list[ReviewIssue]) -> str:
+        """Deterministic numbered-list revision instructions, grouped by location.
+
+        Drops "low"-severity items (they are noise per the legacy policy) and
+        groups by location: cover → page N (sorted) → the_end → whole_story.
+        """
+        actionable = [i for i in issues if i.severity in ("high", "medium")]
+        if not actionable:
+            return ""
+
+        cover_items: list[ReviewIssue] = []
+        page_items: dict[int, list[ReviewIssue]] = {}
+        end_items: list[ReviewIssue] = []
+        whole_items: list[ReviewIssue] = []
+        for i in actionable:
+            if i.location == "cover":
+                cover_items.append(i)
+            elif i.location == "the_end":
+                end_items.append(i)
+            elif i.location == "whole_story":
+                whole_items.append(i)
+            else:
+                # location == "page" (or default)
+                key = i.page_number if isinstance(i.page_number, int) else 0
+                page_items.setdefault(key, []).append(i)
+
+        lines: list[str] = []
+        counter = 1
+
+        def _line(prefix: str, issue: ReviewIssue) -> str:
+            return (
+                f"{counter}. {prefix}: [{issue.severity}] [{issue.category}] "
+                f"{issue.description}"
             )
 
-        revision_section = ""
-        if revision_count and prior_revision_instructions:
-            revision_section = (
-                f"\nTHIS IS REVISION ROUND {revision_count}. The previous review issued"
-                " these revision instructions:\n"
-                f"{prior_revision_instructions}\n"
-                "You MUST verify that EACH numbered item above was addressed in this"
-                " revision. If any was not, reject the story again and call out which"
-                " items were missed in your new revision_instructions."
+        for issue in cover_items:
+            lines.append(_line("Cover", issue))
+            counter += 1
+        for page_num in sorted(page_items.keys()):
+            label = f"Page {page_num}" if page_num else "Page (unspecified)"
+            for issue in page_items[page_num]:
+                lines.append(_line(label, issue))
+                counter += 1
+        for issue in end_items:
+            lines.append(_line("The End", issue))
+            counter += 1
+        for issue in whole_items:
+            lines.append(_line("Whole story", issue))
+            counter += 1
+
+        return "\n".join(lines)
+
+    # ─── Message builders ────────────────────────────────────────────────
+
+    @staticmethod
+    def _build_revision_section(
+        revision_count: int, prior_revision_instructions: str
+    ) -> str:
+        if not (revision_count and prior_revision_instructions):
+            return ""
+        return (
+            f"REVISION ROUND {revision_count}. The previous round issued these "
+            "revision instructions:\n"
+            f"{prior_revision_instructions}\n"
+            "Verify that any items in scope for THIS subcall were addressed."
+        )
+
+    def _build_page_message(
+        self,
+        page: StoryPage,
+        png_bytes: bytes,
+        character_descriptions: dict[str, str],
+        revision_section: str,
+    ) -> Message:
+        """Per-page message: scoped metadata + canonical roster + ONE image."""
+        canonical_names = list(character_descriptions.keys())
+        # Filter descriptions to characters present on this page; pass the
+        # FULL roster name list separately so unauthorized-character detection
+        # still works (rubber-duck issue #4).
+        relevant = {
+            n: d for n, d in character_descriptions.items()
+            if n in page.characters_present
+        }
+
+        text_lines = [
+            f"PAGE {page.page_number} of the children's story.",
+            "",
+            f"Page text:\n{page.text}",
+            "",
+            f"Characters present on this page: "
+            f"{', '.join(page.characters_present) or '(none)'}",
+            f"Emotional tone: {page.emotional_tone}",
+            f"Image prompt that was used: {page.image_prompt}",
+            "",
+            "Canonical character roster (the ONLY named characters that may "
+            "appear in any image as a prominent figure; anonymous background "
+            "figures such as crowds or townspeople are fine when called for "
+            "by the narrative):",
+            ", ".join(canonical_names) if canonical_names else "(none provided)",
+        ]
+        if relevant:
+            text_lines.append("")
+            text_lines.append(
+                "Canonical descriptions for characters present on this page:"
             )
+            for n, d in relevant.items():
+                text_lines.append(f"  - {n}: {d}")
+        if revision_section:
+            text_lines.extend(["", revision_section])
+        text_lines.extend(["", "The rendered illustration for this page is attached below."])
 
-        return "\n".join([
-            f"Please review this complete children's story titled '{draft.title}'.",
-            "",
-            "The actual rendered illustrations are attached as inline images, interleaved",
-            "with the per-page metadata. Compare each image to its page text AND compare",
-            "each named character's appearance across all pages they appear in.",
-            "",
-            "PAGES:",
-            pages_summary,
-            "",
-            f"MORAL SUMMARY (final page closing): {draft.moral_summary}",
-            char_desc_section,
-            revision_section,
-        ])
+        return Message(
+            role="user",
+            contents=[
+                Content.from_text("\n".join(text_lines)),
+                Content.from_data(data=png_bytes, media_type="image/png"),
+            ],
+        )
 
-    def _build_review_message(
+    def _build_cover_message(
         self,
         draft: StoryDraft,
-        prompt_text: str,
-        session_id: str | None,
+        png_bytes: bytes,
+        character_descriptions: dict[str, str],
+        plot_summary: str,
+        revision_section: str,
     ) -> Message:
-        """
-        Build a multimodal user message: prompt text first, then for each page a small
-        text header followed by the rendered image (when available), then cover + end.
-        """
-        contents: list[Content] = [Content.from_text(prompt_text)]
+        canonical_names = list(character_descriptions.keys())
+        text_lines = [
+            f"COVER illustration for the children's story titled: {draft.title!r}",
+            "",
+            f"Plot summary: {plot_summary or '(not provided)'}",
+            "",
+            "Canonical character roster (the ONLY named characters that may "
+            "appear as prominent figures):",
+            ", ".join(canonical_names) if canonical_names else "(none provided)",
+        ]
+        if character_descriptions:
+            text_lines.append("")
+            text_lines.append("Canonical character descriptions:")
+            for n, d in character_descriptions.items():
+                text_lines.append(f"  - {n}: {d}")
+        if revision_section:
+            text_lines.extend(["", revision_section])
+        text_lines.extend(["", "The rendered cover illustration is attached below."])
 
-        backend = get_backend()
+        return Message(
+            role="user",
+            contents=[
+                Content.from_text("\n".join(text_lines)),
+                Content.from_data(data=png_bytes, media_type="image/png"),
+            ],
+        )
 
-        def _image_for(image_url: str | None, label: str) -> None:
-            if not image_url or not session_id:
-                return
-            filename = self._filename_from_url(image_url)
-            if not filename:
-                return
-            try:
-                png_bytes = backend.get_draft_image_bytes(session_id, filename)
-            except Exception:  # noqa: BLE001 — never let image fetch break review
-                logger.warning(
-                    "[StoryReviewer] Could not fetch %s image bytes (%s)", label, filename
-                )
-                return
-            if not png_bytes:
-                return
-            contents.append(Content.from_text(f"\n[Attached image: {label}]"))
-            contents.append(
-                Content.from_data(data=png_bytes, media_type="image/png")
+    def _build_the_end_message(
+        self,
+        png_bytes: bytes,
+        character_descriptions: dict[str, str],
+        revision_section: str,
+    ) -> Message:
+        canonical_names = list(character_descriptions.keys())
+        text_lines = [
+            "Closing \"The End\" illustration for the children's story.",
+            "",
+            "Canonical character roster (the ONLY named characters that may "
+            "appear as prominent figures; the closing image is often purely "
+            "decorative and may not contain any characters):",
+            ", ".join(canonical_names) if canonical_names else "(none provided)",
+        ]
+        if character_descriptions:
+            text_lines.append("")
+            text_lines.append("Canonical character descriptions:")
+            for n, d in character_descriptions.items():
+                text_lines.append(f"  - {n}: {d}")
+        if revision_section:
+            text_lines.extend(["", revision_section])
+        text_lines.extend([
+            "",
+            "The rendered closing illustration is attached below. Decorative "
+            "\"The End\" calligraphy and ornate frames are NORMAL and EXPECTED.",
+        ])
+
+        return Message(
+            role="user",
+            contents=[
+                Content.from_text("\n".join(text_lines)),
+                Content.from_data(data=png_bytes, media_type="image/png"),
+            ],
+        )
+
+    def _build_text_message(
+        self,
+        draft: StoryDraft,
+        character_descriptions: dict[str, str],
+        revision_section: str,
+    ) -> Message:
+        pages_block = "\n\n".join(
+            f"--- PAGE {p.page_number} ---\n{p.text}"
+            for p in draft.pages
+        )
+        text_lines = [
+            f"Children's story titled: {draft.title!r}",
+            "",
+            "PAGES (text only):",
+            pages_block,
+            "",
+            f"MORAL SUMMARY (final-page closing): {draft.moral_summary}",
+        ]
+        if character_descriptions:
+            text_lines.append("")
+            text_lines.append(
+                "Canonical character descriptions (the ONLY named characters "
+                "that should appear in the story):"
             )
+            for n, d in character_descriptions.items():
+                text_lines.append(f"  - {n}: {d}")
+        if revision_section:
+            text_lines.extend(["", revision_section])
 
-        # Cover first so the reviewer establishes the visual baseline
-        _image_for(draft.cover_image_url, "Cover")
+        return Message(
+            role="user",
+            contents=[Content.from_text("\n".join(text_lines))],
+        )
 
-        for page in draft.pages:
-            _image_for(page.image_url, f"Page {page.page_number}")
+    def _build_cross_page_message(
+        self,
+        labeled_images: list[tuple[str, bytes]],
+        character_descriptions: dict[str, str],
+    ) -> Message:
+        """Cross-page consistency message: minimal text + EVERY character image."""
+        canonical_names = list(character_descriptions.keys())
+        text_lines = [
+            "Cross-page character consistency check.",
+            "",
+            "Canonical character descriptions (the only thing that defines "
+            "what each character looks like):",
+        ]
+        if character_descriptions:
+            for n, d in character_descriptions.items():
+                text_lines.append(f"  - {n}: {d}")
+        else:
+            text_lines.append("  (none provided)")
+        text_lines.extend([
+            "",
+            f"Attached below are {len(labeled_images)} character images from "
+            "the storybook in order. Each image is preceded by its label. "
+            "Verify that the same NAMED character is depicted with the same "
+            "species, dominant color, and persistent distinguishing features "
+            "across pages. Per-page differences in pose, expression, lighting, "
+            "or brush style are NOT drift.",
+        ])
 
-        _image_for(draft.the_end_image_url, "The End")
+        contents: list[Content] = [Content.from_text("\n".join(text_lines))]
+        for label, png_bytes in labeled_images:
+            contents.append(Content.from_text(f"\n[Attached image: {label}]"))
+            contents.append(Content.from_data(data=png_bytes, media_type="image/png"))
 
         return Message(role="user", contents=contents)
+
+    # ─── Image fetch / descriptor helpers ────────────────────────────────
+
+    def _fetch_image_bytes(
+        self, image_url: str | None, session_id: str | None
+    ) -> bytes | None:
+        """Fetch the PNG bytes for a draft image. Returns None on any failure."""
+        if not image_url or not session_id:
+            return None
+        filename = self._filename_from_url(image_url)
+        if not filename:
+            return None
+        try:
+            png_bytes = get_backend().get_draft_image_bytes(session_id, filename)
+        except Exception:  # noqa: BLE001 — never let image fetch break review
+            logger.warning(
+                "[StoryReviewer] Could not fetch image bytes for %s", filename
+            )
+            return None
+        return png_bytes or None
+
+    @staticmethod
+    def _descriptor(
+        call_id: str,
+        call_kind: str,
+        call_label: str,
+        *,
+        page_number: int | None,
+    ) -> dict[str, Any]:
+        return {
+            "call_id": call_id,
+            "call_kind": call_kind,
+            "call_label": call_label,
+            "page_number": page_number,
+        }
+
+    @staticmethod
+    def _missing_image_issue(
+        location: str, page_number: int | None
+    ) -> ReviewIssue:
+        if location == "cover":
+            description = "Cover image was not generated — flagging as a high-severity art_text_alignment failure."
+        elif location == "the_end":
+            description = "\"The End\" image was not generated — flagging as a high-severity art_text_alignment failure."
+        else:
+            description = (
+                f"Page {page_number} image was not generated — flagging "
+                "as a high-severity art_text_alignment failure."
+            )
+        return ReviewIssue(
+            location=location,  # type: ignore[arg-type]
+            page_number=page_number,
+            category="art_text_alignment",
+            severity="high",
+            description=description,
+        )
 
     @staticmethod
     def _filename_from_url(image_url: str) -> str | None:

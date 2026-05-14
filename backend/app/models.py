@@ -163,6 +163,9 @@ class ReviewIssue(BaseModel):
     # any non-numeric label (e.g. "Cover", "All pages") as None so the LLM
     # can flag whole-story or cover issues without breaking validation.
     page_number: Optional[int] = None
+    # Where the issue lives. Defaults to "page" so older callers (and any
+    # cached payloads from before the fan-out refactor) keep validating.
+    location: Literal["cover", "page", "the_end", "whole_story"] = "page"
     category: str  # "character_consistency" | "narrative_coherence" | "age_appropriateness" | "moral_integration" | "art_text_alignment"
     severity: str = "medium"  # "high" | "medium" | "low"
     description: str
@@ -183,6 +186,58 @@ class ReviewIssue(BaseModel):
                 return None
         return v
 
+    @field_validator("severity", mode="before")
+    @classmethod
+    def _normalize_severity(cls, v):  # noqa: ANN001
+        """Normalize common LLM-emitted severity variants. Fail closed on
+        unknown values (default to "medium") rather than silently accepting
+        garbage that would skew the approval threshold counts.
+        """
+        if not isinstance(v, str):
+            return "medium"
+        s = v.strip().lower()
+        # Common aliases
+        aliases = {
+            "high": "high",
+            "h": "high",
+            "critical": "high",
+            "severe": "high",
+            "major": "high",
+            "blocker": "high",
+            "medium": "medium",
+            "med": "medium",
+            "m": "medium",
+            "moderate": "medium",
+            "minor": "medium",
+            "warn": "medium",
+            "warning": "medium",
+            "low": "low",
+            "l": "low",
+            "info": "low",
+            "trivial": "low",
+            "nit": "low",
+        }
+        return aliases.get(s, "medium")
+
+    @field_validator("location", mode="before")
+    @classmethod
+    def _normalize_location(cls, v):  # noqa: ANN001
+        """Accept common variants and fail closed on unknown values.
+
+        Default to "page" (the most common case) when the value is unknown,
+        which preserves backward compatibility with any cached payloads.
+        """
+        if not isinstance(v, str):
+            return "page"
+        s = v.strip().lower().replace(" ", "_").replace("-", "_")
+        if s in ("cover",):
+            return "cover"
+        if s in ("the_end", "end", "ending"):
+            return "the_end"
+        if s in ("whole_story", "story", "global", "all", "all_pages"):
+            return "whole_story"
+        return "page"
+
 
 class ReviewResult(BaseModel):
     approved: bool
@@ -196,6 +251,55 @@ class ReviewResult(BaseModel):
     age_appropriateness_pass: bool = True
     moral_integration_pass: bool = True
     art_text_alignment_pass: bool = True
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# StoryReviewer fan-out wire-format DTOs.
+#
+# StoryReviewerExecutor decomposes the review into N+3 focused LLM calls
+# (one per page + cover + "The End" + a text-only call + a cross-page
+# consistency call) and aggregates the responses in code into the existing
+# `ReviewResult` contract above. The DTOs below are the per-call response
+# shapes; they never escape `story_reviewer.py`.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class PageReviewResult(BaseModel):
+    """Per-image focused review result.
+
+    Used for cover, story pages, and "The End". When `location == "page"`,
+    `page_number` MUST be set; otherwise it is None.
+    """
+    location: Literal["cover", "page", "the_end"]
+    page_number: Optional[int] = None
+    # `art_text_alignment_pass` is None when the call did not evaluate this
+    # axis (e.g. the closing "The End" image — it has no narrative text to
+    # align with). The aggregator skips None values when AND-ing.
+    art_text_alignment_pass: Optional[bool] = None
+    character_consistency_pass: bool
+    age_appropriateness_pass: bool
+    issues: list[ReviewIssue]
+
+
+class StoryTextReviewResult(BaseModel):
+    """Text-only story-level review result (no images attached to this call)."""
+    narrative_coherence_pass: bool
+    moral_integration_pass: bool
+    # Vocabulary / sentence-length axis — the per-image calls cover the
+    # "no scary or unsuitable imagery" axis separately.
+    age_appropriateness_pass: bool
+    issues: list[ReviewIssue]
+
+
+class CrossPageConsistencyResult(BaseModel):
+    """Focused cross-page character-drift check.
+
+    Receives every character image with no per-page metadata and answers
+    only one narrow question: do the images depict the same character
+    consistently in species/color/distinguishing-features across pages?
+    """
+    character_consistency_pass: bool
+    issues: list[ReviewIssue]
 
 
 # ─────────────────────────────────────────────────────────────────────────────

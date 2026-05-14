@@ -223,6 +223,138 @@ function RevisionStartedBlock({ data }) {
   );
 }
 
+/* ─── Reviewer per-call checklist ──────────────────────────────────────────
+ * Renders the StoryReviewer's parallel sub-call progress as a checklist.
+ * Seeds rows from the prompt_sent.data.calls array (every expected call in
+ * `pending` state immediately) and walks review_call_started /
+ * review_call_completed / review_call_failed events to update each row.
+ * One row per call_id; the latest event for a row wins.
+ */
+const REVIEWER_CALL_KIND_ICONS = {
+  cover:      '🖼',
+  page:       '📄',
+  the_end:    '🏁',
+  text:       '📝',
+  cross_page: '🔄',
+};
+
+function ReviewerCallList({ promptEvt, callEvts }) {
+  const [expandedCallId, setExpandedCallId] = useState(null);
+  const seedCalls = promptEvt?.data?.calls;
+  if (!Array.isArray(seedCalls) || seedCalls.length === 0) return null;
+
+  // Walk lifecycle events in order; latest event for a call_id wins.
+  const stateByCallId = {};
+  for (const seed of seedCalls) {
+    if (!seed?.call_id) continue;
+    stateByCallId[seed.call_id] = {
+      ...seed,
+      status: 'pending',
+      passed: null,
+      issue_count: 0,
+      issues: [],
+      error: null,
+    };
+  }
+  for (const ev of callEvts) {
+    const cid = ev.data?.call_id;
+    if (!cid || !stateByCallId[cid]) continue;
+    if (ev.detail_type === 'review_call_started') {
+      stateByCallId[cid] = { ...stateByCallId[cid], status: 'running' };
+    } else if (ev.detail_type === 'review_call_completed') {
+      stateByCallId[cid] = {
+        ...stateByCallId[cid],
+        status: 'completed',
+        passed: ev.data?.passed === true,
+        issue_count: ev.data?.issue_count || 0,
+        issues: Array.isArray(ev.data?.issues) ? ev.data.issues : [],
+      };
+    } else if (ev.detail_type === 'review_call_failed') {
+      stateByCallId[cid] = {
+        ...stateByCallId[cid],
+        status: 'failed',
+        error: ev.data?.error || 'unknown error',
+      };
+    }
+  }
+
+  const rows = seedCalls.map(s => stateByCallId[s.call_id]).filter(Boolean);
+  const total = rows.length;
+  const completedCount = rows.filter(r => r.status === 'completed' || r.status === 'failed').length;
+
+  const renderStatus = (row) => {
+    if (row.status === 'pending') {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallPending}`}>queued…</span>;
+    }
+    if (row.status === 'running') {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallRunning}`}>reviewing…</span>;
+    }
+    if (row.status === 'failed') {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallFailed}`}>❌ technical failure</span>;
+    }
+    // completed
+    if (row.passed && row.issue_count === 0) {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallClean}`}>✅ clean</span>;
+    }
+    return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallIssues}`}>⚠️ {row.issue_count} {row.issue_count === 1 ? 'issue' : 'issues'}</span>;
+  };
+
+  return (
+    <div className={styles.reviewerCallList}>
+      <div className={styles.reviewerCallListHeader}>
+        <span className={styles.detailLabel}>🔍 Reviewer subcalls</span>
+        <span className={styles.reviewerCallProgress}>{completedCount} / {total} complete</span>
+      </div>
+      <div className={styles.reviewerCallProgressBarOuter}>
+        <div
+          className={styles.reviewerCallProgressBarInner}
+          style={{ width: total > 0 ? `${(completedCount / total) * 100}%` : '0%' }}
+        />
+      </div>
+      <div className={styles.reviewerCallRows}>
+        {rows.map(row => {
+          const icon = REVIEWER_CALL_KIND_ICONS[row.call_kind] || '•';
+          const hasDetails = (row.issues && row.issues.length > 0) || row.error;
+          const isExpanded = expandedCallId === row.call_id;
+          return (
+            <div key={row.call_id} className={styles.reviewerCallRow}>
+              <div
+                className={hasDetails ? styles.reviewerCallRowHeaderClickable : styles.reviewerCallRowHeader}
+                onClick={hasDetails ? () => setExpandedCallId(isExpanded ? null : row.call_id) : undefined}
+              >
+                <span className={styles.reviewerCallIcon}>{icon}</span>
+                <span className={styles.reviewerCallLabel}>{row.call_label}</span>
+                {renderStatus(row)}
+                {hasDetails && (
+                  <span className={styles.reviewerCallExpandHint}>{isExpanded ? '▲' : '▼'}</span>
+                )}
+              </div>
+              {isExpanded && row.issues && row.issues.length > 0 && (
+                <div className={styles.reviewerCallDetails}>
+                  {row.issues.map((issue, i) => (
+                    <div key={i} className={styles.issueRow}>
+                      <span className={styles.issueCategory}>{issue.severity}</span>
+                      <span className={styles.issueCategory}>{issue.category}</span>
+                      <span>{issue.description}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {isExpanded && row.error && (
+                <div className={styles.reviewerCallDetails}>
+                  <div className={styles.issueRow}>
+                    <span>{row.error}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function PageContentBlock({ pages }) {
   if (!pages?.length) return null;
   return (
@@ -424,6 +556,11 @@ function StepDetailPanel({ stepId, details }) {
           d.detail_type === 'image_completed' ||
           d.detail_type === 'image_failed'
         );
+        const reviewerCallEvts = round.filter(d =>
+          d.detail_type === 'review_call_started'   ||
+          d.detail_type === 'review_call_completed' ||
+          d.detail_type === 'review_call_failed'
+        );
         const totalPages = round.find(d => d.data?.total_pages)?.data?.total_pages ?? pageEvts.length ?? 0;
 
         return (
@@ -441,6 +578,9 @@ function StepDetailPanel({ stepId, details }) {
             {promptEvt   && <PromptBlock text={promptEvt.data?.prompt} />}
             {pageEvts.length  > 0 && <PageContentBlock pages={pageEvts} />}
             {imageEvts.length > 0 && <ImageGrid imageEvents={imageEvts} totalPages={totalPages} />}
+            {stepId === 'story_reviewer' && promptEvt?.data?.calls && (
+              <ReviewerCallList promptEvt={promptEvt} callEvts={reviewerCallEvts} />
+            )}
             {responseEvt && <ResponseBlock data={responseEvt.data} executorId={stepId} />}
           </div>
         );
