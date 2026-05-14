@@ -278,58 +278,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
 
         <hr className={styles.divider} />
 
-        {/* ── Bonus content ─────────────────────────────────────────── */}
-        <div className={styles.sectionTitle}>🌟 Bonus Content</div>
-
-        <div className={styles.checkboxGroup}>
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              className={styles.checkboxInput}
-              checked={form.include_look_and_find}
-              onChange={e => setForm(prev => ({ ...prev, include_look_and_find: e.target.checked }))}
-            />
-            <span className={styles.checkboxText}>
-              <strong>🔎 Generate Look &amp; Find Activity Page</strong>
-              <span className={styles.checkboxHint}>Challenges the child to find 3–5 hidden items across the story's illustrations</span>
-            </span>
-          </label>
-
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              className={styles.checkboxInput}
-              checked={form.include_character_glossary}
-              onChange={e => setForm(prev => ({ ...prev, include_character_glossary: e.target.checked }))}
-            />
-            <span className={styles.checkboxText}>
-              <strong>📖 Generate Character Glossary</strong>
-              <span className={styles.checkboxHint}>Adds a "Meet the Characters" page with fun descriptions of each character</span>
-            </span>
-          </label>
-        </div>
-
-        {/* ── Advanced Options ──────────────────────────────────────── */}
-        <div className={styles.sectionTitle}>⚙️ Advanced Options</div>
-
-        <div className={styles.checkboxGroup}>
-          <label className={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              className={styles.checkboxInput}
-              checked={form.enable_story_reviewer}
-              onChange={e => setForm(prev => ({ ...prev, enable_story_reviewer: e.target.checked }))}
-            />
-            <span className={styles.checkboxText}>
-              <strong>Enable Story Reviewer</strong>
-              <span className={styles.checkboxHint}>Runs a quality review step with potential revision loops — produces higher quality but takes longer</span>
-            </span>
-          </label>
-        </div>
-
         {/* ── Wikipedia RAG section (optional, collapsible — collapsed by default) ── */}
-        <hr className={styles.divider} />
-
         <button
           type="button"
           className={`${styles.collapsibleHeader} ${wikiOpen ? styles.collapsibleHeaderOpen : ''}`}
@@ -402,6 +351,57 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             </div>
           </div>
         )}
+
+        <hr className={styles.divider} />
+
+        {/* ── Bonus content ─────────────────────────────────────────── */}
+        <div className={styles.sectionTitle}>🌟 Bonus Content</div>
+
+        <div className={styles.checkboxGroup}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              className={styles.checkboxInput}
+              checked={form.include_look_and_find}
+              onChange={e => setForm(prev => ({ ...prev, include_look_and_find: e.target.checked }))}
+            />
+            <span className={styles.checkboxText}>
+              <strong>🔎 Generate Look &amp; Find Activity Page</strong>
+              <span className={styles.checkboxHint}>Challenges the child to find 3–5 hidden items across the story's illustrations</span>
+            </span>
+          </label>
+
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              className={styles.checkboxInput}
+              checked={form.include_character_glossary}
+              onChange={e => setForm(prev => ({ ...prev, include_character_glossary: e.target.checked }))}
+            />
+            <span className={styles.checkboxText}>
+              <strong>📖 Generate Character Glossary</strong>
+              <span className={styles.checkboxHint}>Adds a "Meet the Characters" page with fun descriptions of each character</span>
+            </span>
+          </label>
+        </div>
+
+        {/* ── Advanced Options ──────────────────────────────────────── */}
+        <div className={styles.sectionTitle}>⚙️ Advanced Options</div>
+
+        <div className={styles.checkboxGroup}>
+          <label className={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              className={styles.checkboxInput}
+              checked={form.enable_story_reviewer}
+              onChange={e => setForm(prev => ({ ...prev, enable_story_reviewer: e.target.checked }))}
+            />
+            <span className={styles.checkboxText}>
+              <strong>Enable Story Reviewer</strong>
+              <span className={styles.checkboxHint}>Runs a quality review step with potential revision loops — produces higher quality but takes longer</span>
+            </span>
+          </label>
+        </div>
 
         {/* ── Submit ────────────────────────────────────────────────── */}
         <div className={styles.submitRow}>
