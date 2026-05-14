@@ -180,8 +180,14 @@ REVIEW CHECKLIST — set the matching `<category>_pass` boolean to false if the 
    - The named characters in characters_present appear in the image as recognizable figures.
      They do NOT need to be perfectly centered, fully facing the camera, or have an
      unobstructed face. Tilted heads, profile views, partial occlusion by foreground
-     elements (fog, leaves, other characters), and characters looking away from the camera
-     are all normal illustration choices and MUST NOT be flagged.
+     elements (fog, leaves, other characters), characters looking away from the camera,
+     AND PAINTERLY / STYLISTIC EFFECTS that soften, blur, or partially obscure faces
+     (motion blur, soft focus, atmospheric haze, fog-density, watercolor wash that
+     diffuses features, stylized simplification, dappled lighting, shadow falling
+     across part of the face) are ALL normal storybook-illustration choices and MUST
+     NOT be flagged. As long as you can tell which named character is which from
+     their silhouette, color palette, clothing, or accessories, the rendering is
+     acceptable — even if the face itself is soft, blurred, or partly hidden.
    - Emotional tone of the image is in the right ballpark — a sad scene shouldn't feel
      joyful, a joyful scene shouldn't feel grim. Subtle expression differences are fine.
      Do NOT flag because a character's expression "could be more expressive" or because
@@ -203,17 +209,29 @@ REVIEW CHECKLIST — set the matching `<category>_pass` boolean to false if the 
 DO NOT FLAG (these are normal illustration choices, not failures):
    - A character's face is tilted, in profile, partially obscured by fog/leaves/other
      elements, or oriented away from the camera.
+   - A character's face is softened, blurred, hazy, in shadow, or partially covered by
+     painterly / atmospheric effects (motion blur, soft focus, fog, mist, watercolor
+     diffusion, stylized simplification, dappled or low light). These are artistic
+     rendering choices, not character-recognizability failures. Only flag when the
+     character cannot be identified at all — not when the face is "less crisp than it
+     could be."
    - A character is positioned to the side of the scene rather than the center.
    - The image is "less expressive than it could be" — subjective polish is not a failure.
    - Minor differences in shading, brush style, or composition between pages, as long as
      the character is recognizably the same character.
    - Background details that are present in the image but not mentioned in the text
-     (a stylized sun, decorative flowers, atmospheric mist).
+     (a stylized sun, decorative flowers, atmospheric mist, distant buildings, foliage,
+     props, scenery). The narrative does not enumerate every visual element on a page;
+     extra background scenery is the illustrator's job and is NEVER an art-text
+     contradiction unless it directly conflicts with what the text says (e.g. text
+     says "in the deep forest" but the image is clearly inside a city).
    - In-image dialogue or lettering whose wording differs from the page text but
      conveys the same idea (e.g. page text "Thomas called out, 'Benny, where are you?'"
      and the speech bubble in the art reads "Benny!" or "Where are you, Benny?").
      Paraphrases, abbreviated versions, or reordered phrasings of the page's
-     dialogue/narration are explicitly OK.
+     dialogue/narration are explicitly OK — and this also applies to the moral on the
+     final page: a speech bubble that paraphrases the moral is NOT a moral_integration
+     failure as long as it conveys the same lesson.
 
 ISSUE SEVERITY — every issue must be classified:
   - "high"   → ships a broken or harmful experience: image directly contradicts page text
