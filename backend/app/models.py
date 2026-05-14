@@ -155,16 +155,22 @@ class StoryArchitectOutput(BaseModel):
 class StorySuggestion(BaseModel):
     main_character: str = Field(
         description=(
-            "A vivid main-character name with a one-line trait or species "
-            "(e.g. 'Marigold the Curious Marmoset')."
+            "JUST THE MAIN CHARACTER'S NAME — no descriptive clauses, no commas. "
+            "For animal characters the '<Name> the <Species/Trait>' pattern is "
+            "encouraged (e.g. 'Benny the Bunny', 'Thomas the Turtle', "
+            "'Marigold the Marmoset'). Any personality, visual, or backstory "
+            "details belong in additional_details, not here."
         ),
     )
     supporting_characters: list[str] = Field(
         min_length=1,
         max_length=4,
         description=(
-            "1-4 supporting character names, each with a brief trait or species. "
-            "They should belong to the same world as the main character."
+            "1-4 supporting character NAMES ONLY — no descriptive clauses, no "
+            "commas. Same naming pattern as main_character (e.g. 'Pip the "
+            "Seahorse', 'Grandma Quill'). Each must plausibly belong to the "
+            "same world as the main character. Personality and visual details "
+            "go in additional_details."
         ),
     )
     setting: str = Field(
@@ -186,8 +192,11 @@ class StorySuggestion(BaseModel):
     additional_details: str = Field(
         default="",
         description=(
-            "Optional 1-2 sentences of extra texture: a specific scene, recurring motif, "
-            "or thematic element the writer should include. May be empty."
+            "A short paragraph of extra texture for the story. This is where "
+            "every character's personality and visual description belongs (one "
+            "short line per character — e.g. 'Benny is a small brown bunny with "
+            "a red scarf who loves carrots'). May also include a specific scene "
+            "idea or recurring motif. Keep it concise."
         ),
     )
 

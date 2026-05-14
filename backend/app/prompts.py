@@ -638,20 +638,32 @@ REQUIREMENTS:
    bears in a forest). Reach for animals, objects, jobs, or settings that
    would surprise a 5-year-old: a librarian octopus, a forgetful lighthouse,
    a brave little teacup, a paleontologist hedgehog, etc.
-2. The 1-4 supporting characters must plausibly belong to the same world as
+2. NAMES ONLY in the character fields. The main_character and
+   supporting_characters fields must contain just a name — never a description,
+   never a comma, never a clause like "a gentle sky-whale who hums lullabies."
+   For animals or themed characters the "<Name> the <Species/Trait>" pattern
+   is encouraged ("Benny the Bunny", "Thomas the Turtle", "Pip the Seahorse",
+   "Waverly the Whale"). For human characters a plain first name (or
+   "Grandma <Name>", "Captain <Name>", etc.) is fine. Treat these fields
+   the way a roster would — name only.
+3. The 1-4 supporting characters must plausibly belong to the same world as
    the main character. A pirate captain main character should not have a
    forest-fairy sidekick unless the world clearly explains the overlap.
-3. The setting should be specific and evocative in one sentence — not just
+4. The setting should be specific and evocative in one sentence — not just
    "a forest" but "a forest where the trees rearrange themselves overnight."
-4. The moral should be ACTIONABLE for a 5-8-year-old — kindness, patience,
+5. The moral should be ACTIONABLE for a 5-8-year-old — kindness, patience,
    curiosity, perseverance, honesty, courage, friendship, asking for help,
    sharing, listening. Phrase it as something the main character will SHOW
    through their choices, not as a sermon.
-5. The main problem must be CONCRETE (something the character has to do or
+6. The main problem must be CONCRETE (something the character has to do or
    resolve) and must naturally lead the character toward demonstrating the
    moral. The problem should be solvable by the characters you chose.
-6. The additional_details field is optional — use it for ONE specific scene
-   idea or recurring motif if you have a good one, otherwise leave it empty.
+7. The additional_details field is where ALL character flavor goes. Write one
+   short line per character giving their visual look and a personality trait
+   (e.g. "Benny is a small brown bunny with a red scarf who loves carrots.
+   Oliver is a wise old owl who wears tiny round glasses."). You may also
+   add ONE specific scene idea or recurring motif at the end if you have a
+   good one. Keep the whole field to a few sentences — concise, not florid.
 
 VARIETY: You will be called many times to suggest different stories. Make
 each suggestion feel fresh — change the setting type, the species, the

@@ -220,9 +220,8 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             <label className={styles.label}>
               Setting {!isFullMode && <span className={styles.required}>*</span>}
             </label>
-            <input
-              className={styles.input}
-              type="text"
+            <textarea
+              className={styles.textarea}
               placeholder="e.g. A magical forest with talking trees and glowing fireflies"
               value={form.setting}
               onChange={handleField('setting')}
@@ -234,9 +233,8 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             <label className={styles.label}>
               Moral of the Story {!isFullMode && <span className={styles.required}>*</span>}
             </label>
-            <input
-              className={styles.input}
-              type="text"
+            <textarea
+              className={styles.textarea}
               placeholder="e.g. True courage means helping others even when you're scared"
               value={form.moral}
               onChange={handleField('moral')}
