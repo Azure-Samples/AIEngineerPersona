@@ -136,6 +136,28 @@ class StoryArchitectOutput(BaseModel):
     moral_summary: str
 
 
+# StoryOutline (above) carries character_descriptions as a ``dict[str, str]``
+# because every consumer (orchestrator, story_architect, story_reviewer,
+# art_director, character_glossary) reads it that way. Strict ``json_schema``
+# response_format mode does NOT support open-ended dict types — every object
+# in the schema must declare a fixed property set with ``additionalProperties:
+# false``. The DTO below is the LLM's actual output shape; orchestrator.py
+# converts to StoryOutline (with the dict view) after the call.
+
+
+class CharacterDescription(BaseModel):
+    name: str
+    description: str
+
+
+class StoryOutlineDraft(BaseModel):
+    title: str
+    target_pages: int = Field(ge=8, le=10)
+    character_descriptions: list[CharacterDescription]
+    plot_summary: str
+    page_outlines: list[PageOutline]
+
+
 class ReviewIssue(BaseModel):
     # Pydantic will coerce strings like "3" to int 3. We additionally accept
     # any non-numeric label (e.g. "Cover", "All pages") as None so the LLM

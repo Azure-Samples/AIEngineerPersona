@@ -19,10 +19,11 @@ STORY STRUCTURE (8–10 pages):
 
 REQUIREMENTS:
 1. Create a compelling, age-appropriate title.
-2. Write a character_descriptions dictionary mapping each character's name to a vivid,
-   consistent visual description (e.g., "a small brown rabbit with long floppy ears, a
-   bright blue scarf, and a cheerful smile"). These descriptions MUST be used verbatim in
-   image prompts to ensure visual consistency across all pages.
+2. Write a character_descriptions list — one entry per named character, each with a
+   `name` and a vivid, consistent visual `description` (e.g., "a small brown rabbit
+   with long floppy ears, a bright blue scarf, and a cheerful smile"). These
+   descriptions MUST be used verbatim in image prompts to ensure visual consistency
+   across all pages.
 3. Each page outline must clearly state: the scene, which characters are present, the
    emotional tone, and which plot milestone occurs.
 4. The moral must be woven naturally into the resolution — never preachy, always shown

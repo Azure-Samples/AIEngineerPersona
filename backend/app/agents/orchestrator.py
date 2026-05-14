@@ -15,7 +15,7 @@ from opentelemetry import trace
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
-from ..models import StoryRequest, StoryOutline
+from ..models import StoryRequest, StoryOutline, StoryOutlineDraft
 from ..prompts import ORCHESTRATOR_INSTRUCTIONS
 from ..signals import RevisionSignal
 from ..utils import record_llm_usage
@@ -231,11 +231,21 @@ class OrchestratorExecutor(Executor):
 
         result = await self._agent.run(
             prompt,
-            options={"response_format": StoryOutline},
+            options={"response_format": StoryOutlineDraft},
         )
         record_llm_usage(result)
-        outline: StoryOutline = result.value
-        outline.revision_instructions = revision_instructions
+        # The model emits a StoryOutlineDraft (character_descriptions is a list
+        # of {name, description}). Convert to StoryOutline (dict[str,str]) so
+        # downstream executors keep their existing dict-based access pattern.
+        draft: StoryOutlineDraft = result.value
+        outline = StoryOutline(
+            title=draft.title,
+            target_pages=draft.target_pages,
+            character_descriptions={cd.name: cd.description for cd in draft.character_descriptions},
+            plot_summary=draft.plot_summary,
+            page_outlines=draft.page_outlines,
+            revision_instructions=revision_instructions,
+        )
 
         await ctx.add_event(ProgressDetailEvent(
             executor_id="orchestrator",
