@@ -11,22 +11,21 @@ import logging
 from urllib.parse import urlparse
 
 from agent_framework import (
-    ChatAgent,
-    ChatMessage,
-    DataContent,
+    Agent,
+    Content,
     Executor,
-    TextContent,
+    Message,
     WorkflowContext,
     handler,
 )
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
 from ..models import StoryDraft, ReviewResult
 from ..prompts import STORY_REVIEWER_INSTRUCTIONS
 from ..storage import get_backend
-from ..utils import parse_llm_json, record_llm_usage
+from ..utils import record_llm_usage
 from ..events import ProgressDetailEvent
 
 logger = logging.getLogger(__name__)
@@ -41,14 +40,14 @@ class StoryReviewerExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="story_reviewer")
-        self._agent = ChatAgent(
-            name="StoryReviewerAgent",
-            instructions=STORY_REVIEWER_INSTRUCTIONS,
-            chat_client=AzureOpenAIChatClient(
-                endpoint=settings.foundry_project_endpoint,
-                deployment_name=settings.foundry_model_deployment_name,
+        self._agent = Agent(
+            client=OpenAIChatClient(
+                model=settings.foundry_model_deployment_name,
+                azure_endpoint=settings.foundry_project_endpoint,
                 credential=DefaultAzureCredential(),
             ),
+            instructions=STORY_REVIEWER_INSTRUCTIONS,
+            name="StoryReviewerAgent",
         )
 
     @handler
@@ -66,7 +65,7 @@ class StoryReviewerExecutor(Executor):
         # Retrieve the canonical character list from shared state so the reviewer can
         # cross-check every image_prompt against the officially defined characters.
         character_descriptions: dict[str, str] = {}
-        outline_json = await ctx.get_shared_state("outline")
+        outline_json = ctx.get_state("outline")
         if outline_json:
             try:
                 outline_data = json.loads(outline_json)
@@ -74,25 +73,16 @@ class StoryReviewerExecutor(Executor):
             except Exception:
                 pass  # graceful degradation — review still proceeds without it
 
-        # On revision rounds, surface the previous round's instructions so the reviewer
-        # can verify the requested fixes actually landed. ``get_shared_state`` raises
-        # KeyError when the key is absent, so guard both reads — they're absent on the
-        # very first review pass.
-        try:
-            revision_count = (await ctx.get_shared_state("revision_count")) or 0
-        except KeyError:
-            revision_count = 0
-        try:
-            prior_revision_instructions = (
-                await ctx.get_shared_state("last_revision_instructions")
-            ) or ""
-        except KeyError:
-            prior_revision_instructions = ""
+        # On revision rounds, surface the previous round's instructions so the
+        # reviewer can verify the requested fixes actually landed. ``get_state``
+        # returns the default (None / 0 / "") when the key is absent — both
+        # reads are absent on the very first review pass.
+        revision_count = ctx.get_state("revision_count", default=0) or 0
+        prior_revision_instructions = (
+            ctx.get_state("last_revision_instructions", default="") or ""
+        )
 
-        try:
-            session_id = await ctx.get_shared_state("session_id")
-        except KeyError:
-            session_id = None
+        session_id = ctx.get_state("session_id", default=None)
 
         prompt_text = self._build_review_prompt(
             draft,
@@ -114,17 +104,21 @@ class StoryReviewerExecutor(Executor):
                 "page_count": len(draft.pages),
                 "revision_round": revision_count,
                 "image_count": sum(
-                    1 for c in review_message.contents if isinstance(c, DataContent)
+                    1 for c in review_message.contents
+                    if isinstance(c, Content) and c.type == "data"
                 ),
             },
         ))
 
-        result = await self._agent.run(review_message)
+        result = await self._agent.run(
+            review_message,
+            options={"response_format": ReviewResult},
+        )
         record_llm_usage(result)
-        review = ReviewResult.model_validate(parse_llm_json(result.text))
+        review: ReviewResult = result.value
 
         # Stash this round's instructions so the next review can verify them.
-        await ctx.set_shared_state(
+        ctx.set_state(
             "last_revision_instructions", review.revision_instructions
         )
 
@@ -227,12 +221,6 @@ class StoryReviewerExecutor(Executor):
             f"MORAL SUMMARY (final page closing): {draft.moral_summary}",
             char_desc_section,
             revision_section,
-            "",
-            (
-                "Return a single ReviewResult JSON object as defined in your system"
-                " instructions, including the per-category pass booleans and a severity"
-                " on every issue."
-            ),
         ])
 
     def _build_review_message(
@@ -240,12 +228,12 @@ class StoryReviewerExecutor(Executor):
         draft: StoryDraft,
         prompt_text: str,
         session_id: str | None,
-    ) -> ChatMessage:
+    ) -> Message:
         """
         Build a multimodal user message: prompt text first, then for each page a small
         text header followed by the rendered image (when available), then cover + end.
         """
-        contents: list = [TextContent(text=prompt_text)]
+        contents: list[Content] = [Content.from_text(prompt_text)]
 
         backend = get_backend()
 
@@ -264,9 +252,9 @@ class StoryReviewerExecutor(Executor):
                 return
             if not png_bytes:
                 return
-            contents.append(TextContent(text=f"\n[Attached image: {label}]"))
+            contents.append(Content.from_text(f"\n[Attached image: {label}]"))
             contents.append(
-                DataContent(data=png_bytes, media_type="image/png")
+                Content.from_data(data=png_bytes, media_type="image/png")
             )
 
         # Cover first so the reviewer establishes the visual baseline
@@ -277,7 +265,7 @@ class StoryReviewerExecutor(Executor):
 
         _image_for(draft.the_end_image_url, "The End")
 
-        return ChatMessage(role="user", contents=contents)
+        return Message(role="user", contents=contents)
 
     @staticmethod
     def _filename_from_url(image_url: str) -> str | None:

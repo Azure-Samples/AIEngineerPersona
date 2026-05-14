@@ -7,14 +7,14 @@ narrative text + image prompts for every page, producing a StoryDraft.
 
 import logging
 
-from agent_framework import ChatAgent, Executor, WorkflowContext, handler
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework import Agent, Executor, WorkflowContext, handler
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
-from ..models import StoryOutline, StoryDraft
+from ..models import StoryArchitectOutput, StoryDraft, StoryOutline, StoryPage
 from ..prompts import STORY_ARCHITECT_INSTRUCTIONS
-from ..utils import parse_llm_json, record_llm_usage
+from ..utils import record_llm_usage
 from ..events import ProgressDetailEvent
 
 logger = logging.getLogger(__name__)
@@ -28,14 +28,14 @@ class StoryArchitectExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="story_architect")
-        self._agent = ChatAgent(
-            name="StoryArchitectAgent",
-            instructions=STORY_ARCHITECT_INSTRUCTIONS,
-            chat_client=AzureOpenAIChatClient(
-                endpoint=settings.foundry_project_endpoint,
-                deployment_name=settings.foundry_model_deployment_name,
+        self._agent = Agent(
+            client=OpenAIChatClient(
+                model=settings.foundry_model_deployment_name,
+                azure_endpoint=settings.foundry_project_endpoint,
                 credential=DefaultAzureCredential(),
             ),
+            instructions=STORY_ARCHITECT_INSTRUCTIONS,
+            name="StoryArchitectAgent",
         )
 
     @handler
@@ -52,7 +52,7 @@ class StoryArchitectExecutor(Executor):
 
         # Persist the outline so the DecisionExecutor can include it in the
         # final StoryResponse metadata if needed.
-        await ctx.set_shared_state("outline", outline.model_dump_json())
+        ctx.set_state("outline", outline.model_dump_json())
 
         prompt = self._build_prompt(outline)
 
@@ -62,9 +62,22 @@ class StoryArchitectExecutor(Executor):
             detail_data={"prompt": prompt, "title": outline.title, "page_count": outline.target_pages},
         ))
 
-        result = await self._agent.run(prompt)
+        result = await self._agent.run(
+            prompt,
+            options={"response_format": StoryArchitectOutput},
+        )
         record_llm_usage(result)
-        draft = StoryDraft.model_validate(parse_llm_json(result.text))
+
+        # The model emits a StoryArchitectOutput (text-only). Convert to the
+        # runtime StoryDraft so downstream executors (ArtDirector, Reviewer,
+        # FinalAssembly) can fill in image_url / cover_image_url /
+        # the_end_image_url as they run.
+        output: StoryArchitectOutput = result.value
+        draft = StoryDraft(
+            title=output.title,
+            pages=[StoryPage(**page.model_dump()) for page in output.pages],
+            moral_summary=output.moral_summary,
+        )
 
         # Belt-and-suspenders: append a hard negative constraint to every image prompt so
         # DALL-E cannot render characters who are not present on this page, regardless of
@@ -142,8 +155,4 @@ class StoryArchitectExecutor(Executor):
             "",
             "Plot summary for guiding narrative continuity:",
             outline.plot_summary,
-            "",
-            "Return a complete StoryDraft JSON object. "
-            "Each page must include: page_number, text, scene_description, "
-            "characters_present, emotional_tone, and image_prompt.",
         ])

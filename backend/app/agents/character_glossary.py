@@ -6,18 +6,17 @@ LLM to write a child-friendly glossary entry for every character in the story.
 Produces a CharacterGlossary result forwarded to FinalAssemblyExecutor.
 """
 
-import json
 import logging
 
-from agent_framework import ChatAgent, Executor, WorkflowContext, handler
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework import Agent, Executor, WorkflowContext, handler
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import CharacterGlossary, StoryOutline, StoryResponse
 from ..prompts import CHARACTER_GLOSSARY_INSTRUCTIONS
-from ..utils import parse_llm_json, record_llm_usage
+from ..utils import record_llm_usage
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +29,14 @@ class CharacterGlossaryExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="character_glossary")
-        self._agent = ChatAgent(
-            name="CharacterGlossaryAgent",
-            instructions=CHARACTER_GLOSSARY_INSTRUCTIONS,
-            chat_client=AzureOpenAIChatClient(
-                endpoint=settings.foundry_project_endpoint,
-                deployment_name=settings.foundry_model_deployment_name,
+        self._agent = Agent(
+            client=OpenAIChatClient(
+                model=settings.foundry_model_deployment_name,
+                azure_endpoint=settings.foundry_project_endpoint,
                 credential=DefaultAzureCredential(),
             ),
+            instructions=CHARACTER_GLOSSARY_INSTRUCTIONS,
+            name="CharacterGlossaryAgent",
         )
 
     @handler
@@ -53,7 +52,7 @@ class CharacterGlossaryExecutor(Executor):
 
         # Pull character descriptions from the outline stored in shared state
         character_descriptions: dict[str, str] = {}
-        outline_json = await ctx.get_shared_state("outline")
+        outline_json = ctx.get_state("outline")
         if outline_json:
             try:
                 outline = StoryOutline.model_validate_json(outline_json)
@@ -69,9 +68,12 @@ class CharacterGlossaryExecutor(Executor):
             detail_data={"prompt": prompt, "title": story.title},
         ))
 
-        result = await self._agent.run(prompt)
+        result = await self._agent.run(
+            prompt,
+            options={"response_format": CharacterGlossary},
+        )
         record_llm_usage(result)
-        glossary = CharacterGlossary.model_validate(parse_llm_json(result.text))
+        glossary: CharacterGlossary = result.value
 
         logger.info(
             "[CharacterGlossary] Generated %d glossary entries for '%s'",

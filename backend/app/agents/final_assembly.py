@@ -90,7 +90,7 @@ class FinalAssemblyExecutor(Executor):
 
     async def _read_story(self, ctx: WorkflowContext) -> StoryResponse:
         """Read the approved StoryResponse from shared state."""
-        story_json = await ctx.get_shared_state("approved_story")
+        story_json = ctx.get_state("approved_story")
         if not story_json:
             raise RuntimeError(
                 "FinalAssemblyExecutor: 'approved_story' not found in shared state. "

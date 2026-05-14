@@ -66,21 +66,15 @@ class ArtDirectorExecutor(Executor):
         # Per-generation session id (set by StoryGenerator → Orchestrator).
         # Falls back to a fresh uuid so revision rounds and ad-hoc invocations
         # without an upstream session still get isolated draft folders.
-        # ``get_shared_state`` raises KeyError when the key isn't set yet, so
-        # guard the read.
-        try:
-            session_id = await ctx.get_shared_state("session_id") or uuid.uuid4().hex
-        except KeyError:
-            session_id = uuid.uuid4().hex
+        session_id = (
+            ctx.get_state("session_id", default=None) or uuid.uuid4().hex
+        )
 
         # Revision round (0 for the initial pass, 1+ after StoryReviewer asks
         # for changes).  Folded into image filenames so a revision's images
         # don't overwrite the originals in storage — that lets the saved
         # event history accurately replay every round's illustrations.
-        try:
-            revision_round = await ctx.get_shared_state("revision_count") or 0
-        except KeyError:
-            revision_round = 0
+        revision_round = ctx.get_state("revision_count", default=0) or 0
         revision_suffix = f".r{revision_round}" if revision_round else ""
 
         # Canonical character descriptions (set by Orchestrator). These pin the
@@ -88,10 +82,7 @@ class ArtDirectorExecutor(Executor):
         # extra creatures on the cover (e.g. a mouse and a cat that don't
         # exist anywhere in the story).
         character_descriptions: dict[str, str] = {}
-        try:
-            outline_json = await ctx.get_shared_state("outline")
-        except KeyError:
-            outline_json = None
+        outline_json = ctx.get_state("outline", default=None)
         if outline_json:
             try:
                 import json as _json
@@ -240,7 +231,7 @@ class ArtDirectorExecutor(Executor):
 
         # Store the illustrated draft in workflow state so the DecisionExecutor
         # can assemble the final StoryResponse without re-passing the whole draft.
-        await ctx.set_shared_state("illustrated_draft", draft.model_dump_json())
+        ctx.set_state("illustrated_draft", draft.model_dump_json())
 
         logger.info("[ArtDirector] All illustrations complete for '%s'", draft.title)
         await ctx.send_message(draft)

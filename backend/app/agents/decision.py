@@ -57,7 +57,7 @@ class DecisionExecutor(Executor):
         review: ReviewResult,
         ctx: WorkflowContext[StoryResponse | RevisionSignal],
     ) -> None:
-        revision_count = await ctx.get_shared_state("revision_count") or 0
+        revision_count = ctx.get_state("revision_count") or 0
         budget_exhausted = revision_count >= MAX_REVISION_ROUNDS
 
         if review.approved or budget_exhausted:
@@ -77,7 +77,7 @@ class DecisionExecutor(Executor):
             story_response = await self._assemble_story(review, revision_count, ctx)
             # Persist the approved StoryResponse so FinalAssemblyExecutor can always
             # read it from shared state, regardless of which bonus agents executed.
-            await ctx.set_shared_state("approved_story", story_response.model_dump_json())
+            ctx.set_state("approved_story", story_response.model_dump_json())
             await ctx.send_message(story_response)
 
         else:
@@ -103,7 +103,7 @@ class DecisionExecutor(Executor):
         ctx: WorkflowContext,
     ) -> StoryResponse:
         """Pull the illustrated draft from workflow state and build the final response."""
-        draft_json = await ctx.get_shared_state("illustrated_draft")
+        draft_json = ctx.get_state("illustrated_draft")
         if not draft_json:
             raise RuntimeError(
                 "DecisionExecutor: 'illustrated_draft' not found in workflow state. "

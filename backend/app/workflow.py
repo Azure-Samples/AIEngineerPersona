@@ -85,9 +85,10 @@ def build_story_workflow(request: StoryRequest) -> Workflow:
     final_assembly     = FinalAssemblyExecutor()
 
     builder = (
-        WorkflowBuilder()
-        .set_start_executor(orchestrator)
-        .set_max_iterations(30)
+        WorkflowBuilder(
+            max_iterations=30,
+            start_executor=orchestrator,
+        )
         # ── Core sequential chain ──────────────────────────────────────────
         .add_edge(orchestrator, story_architect)
         .add_edge(story_architect, art_director)

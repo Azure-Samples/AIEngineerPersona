@@ -18,19 +18,6 @@ from .events import ProgressDetailEvent
 from .models import StoryRequest, StoryResponse
 from .workflow import build_story_workflow
 
-try:
-    from agent_framework import (
-        ExecutorInvokedEvent,
-        ExecutorCompletedEvent,
-        WorkflowOutputEvent,
-    )
-    try:
-        from agent_framework import WorkflowFailedEvent
-    except ImportError:
-        WorkflowFailedEvent = None  # type: ignore[misc,assignment]
-except ImportError as _ie:
-    raise RuntimeError(f"agent_framework event classes unavailable: {_ie}") from _ie
-
 logger = logging.getLogger(__name__)
 
 
@@ -122,9 +109,24 @@ class StoryGenerator:
             # on which options the user selected (bonus agents, skip reviewer, etc.).
             workflow = build_story_workflow(request)
 
-            async for event in workflow.run_stream(request):
+            async for event in workflow.run(request, stream=True):
 
-                if isinstance(event, ExecutorInvokedEvent):
+                # ProgressDetailEvent must be checked BEFORE the event.type
+                # discriminator branches: it inherits from WorkflowEvent and
+                # carries type="data", so the generic "data" branch (if any)
+                # would otherwise swallow it.
+                if isinstance(event, ProgressDetailEvent):
+                    yield self._sse_event(
+                        "detail",
+                        {
+                            "executor_id": event.executor_id,
+                            "detail_type": event.detail_type,
+                            "data": event.detail_data,
+                        },
+                    )
+                    continue
+
+                if event.type == "executor_invoked":
                     executor_id: str = event.executor_id or ""
                     active_executor = executor_id
                     label = self.EXECUTOR_LABELS.get(executor_id, executor_id)
@@ -161,7 +163,7 @@ class StoryGenerator:
                             },
                         )
 
-                elif isinstance(event, ExecutorCompletedEvent):
+                elif event.type == "executor_completed":
                     executor_id = event.executor_id or (active_executor or "")
                     label = self.EXECUTOR_LABELS.get(executor_id, executor_id)
                     if executor_id == "decision":
@@ -178,17 +180,7 @@ class StoryGenerator:
                         },
                     )
 
-                elif isinstance(event, ProgressDetailEvent):
-                    yield self._sse_event(
-                        "detail",
-                        {
-                            "executor_id": event.executor_id,
-                            "detail_type": event.detail_type,
-                            "data": event.detail_data,
-                        },
-                    )
-
-                elif isinstance(event, WorkflowOutputEvent):
+                elif event.type == "output":
                     output_data = event.data
                     if output_data is not None:
                         if isinstance(output_data, StoryResponse):
@@ -204,16 +196,13 @@ class StoryGenerator:
                         revision_count = 0
                         yield self._sse_event("complete", {"story": story_dict})
 
-                elif (
-                    WorkflowFailedEvent is not None
-                    and isinstance(event, WorkflowFailedEvent)
-                ):
+                elif event.type in ("failed", "executor_failed"):
                     details = getattr(event, "details", None)
                     if details is not None:
                         error_msg = (
                             getattr(details, "message", None) or str(details)
                         )
-                        executor = getattr(details, "executor_id", None)
+                        executor = getattr(details, "executor_id", None) or event.executor_id
                         tb = getattr(details, "traceback", None)
                         logger.error(
                             "[Workflow] Workflow failed in executor=%s: %s\n%s",
