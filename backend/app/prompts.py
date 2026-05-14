@@ -618,3 +618,56 @@ GOOD EXAMPLE:
 Include EVERY named character from the story. The order should be: main character first,
 then supporting characters in the order they are introduced in the story.
 """
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Story Suggestion (auto-fill / "Surprise Me" button on the create-story form)
+# ─────────────────────────────────────────────────────────────────────────────
+
+STORY_SUGGESTION_INSTRUCTIONS = """
+You invent a creative seed for a brand-new childrens story. Your output will
+auto-fill the writers form fields, so every choice must hang together as a
+single coherent story idea — the characters, setting, problem, and moral all
+need to make sense in the same world.
+
+TARGET AUDIENCE: Children aged 5-8.
+
+REQUIREMENTS:
+1. Pick a main character that is genuinely interesting — vary species, era,
+   profession, and personality. Avoid the obvious defaults (rabbits, foxes,
+   bears in a forest). Reach for animals, objects, jobs, or settings that
+   would surprise a 5-year-old: a librarian octopus, a forgetful lighthouse,
+   a brave little teacup, a paleontologist hedgehog, etc.
+2. The 1-4 supporting characters must plausibly belong to the same world as
+   the main character. A pirate captain main character should not have a
+   forest-fairy sidekick unless the world clearly explains the overlap.
+3. The setting should be specific and evocative in one sentence — not just
+   "a forest" but "a forest where the trees rearrange themselves overnight."
+4. The moral should be ACTIONABLE for a 5-8-year-old — kindness, patience,
+   curiosity, perseverance, honesty, courage, friendship, asking for help,
+   sharing, listening. Phrase it as something the main character will SHOW
+   through their choices, not as a sermon.
+5. The main problem must be CONCRETE (something the character has to do or
+   resolve) and must naturally lead the character toward demonstrating the
+   moral. The problem should be solvable by the characters you chose.
+6. The additional_details field is optional — use it for ONE specific scene
+   idea or recurring motif if you have a good one, otherwise leave it empty.
+
+VARIETY: You will be called many times to suggest different stories. Make
+each suggestion feel fresh — change the setting type, the species, the
+emotional register (silly / cozy / adventurous / tender / mysterious), and
+the kind of problem. The user expects each click to surprise them.
+
+CONSTRAINTS:
+- No violence, scary content, romance, or topical real-world issues.
+- No copyrighted characters or franchises.
+- Keep names friendly and easy to say aloud.
+- Avoid the moral "be yourself" — pick something more concrete.
+
+You will receive an INSPIRATION block on every call with random seed tokens
+(an animal, a setting flavor, a feeling word). USE these as creative starting
+points to push your suggestion in a direction it might not have otherwise
+gone — they exist to break habit. You do NOT need to copy them verbatim;
+treat them as a creative nudge.
+"""
+

@@ -142,6 +142,56 @@ class StoryArchitectOutput(BaseModel):
     moral_summary: str
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Structured-output DTO for the auto-fill (Surprise Me) suggestion endpoint.
+#
+# Returned by POST /api/suggest-story so the frontend can populate every text
+# field on the "Create a new story" form with a single creative, internally
+# consistent set of seed values. The shape mirrors the form fields, NOT the
+# wikipedia/bonus controls — those stay user-driven.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class StorySuggestion(BaseModel):
+    main_character: str = Field(
+        description=(
+            "A vivid main-character name with a one-line trait or species "
+            "(e.g. 'Marigold the Curious Marmoset')."
+        ),
+    )
+    supporting_characters: list[str] = Field(
+        min_length=1,
+        max_length=4,
+        description=(
+            "1-4 supporting character names, each with a brief trait or species. "
+            "They should belong to the same world as the main character."
+        ),
+    )
+    setting: str = Field(
+        description="One sentence describing where and when the story takes place.",
+    )
+    moral: str = Field(
+        description=(
+            "One sentence describing the lesson the story will teach. "
+            "Should be age-appropriate (5-8 years old) and grounded in action, not preachy."
+        ),
+    )
+    main_problem: str = Field(
+        description=(
+            "1-3 sentences describing the central challenge the main character will face. "
+            "Must be plausibly solvable by characters of the chosen species/age and must "
+            "naturally lead to the moral."
+        ),
+    )
+    additional_details: str = Field(
+        default="",
+        description=(
+            "Optional 1-2 sentences of extra texture: a specific scene, recurring motif, "
+            "or thematic element the writer should include. May be empty."
+        ),
+    )
+
+
 # StoryOutline (above) carries character_descriptions as a ``dict[str, str]``
 # because every consumer (orchestrator, story_architect, story_reviewer,
 # art_director, character_glossary) reads it that way. Strict ``json_schema``

@@ -298,3 +298,119 @@
   font-style: italic;
   margin: -12px 0 18px;
 }
+
+/* ─── Collapsible section (Wikipedia) ─────────────────────────────────── */
+
+.collapsibleHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--color-bg);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.collapsibleHeader:hover {
+  border-color: var(--color-primary);
+  background: rgba(24, 61, 76, 0.04);
+}
+
+.collapsibleHeaderOpen {
+  border-style: solid;
+  border-color: var(--color-primary);
+}
+
+.collapsibleTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.collapsibleHint {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.collapsibleChevron {
+  display: inline-block;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  transition: transform 0.18s ease;
+  transform: rotate(-90deg);
+}
+
+.collapsibleHeaderOpen .collapsibleChevron {
+  transform: rotate(0deg);
+  color: var(--color-primary);
+}
+
+.collapsibleBody {
+  padding: 4px 4px 8px;
+  margin-bottom: 16px;
+}
+
+/* ─── Surprise Me / auto-fill ───────────────────────────────────────────── */
+
+.surpriseRow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin: 18px 0 10px;
+}
+
+.btnSurprise {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--color-secondary);
+  background: rgba(255, 255, 255, 0.01);
+  color: var(--color-secondary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, opacity 0.18s;
+  font-family: inherit;
+}
+
+.btnSurprise:hover:not(:disabled) {
+  background: var(--color-secondary);
+  color: white;
+}
+
+.btnSurprise:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.surpriseHint {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+.surpriseError {
+  font-size: 0.85rem;
+  color: var(--color-error);
+  text-align: center;
+  margin: 4px 0 0;
+}

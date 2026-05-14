@@ -60,6 +60,7 @@ configure_telemetry(app)
 
 from .story_generator import StoryGenerator  # noqa: E402
 from .tts import TTSService, TTSRequest  # noqa: E402
+from .suggestion import StorySuggestionService  # noqa: E402
 
 _story_generator = StoryGenerator()
 
@@ -94,6 +95,25 @@ async def text_to_speech(req: TTSRequest):
         raise HTTPException(status_code=400, detail="Text is required.")
     _tts.validate_config()
     return _tts.streaming_response(req.text.strip())
+
+
+# ─── Story suggestion ("Surprise Me" auto-fill) ───────────────────────────────
+
+_suggestion_service = StorySuggestionService()
+
+
+@app.post("/api/suggest-story")
+async def suggest_story() -> dict:
+    """Return a creative, internally-consistent set of seed values to auto-fill
+    the create-story form. Each call produces a fresh suggestion driven by a
+    randomized inspiration block — variety is part of the contract.
+    """
+    try:
+        suggestion = await _suggestion_service.suggest()
+    except Exception as exc:
+        logger.exception("Failed to generate story suggestion")
+        raise HTTPException(status_code=502, detail=f"Suggestion service error: {exc}")
+    return suggestion.model_dump()
 
 
 # ─── Demo Stories ─────────────────────────────────────────────────────────────
