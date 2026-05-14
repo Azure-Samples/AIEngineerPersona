@@ -110,7 +110,7 @@ The base application requires an **Azure AI Foundry** project with two model dep
 
 #### Step 3: Deploy the Image Generation Model
 
-1. In the same Deployments section, search for an image generation model (e.g., **gpt-image-1**, **gpt-image-1.5** or **dall-e-3**).
+1. In the same Deployments section, search for an image generation model (e.g., **gpt-image-2**, **gpt-image-1.5** or **dall-e-3**).
 2. Click **Deploy** and configure:
    - **Deployment name:** `gpt-image-1.5` (or your preferred name — match whatever you set in `.env`)
    - Use default settings for other options.

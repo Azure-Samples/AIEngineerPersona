@@ -20,7 +20,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [bonusAgents, setBonusAgents] = useState({ lookAndFind: true, characterGlossary: true });
 
-  const { story, progress, details, isGenerating, error, generate, reset, loadDemoStory } =
+  const { story, progress, details, sessionId, isGenerating, error, generate, reset, loadDemoStory } =
     useStoryGeneration();
 
   // Transition to the storybook view once the story is ready
@@ -67,6 +67,9 @@ function App() {
       },
       story,
       events,
+      // Echo back the server-assigned session id so the backend can promote
+      // the per-session draft images folder rather than re-decoding base64.
+      session_id: sessionId,
     };
     const res = await fetch('/api/demo-stories', {
       method: 'POST',

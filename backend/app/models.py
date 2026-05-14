@@ -1,5 +1,5 @@
 from typing import Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -59,6 +59,14 @@ class StoryRequest(BaseModel):
         description="When True, runs the story reviewer agent for quality review and potential revision loops",
     )
 
+    # Server-managed session id for this generation run.  Set by StoryGenerator
+    # before the workflow starts; used by ArtDirector to write per-session
+    # draft images and surfaced to the client so it can echo it back on save.
+    session_id: Optional[str] = Field(
+        default=None,
+        description="Server-assigned per-generation session id (do not set from the client).",
+    )
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Intermediate workflow data models
@@ -102,15 +110,43 @@ class StoryDraft(BaseModel):
 
 
 class ReviewIssue(BaseModel):
-    page_number: Optional[int] = None  # None means whole-story issue
-    category: str  # "character_consistency" | "narrative_flow" | "age_appropriateness" | "art_text_alignment"
+    # Pydantic will coerce strings like "3" to int 3. We additionally accept
+    # any non-numeric label (e.g. "Cover", "All pages") as None so the LLM
+    # can flag whole-story or cover issues without breaking validation.
+    page_number: Optional[int] = None
+    category: str  # "character_consistency" | "narrative_coherence" | "age_appropriateness" | "moral_integration" | "art_text_alignment"
+    severity: str = "medium"  # "high" | "medium" | "low"
     description: str
+
+    @field_validator("page_number", mode="before")
+    @classmethod
+    def _coerce_page_number(cls, v):  # noqa: ANN001
+        if v is None or isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            s = v.strip()
+            if not s:
+                return None
+            try:
+                return int(s)
+            except ValueError:
+                # "Cover", "All pages", "the end", etc. → whole-story issue
+                return None
+        return v
 
 
 class ReviewResult(BaseModel):
     approved: bool
     issues: list[ReviewIssue]
     revision_instructions: str  # actionable feedback for the Orchestrator
+    # Per-category pass/fail booleans force the reviewer to commit per axis
+    # rather than issue a blanket approval. Default True so older payloads
+    # (e.g. cached reviews from prior runs) keep validating.
+    character_consistency_pass: bool = True
+    narrative_coherence_pass: bool = True
+    age_appropriateness_pass: bool = True
+    moral_integration_pass: bool = True
+    art_text_alignment_pass: bool = True
 
 
 # ─────────────────────────────────────────────────────────────────────────────

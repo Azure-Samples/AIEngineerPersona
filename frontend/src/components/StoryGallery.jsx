@@ -59,6 +59,13 @@ export default function StoryGallery({ onLoadStory }) {
               {story.moral && (
                 <div className={styles.moral}>💡 {story.moral}</div>
               )}
+              {story.models_used?.length > 0 && (
+                <div className={styles.models}>
+                  {story.models_used.map(m => (
+                    <span key={m} className={styles.modelChip}>{m}</span>
+                  ))}
+                </div>
+              )}
             </div>
           </button>
         ))}

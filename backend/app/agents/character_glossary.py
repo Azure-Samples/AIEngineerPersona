@@ -17,7 +17,7 @@ from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import CharacterGlossary, StoryOutline, StoryResponse
 from ..prompts import CHARACTER_GLOSSARY_INSTRUCTIONS
-from ..utils import extract_json_from_response, record_llm_usage
+from ..utils import parse_llm_json, record_llm_usage
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +71,7 @@ class CharacterGlossaryExecutor(Executor):
 
         result = await self._agent.run(prompt)
         record_llm_usage(result)
-        raw_json = extract_json_from_response(result.text)
-        glossary = CharacterGlossary.model_validate_json(raw_json)
+        glossary = CharacterGlossary.model_validate(parse_llm_json(result.text))
 
         logger.info(
             "[CharacterGlossary] Generated %d glossary entries for '%s'",

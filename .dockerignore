@@ -1,0 +1,35 @@
+# Build context exclusions for the Children's Story Studio image.
+# Keep the build context small so `docker build` / `azd deploy` is fast.
+
+# Version control
+.git
+.gitignore
+.github
+.vscode
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+backend/.venv
+backend/.env
+
+# Node / Vite
+frontend/node_modules
+frontend/dist
+
+# Local data / artefacts
+**/.DS_Store
+**/*.log
+evals
+docs
+README.md
+*.md
+
+# Infra & deployment artefacts (not needed inside the image)
+infra
+azure.yaml
+.azure

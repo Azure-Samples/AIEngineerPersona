@@ -3,5 +3,9 @@
   "description": "True courage does not mean never feeling scared. It means helping others even when fear is still in your heart.",
   "moral": "True courage does not mean never feeling scared. It means helping others even when fear is still in your heart.",
   "id": "thomas-the-turtle-and-the-foggy-forest-rescue",
-  "cover_image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/cover.png"
+  "cover_image_url": "/api/demo-stories/thomas-the-turtle-and-the-foggy-forest-rescue/images/cover.png",
+  "models_used": [
+    "gpt-5.4",
+    "gpt-image-1.5"
+  ]
 }

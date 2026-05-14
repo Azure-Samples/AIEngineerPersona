@@ -7,7 +7,10 @@ Each page's image_url is populated before the updated draft is sent downstream.
 """
 
 import asyncio
+import base64
 import logging
+import re
+import uuid
 
 from openai import AsyncAzureOpenAI
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
@@ -15,8 +18,8 @@ from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from agent_framework import Executor, WorkflowContext, handler
 
 from ..config import settings
+from ..demo_stories import save_draft_image
 from ..models import StoryDraft
-from ..utils import extract_json_from_response
 from ..events import ProgressDetailEvent
 
 logger = logging.getLogger(__name__)
@@ -60,6 +63,44 @@ class ArtDirectorExecutor(Executor):
             draft.title,
         )
 
+        # Per-generation session id (set by StoryGenerator → Orchestrator).
+        # Falls back to a fresh uuid so revision rounds and ad-hoc invocations
+        # without an upstream session still get isolated draft folders.
+        # ``get_shared_state`` raises KeyError when the key isn't set yet, so
+        # guard the read.
+        try:
+            session_id = await ctx.get_shared_state("session_id") or uuid.uuid4().hex
+        except KeyError:
+            session_id = uuid.uuid4().hex
+
+        # Revision round (0 for the initial pass, 1+ after StoryReviewer asks
+        # for changes).  Folded into image filenames so a revision's images
+        # don't overwrite the originals in storage — that lets the saved
+        # event history accurately replay every round's illustrations.
+        try:
+            revision_round = await ctx.get_shared_state("revision_count") or 0
+        except KeyError:
+            revision_round = 0
+        revision_suffix = f".r{revision_round}" if revision_round else ""
+
+        # Canonical character descriptions (set by Orchestrator). These pin the
+        # cover's character roster — without them the image model invents
+        # extra creatures on the cover (e.g. a mouse and a cat that don't
+        # exist anywhere in the story).
+        character_descriptions: dict[str, str] = {}
+        try:
+            outline_json = await ctx.get_shared_state("outline")
+        except KeyError:
+            outline_json = None
+        if outline_json:
+            try:
+                import json as _json
+                character_descriptions = _json.loads(outline_json).get(
+                    "character_descriptions", {}
+                ) or {}
+            except Exception:
+                pass
+
         # ── Derive style reference from the first page's prompt ───────────────
         style_ref = draft.pages[0].image_prompt if draft.pages else ""
         style_hint = style_ref[:300] if len(style_ref) > 300 else style_ref
@@ -74,6 +115,22 @@ class ArtDirectorExecutor(Executor):
                     all_chars.append(c)
         chars_str = ", ".join(all_chars[:6]) if all_chars else "the main characters"
 
+        # Build a per-character description block for the cover prompt so the
+        # image model has full visual definitions and can't invent extra
+        # animals/creatures. Falls back to bare names if the outline didn't
+        # provide descriptions.
+        if character_descriptions:
+            cover_chars_block_lines = []
+            for name in all_chars[:6]:
+                desc = character_descriptions.get(name)
+                if desc:
+                    cover_chars_block_lines.append(f"  - {name}: {desc}")
+                else:
+                    cover_chars_block_lines.append(f"  - {name}")
+            cover_chars_block = "\n".join(cover_chars_block_lines)
+        else:
+            cover_chars_block = chars_str
+
         # ── Signal start of this batch (serves as revision-round pivot) ───────
         await ctx.add_event(ProgressDetailEvent(
             executor_id="art_director",
@@ -87,11 +144,17 @@ class ArtDirectorExecutor(Executor):
 
         cover_prompt = (
             f"A beautiful, full-bleed children's book cover illustration for a story titled "
-            f'"{draft.title}". The scene should prominently feature {chars_str} in a warm, '
-            f"inviting composition that captures the spirit of the story. "
+            f'"{draft.title}".\n\n'
+            f"The cover MUST feature ONLY the following characters, drawn exactly as described:\n"
+            f"{cover_chars_block}\n\n"
+            f"Compose them together in a warm, inviting scene that captures the spirit of the story. "
             f"Use the same artistic style as the interior pages: {style_hint}. "
             f"The image should feel like a classic picture book cover — colourful, engaging, "
-            f"and suitable for young children. Do NOT include any text or lettering in the image."
+            f"and suitable for young children. "
+            f"Do NOT include any other characters, animals, or living creatures of any kind — "
+            f"no extra mice, cats, birds, bunnies, bystanders, or background figures beyond the "
+            f"characters listed above. "
+            f"Do NOT include any text or lettering in the image."
         )
         end_prompt = (
             f'A beautiful children\'s book closing page illustration with the words "The End" '
@@ -140,7 +203,16 @@ class ArtDirectorExecutor(Executor):
                         output_format="png",
                     )
                     b64 = response.data[0].b64_json
-                    image_url = f"data:image/png;base64,{b64}"
+                    png_bytes = base64.b64decode(b64)
+
+                    # Persist to disk under the session's drafts folder so SSE
+                    # frames stay tiny (a URL, not a 1MB base64 blob) and the
+                    # frontend can render via plain <img src="/api/drafts/...">.
+                    # The revision suffix (e.g. ".r1") preserves earlier rounds
+                    # so the saved event history can show every iteration.
+                    label_slug = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_") or f"image_{page_number}"
+                    filename = f"{label_slug}{revision_suffix}.png"
+                    image_url = save_draft_image(session_id, filename, png_bytes)
 
                     # Store on the appropriate model field
                     if page_number == 0:
@@ -150,7 +222,7 @@ class ArtDirectorExecutor(Executor):
                     else:
                         draft.pages[page_number - 1].image_url = image_url
 
-                    logger.info("[ArtDirector] Completed image: %s", label)
+                    logger.info("[ArtDirector] Completed image: %s -> %s", label, image_url)
                     await ctx.add_event(ProgressDetailEvent(
                         executor_id="art_director",
                         detail_type="image_completed",

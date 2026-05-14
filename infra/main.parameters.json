@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environmentName": { "value": "${AZURE_ENV_NAME}" },
+    "location":        { "value": "${AZURE_LOCATION}" },
+
+    "foundryResourceGroup":             { "value": "${FOUNDRY_RESOURCE_GROUP}" },
+    "foundryAccountName":               { "value": "${FOUNDRY_ACCOUNT_NAME}" },
+    "foundryProjectEndpoint":           { "value": "${FOUNDRY_PROJECT_ENDPOINT}" },
+    "foundryModelDeploymentName":       { "value": "${FOUNDRY_MODEL_DEPLOYMENT_NAME=gpt-4o}" },
+    "foundryImageModelDeploymentName":  { "value": "${FOUNDRY_IMAGE_MODEL_DEPLOYMENT_NAME=gpt-image-1.5}" },
+
+    "speechResourceGroup":   { "value": "${SPEECH_RESOURCE_GROUP}" },
+    "speechAccountName":     { "value": "${SPEECH_ACCOUNT_NAME}" },
+    "azureSpeechRegion":     { "value": "${AZURE_SPEECH_REGION}" },
+
+    "principalId":           { "value": "${AZURE_PRINCIPAL_ID=}" }
+  }
+}

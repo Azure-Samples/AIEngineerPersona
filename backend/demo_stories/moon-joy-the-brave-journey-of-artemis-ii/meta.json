@@ -3,5 +3,9 @@
   "description": "Big dreams come true when people work together with patience, care, and respect for one another.",
   "moral": "Big dreams come true when people work together with patience, care, and respect for one another.",
   "id": "moon-joy-the-brave-journey-of-artemis-ii",
-  "cover_image_url": "/api/demo-stories/moon-joy-the-brave-journey-of-artemis-ii/images/cover.png"
+  "cover_image_url": "/api/demo-stories/moon-joy-the-brave-journey-of-artemis-ii/images/cover.png",
+  "models_used": [
+    "gpt-5.4",
+    "gpt-image-1.5"
+  ]
 }

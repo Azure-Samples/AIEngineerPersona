@@ -1,143 +1,192 @@
-"""
-demo_stories.py — helpers to enumerate and load pre-captured demo stories.
+"""demo_stories.py — façade over the configurable storage backend.
 
-Each demo story lives in:
-  backend/demo_stories/{story_id}/
-    meta.json    ← {id, title, description, moral, cover_image_url}
-    story.json   ← StoryResponse with image URLs rewritten to /api/demo-stories/{id}/images/{file}
-    events.json  ← list of SSE-style progress/detail event dicts
-    images/      ← local copies of all images
+Public API (used by main.py and the ArtDirector agent):
+
+    list_demo_stories()                        -> list[meta]
+    get_demo_story(story_id)                   -> {meta, story, events} | None
+    get_demo_image_bytes(story_id, filename)   -> bytes | None
+    save_draft_image(session_id, fname, bytes) -> str (API URL)
+    get_draft_image_bytes(session_id, fname)   -> bytes | None
+    save_demo_story(payload)                   -> story_id
+    cleanup_old_drafts(max_age_seconds=...)    -> count
+    seed_demo_stories_if_empty()               -> count
+
+The on-disk layout (or its blob-prefix equivalent) is::
+
+    {story_id}/meta.json
+    {story_id}/story.json
+    {story_id}/events.json
+    {story_id}/images/<file>
+    _drafts/{session_id}/images/<file>
+
+The actual storage (filesystem vs. Azure Blob) is selected by the
+``STORAGE_BACKEND`` environment variable; see :mod:`app.storage`.
 """
 from __future__ import annotations
 
-import json
+import base64
+import logging
+import os
+import re
 from pathlib import Path
 from typing import Any
 
-# Resolve the demo_stories directory relative to this file's location:
-# backend/app/demo_stories.py  → backend/demo_stories/
-_DEMO_ROOT = Path(__file__).parent.parent / "demo_stories"
+from .storage import get_backend
+from .config import settings
+
+logger = logging.getLogger(__name__)
 
 
-def _story_dir(story_id: str) -> Path:
-    return _DEMO_ROOT / story_id
+# ─── Public API ──────────────────────────────────────────────────────────────
 
 
 def list_demo_stories() -> list[dict[str, Any]]:
-    """Return a list of meta dicts for all available demo stories, sorted by title."""
-    metas: list[dict[str, Any]] = []
-    if not _DEMO_ROOT.is_dir():
-        return metas
-    for entry in sorted(_DEMO_ROOT.iterdir()):
-        if not entry.is_dir():
-            continue
-        meta_path = entry / "meta.json"
-        if not meta_path.exists():
-            continue
-        try:
-            meta = json.loads(meta_path.read_text(encoding="utf-8"))
-            metas.append(meta)
-        except (json.JSONDecodeError, OSError):
-            continue
-    return metas
+    return get_backend().list_demo_stories()
 
 
 def get_demo_story(story_id: str) -> dict[str, Any] | None:
-    """Return {meta, story, events} for a single demo story, or None if not found."""
-    d = _story_dir(story_id)
-    if not d.is_dir():
-        return None
-    try:
-        meta   = json.loads((d / "meta.json").read_text(encoding="utf-8"))
-        story  = json.loads((d / "story.json").read_text(encoding="utf-8"))
-        events = json.loads((d / "events.json").read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
-        return None
-    return {"meta": meta, "story": story, "events": events}
+    return get_backend().get_demo_story(story_id)
 
 
-def get_demo_image_path(story_id: str, filename: str) -> Path | None:
-    """Return the absolute Path to a demo story image file, or None if not found.
+def get_demo_image_bytes(story_id: str, filename: str) -> bytes | None:
+    return get_backend().get_demo_image_bytes(story_id, filename)
 
-    The filename is validated to prevent path traversal attacks.
+
+def save_draft_image(session_id: str, filename: str, png_bytes: bytes) -> str:
+    return get_backend().save_draft_image(session_id, filename, png_bytes)
+
+
+def get_draft_image_bytes(session_id: str, filename: str) -> bytes | None:
+    return get_backend().get_draft_image_bytes(session_id, filename)
+
+
+def cleanup_old_drafts(max_age_seconds: int = 86_400) -> int:
+    return get_backend().cleanup_old_drafts(max_age_seconds)
+
+
+def seed_demo_stories_if_empty() -> int:
+    """Seed the bundled sample stories into the backend if it has none.
+
+    Source defaults to ``backend/demo_stories`` baked into the image, but can
+    be overridden via ``SEED_DEMO_STORIES_DIR`` (the cloud Dockerfile sets
+    this).
     """
-    # Reject any path separators or parent-directory components
-    if "/" in filename or "\\" in filename or ".." in filename:
-        return None
-    image_path = _story_dir(story_id) / "images" / filename
-    if not image_path.is_file():
-        return None
-    return image_path
+    src = Path(
+        os.environ.get(
+            "SEED_DEMO_STORIES_DIR",
+            str(Path(__file__).parent.parent / "demo_stories"),
+        )
+    )
+    return get_backend().seed_if_empty(src)
 
 
 def save_demo_story(payload: dict[str, Any]) -> str:
-    """Save a story snapshot as a new demo story.
+    """Save a story snapshot.
 
-    Expects payload with: story, events, meta (id, title, description, moral).
-    Extracts base64 images from the story and saves them as separate files,
-    rewriting image_url fields to point at the /api/demo-stories/{id}/images/ endpoint.
+    The payload is shaped as ``{meta, story, events, session_id?}``.
+
+    Two payload flavours are supported:
+
+      1. **URL-based (preferred, current frontend).**  The story's image URLs
+         already point at ``/api/drafts/{session_id}/images/...`` because the
+         ArtDirector wrote each image during generation.  We promote the
+         drafts to ``{story_id}/images/`` and rewrite the URLs in the saved
+         JSON to ``/api/demo-stories/{story_id}/images/...`` — no base64
+         work, no re-encoding.
+
+      2. **Legacy data-URI (fallback).**  If a URL doesn't match the drafts
+         pattern but does start with ``data:image/...;base64,``, we decode
+         it and write the bytes ourselves.
 
     Returns the story_id.
     """
-    import base64
-    import re
+    backend = get_backend()
 
     meta = payload.get("meta", {})
     story_id = meta.get("id", "")
     if not story_id:
-        # Generate an id from the title
         title = meta.get("title", "untitled")
         story_id = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60]
         meta["id"] = story_id
+    if not story_id or "/" in story_id or "\\" in story_id or ".." in story_id:
+        raise ValueError(f"Invalid story_id: {story_id!r}")
 
-    story_dir = _story_dir(story_id)
-    images_dir = story_dir / "images"
-    images_dir.mkdir(parents=True, exist_ok=True)
+    # Stamp the meta with the deployment names of every model that participated
+    # in this generation.  Captured server-side from settings so the frontend
+    # never has to know (or be trusted with) model identities.  Stored as a
+    # plain list of strings; the Saved Stories page renders them as chips.
+    seen: set[str] = set()
+    models_used: list[str] = []
+    for name in (
+        settings.foundry_model_deployment_name,
+        settings.foundry_image_model_deployment_name,
+    ):
+        if name and name not in seen:
+            seen.add(name)
+            models_used.append(name)
+    meta["models_used"] = models_used
 
+    session_id = payload.get("session_id") or ""
     story = payload.get("story", {})
-    image_api_base = f"/api/demo-stories/{story_id}/images"
+    events = payload.get("events", [])
 
-    def _extract_and_save(data_uri: str | None, filename: str) -> str | None:
-        """Save a base64 data URI as a file and return the API URL."""
-        if not data_uri or not data_uri.startswith("data:image"):
-            return data_uri
-        match = re.match(r"data:image/(\w+);base64,(.+)", data_uri, re.DOTALL)
-        if not match:
-            return data_uri
-        ext = match.group(1)
-        b64 = match.group(2)
-        fname = f"{filename}.{ext}"
-        (images_dir / fname).write_bytes(base64.b64decode(b64))
-        return f"{image_api_base}/{fname}"
+    # Step 1: promote any draft images for this session.  No-op if there
+    # are none (e.g. the legacy data-URI path or a re-save).
+    if (
+        session_id
+        and "/" not in session_id
+        and "\\" not in session_id
+        and ".." not in session_id
+    ):
+        backend.promote_draft_to_demo_story(session_id, story_id)
 
-    # Extract cover and end images
+    drafts_prefix = f"/api/drafts/{session_id}/images/" if session_id else None
+    final_prefix = f"/api/demo-stories/{story_id}/images"
+
+    def _rewrite(url: str | None, fallback_filename: str) -> str | None:
+        """Map an image URL into its final, post-save form.
+
+        - ``/api/drafts/{sid}/images/x.png`` -> ``/api/demo-stories/{id}/images/x.png``
+        - ``data:image/...;base64,...``      -> write bytes, return final URL
+        - anything else                       -> unchanged
+        """
+        if not url:
+            return url
+        if drafts_prefix and url.startswith(drafts_prefix):
+            return f"{final_prefix}/{url[len(drafts_prefix):]}"
+        if url.startswith("data:image"):
+            match = re.match(r"data:image/(\w+);base64,(.+)", url, re.DOTALL)
+            if not match:
+                return url
+            ext, b64 = match.group(1), match.group(2)
+            fname = f"{fallback_filename}.{ext}"
+            backend.write_demo_image(story_id, fname, base64.b64decode(b64))
+            return f"{final_prefix}/{fname}"
+        return url
+
     if story.get("cover_image_url"):
-        story["cover_image_url"] = _extract_and_save(story["cover_image_url"], "cover")
+        story["cover_image_url"] = _rewrite(story["cover_image_url"], "cover")
         meta["cover_image_url"] = story["cover_image_url"]
 
     if story.get("the_end_image_url"):
-        story["the_end_image_url"] = _extract_and_save(story["the_end_image_url"], "the_end")
+        story["the_end_image_url"] = _rewrite(story["the_end_image_url"], "the_end")
 
-    # Extract page images
     for page in story.get("pages", []):
         if page.get("image_url"):
-            page["image_url"] = _extract_and_save(
+            page["image_url"] = _rewrite(
                 page["image_url"], f"page_{page['page_number']}"
             )
 
-    # Also rewrite image URLs inside events (detail events with image_completed)
-    events = payload.get("events", [])
     for evt in events:
         if evt.get("type") == "detail":
             data = evt.get("data", {})
-            if data.get("detail_type") == "image_completed" and data.get("data", {}).get("image_url"):
+            if (
+                data.get("detail_type") == "image_completed"
+                and data.get("data", {}).get("image_url")
+            ):
                 inner = data["data"]
                 label = inner.get("label", "unknown").replace(" ", "_").lower()
-                inner["image_url"] = _extract_and_save(inner["image_url"], f"evt_{label}")
+                inner["image_url"] = _rewrite(inner["image_url"], f"evt_{label}")
 
-    # Write files
-    (story_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
-    (story_dir / "story.json").write_text(json.dumps(story, indent=2), encoding="utf-8")
-    (story_dir / "events.json").write_text(json.dumps(events, indent=2), encoding="utf-8")
-
+    backend.write_demo_story(story_id, meta=meta, story=story, events=events)
     return story_id

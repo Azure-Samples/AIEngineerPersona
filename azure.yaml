@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+#
+# Azure Developer CLI (azd) project for Children's Story Studio.
+#
+# azd's built-in `services` block doesn't support deploying a custom container
+# to Azure App Service (the `docker:` block is containerapp/aks only).
+# Instead, this project deploys via a postprovision hook that runs:
+#   docker build → docker push to ACR → az webapp config container set
+#
+# Workflow:
+#   azd up        → provision (Bicep) → postprovision hook (build/push/deploy)
+#   azd provision → same flow (re-runs the hook; cheap if no infra changes)
+#
+# See docs/08-deploying-to-azure.md for one-time setup.
+
+name: childrens-story-studio
+metadata:
+  template: childrens-story-studio@1.0.0
+
+# Override `azd up` to skip the package/deploy steps (we have no `services`
+# block, so they would fail with "no package artifacts found").
+workflows:
+  up:
+    steps:
+      - azd: provision
+
+hooks:
+  postprovision:
+    posix:
+      shell: sh
+      run: ./scripts/azd-build-and-deploy.sh
+      interactive: true
+    windows:
+      shell: pwsh
+      run: |
+        Write-Error "Windows hook not implemented. Run scripts/azd-build-and-deploy.sh from WSL or a POSIX shell."
+        exit 1

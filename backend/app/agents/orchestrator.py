@@ -19,7 +19,7 @@ from ..config import settings
 from ..models import StoryRequest, StoryOutline
 from ..prompts import ORCHESTRATOR_INSTRUCTIONS
 from ..signals import RevisionSignal
-from ..utils import extract_json_from_response, record_llm_usage
+from ..utils import parse_llm_json, record_llm_usage
 from ..events import ProgressDetailEvent
 from ..wikipedia import fetch_wikipedia
 
@@ -81,6 +81,9 @@ class OrchestratorExecutor(Executor):
         # Persist the original request so revision runs can reference it
         await ctx.set_shared_state("story_request", request.model_dump_json())
         await ctx.set_shared_state("revision_count", 0)
+        # ArtDirector reads this to scope on-disk draft images per generation.
+        if request.session_id:
+            await ctx.set_shared_state("session_id", request.session_id)
 
         outline = await self._create_outline(request, revision_instructions=None, ctx=ctx)
         logger.info("[Orchestrator] Outline created: '%s' (%d pages)", outline.title, outline.target_pages)
@@ -228,8 +231,7 @@ class OrchestratorExecutor(Executor):
         ))
 
         result = await self._agent.run(prompt)
-        raw_json = extract_json_from_response(result.text)
-        outline = StoryOutline.model_validate_json(raw_json)
+        outline = StoryOutline.model_validate(parse_llm_json(result.text))
         outline.revision_instructions = revision_instructions
 
         record_llm_usage(result)

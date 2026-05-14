@@ -3,5 +3,9 @@
   "description": "Walls can separate people for a while, but courage, hope, and kindness can help bring them back together.",
   "moral": "Walls can separate people for a while, but courage, hope, and kindness can help bring them back together.",
   "id": "lilly-and-ben-on-both-sides-of-the-wall",
-  "cover_image_url": "/api/demo-stories/lilly-and-ben-on-both-sides-of-the-wall/images/cover.png"
+  "cover_image_url": "/api/demo-stories/lilly-and-ben-on-both-sides-of-the-wall/images/cover.png",
+  "models_used": [
+    "gpt-5.4",
+    "gpt-image-1.5"
+  ]
 }

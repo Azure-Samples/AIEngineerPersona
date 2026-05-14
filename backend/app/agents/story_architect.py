@@ -14,7 +14,7 @@ from azure.identity import DefaultAzureCredential
 from ..config import settings
 from ..models import StoryOutline, StoryDraft
 from ..prompts import STORY_ARCHITECT_INSTRUCTIONS
-from ..utils import extract_json_from_response, record_llm_usage
+from ..utils import parse_llm_json, record_llm_usage
 from ..events import ProgressDetailEvent
 
 logger = logging.getLogger(__name__)
@@ -64,8 +64,7 @@ class StoryArchitectExecutor(Executor):
 
         result = await self._agent.run(prompt)
         record_llm_usage(result)
-        raw_json = extract_json_from_response(result.text)
-        draft = StoryDraft.model_validate_json(raw_json)
+        draft = StoryDraft.model_validate(parse_llm_json(result.text))
 
         # Belt-and-suspenders: append a hard negative constraint to every image prompt so
         # DALL-E cannot render characters who are not present on this page, regardless of

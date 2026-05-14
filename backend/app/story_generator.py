@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import uuid
 from typing import AsyncGenerator
 
 from sse_starlette.sse import EventSourceResponse
@@ -106,6 +107,16 @@ class StoryGenerator:
         try:
             revision_count = 0
             active_executor: str | None = None
+
+            # Assign a server-side session id so any per-generation artifacts
+            # (e.g. draft image files written by ArtDirector) can be scoped
+            # to this run.  The frontend must echo this id back when saving.
+            session_id = uuid.uuid4().hex
+            request.session_id = session_id
+            yield self._sse_event(
+                "session",
+                {"session_id": session_id},
+            )
 
             # Build a fresh workflow for this request — the graph topology depends
             # on which options the user selected (bonus agents, skip reviewer, etc.).

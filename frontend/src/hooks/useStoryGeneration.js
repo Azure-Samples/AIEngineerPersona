@@ -16,6 +16,7 @@ export function useStoryGeneration() {
   const [story, setStory]             = useState(null);
   const [progress, setProgress]       = useState(INITIAL_PROGRESS);
   const [details, setDetails]         = useState([]);
+  const [sessionId, setSessionId]     = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError]             = useState(null);
   const abortControllerRef            = useRef(null);
@@ -25,6 +26,7 @@ export function useStoryGeneration() {
     // shows it working immediately — before the first SSE event arrives.
     setStory(null);
     setDetails([]);
+    setSessionId(null);
     setProgress([{
       executor_id: 'orchestrator',
       status: 'started',
@@ -70,7 +72,7 @@ export function useStoryGeneration() {
         if (!raw || raw === '[DONE]') return;
         let data;
         try { data = JSON.parse(raw); } catch { return; }
-        handleSsePayload(currentEvent, data, setProgress, setDetails, setStory, setError);
+        handleSsePayload(currentEvent, data, setProgress, setDetails, setStory, setError, setSessionId);
       };
 
       while (true) {
@@ -118,6 +120,7 @@ export function useStoryGeneration() {
     setStory(null);
     setProgress([]);
     setDetails([]);
+    setSessionId(null);
     setError(null);
   }, [cancel]);
 
@@ -154,7 +157,7 @@ export function useStoryGeneration() {
     }
   }, []);
 
-  return { story, progress, details, isGenerating, error, generate, cancel, reset, loadDemoStory };
+  return { story, progress, details, sessionId, isGenerating, error, generate, cancel, reset, loadDemoStory };
 }
 
 // ─── SSE payload handler ──────────────────────────────────────────────────────
@@ -164,9 +167,15 @@ export function useStoryGeneration() {
  * @param {string} eventType  - value from the SSE `event:` line
  * @param {object} data       - already JSON.parsed value from the SSE `data:` line
  */
-function handleSsePayload(eventType, data, setProgress, setDetails, setStory, setError) {
+function handleSsePayload(eventType, data, setProgress, setDetails, setStory, setError, setSessionId) {
 
   switch (eventType) {
+    case 'session':
+      // First event of the stream — server-assigned id we must echo back
+      // when saving so the backend can promote the on-disk drafts folder.
+      if (data.session_id) setSessionId(data.session_id);
+      break;
+
     case 'progress':
       setProgress(prev => {
         const existingIdx = prev.findIndex(p => p.executor_id === data.executor_id && p.status === 'started');

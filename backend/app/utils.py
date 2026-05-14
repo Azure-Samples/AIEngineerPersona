@@ -28,6 +28,21 @@ def extract_json_from_response(text: str) -> str:
     return text.strip()
 
 
+def parse_llm_json(text: str) -> Any:
+    """
+    Extract and parse JSON from an LLM response leniently.
+
+    Models occasionally emit JSON with unescaped control characters (raw
+    newlines, tabs) inside string values. Strict JSON parsers — including
+    Pydantic's ``model_validate_json`` — reject these. ``json.loads`` with
+    ``strict=False`` tolerates them, so we use it as the universal entry point
+    for parsing model output and feed the resulting dict/list into
+    ``Model.model_validate(...)`` at the call site.
+    """
+    raw = extract_json_from_response(text)
+    return json.loads(raw, strict=False)
+
+
 def build_system_and_user_messages(system: str, user: str) -> list[dict]:
     """Build a minimal chat message list for use with Agent.run()."""
     return [
