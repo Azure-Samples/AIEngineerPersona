@@ -294,7 +294,7 @@ function ReviewerCallList({ promptEvt, callEvts, imageUrlByPageNumber = {} }) {
     }
     // completed
     if (row.passed && row.issue_count === 0) {
-      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallClean}`}>✅ clean</span>;
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallClean}`}>✅ passed</span>;
     }
     return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallIssues}`}>⚠️ {row.issue_count} {row.issue_count === 1 ? 'issue' : 'issues'}</span>;
   };
