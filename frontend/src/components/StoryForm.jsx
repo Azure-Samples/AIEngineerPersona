@@ -117,80 +117,6 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
 
       <form onSubmit={handleSubmit}>
 
-        {/* ── Wikipedia RAG section (collapsible, collapsed by default) ─── */}
-        <button
-          type="button"
-          className={`${styles.collapsibleHeader} ${wikiOpen ? styles.collapsibleHeaderOpen : ''}`}
-          onClick={() => setWikiOpen(o => !o)}
-          aria-expanded={wikiOpen}
-          aria-controls="wikipedia-section"
-        >
-          <span className={styles.collapsibleTitle}>🌐 Wikipedia Topic (optional)</span>
-          <span className={styles.collapsibleHint}>
-            {wikiOpen ? 'Hide' : 'Base your story on a real-world topic'}
-          </span>
-          <span className={styles.collapsibleChevron} aria-hidden="true">▾</span>
-        </button>
-
-        {wikiOpen && (
-          <div id="wikipedia-section" className={styles.collapsibleBody}>
-            <div className={styles.field}>
-              <label className={styles.label}>Real-world Topic</label>
-              <input
-                className={styles.input}
-                type="text"
-                placeholder="e.g. Marie Curie, Moon landing, Photosynthesis"
-                value={form.wikipedia_topic}
-                onChange={handleField('wikipedia_topic')}
-              />
-              <p className={styles.hint}>
-                Enter a topic and we'll pull real facts from Wikipedia to create or inspire the story.
-              </p>
-            </div>
-
-            <div className={styles.field}>
-              <label className={`${styles.label} ${!hasWikiTopic ? styles.labelDisabled : ''}`}>How should Wikipedia content be used?</label>
-              <div className={`${styles.modeCards} ${!hasWikiTopic ? styles.modeCardsDisabled : ''}`}>
-
-                  <label className={`${styles.modeCard} ${form.wikipedia_mode === 'full' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
-                    <input
-                      type="radio"
-                      name="wikipedia_mode"
-                      value="full"
-                      checked={form.wikipedia_mode === 'full'}
-                      onChange={handleField('wikipedia_mode')}
-                      className={styles.modeRadio}
-                    />
-                    <span className={styles.modeIcon}>📖</span>
-                    <span className={styles.modeLabel}>Full Wikipedia Story</span>
-                    <span className={styles.modeDesc}>
-                      The AI creates the <strong>entire story</strong> — characters, setting, moral,
-                      and plot — from the Wikipedia article. The fields below will be ignored.
-                    </span>
-                  </label>
-
-                  <label className={`${styles.modeCard} ${form.wikipedia_mode === 'influence' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
-                    <input
-                      type="radio"
-                      name="wikipedia_mode"
-                      value="influence"
-                      checked={form.wikipedia_mode === 'influence'}
-                      onChange={handleField('wikipedia_mode')}
-                      className={styles.modeRadio}
-                    />
-                    <span className={styles.modeIcon}>✨</span>
-                    <span className={styles.modeLabel}>Wikipedia-Influenced Story</span>
-                    <span className={styles.modeDesc}>
-                      Your characters, setting, and moral are kept — Wikipedia facts are woven in
-                      as <strong>background inspiration</strong>.
-                    </span>
-                  </label>
-
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* ── Surprise Me (auto-fill text fields with an LLM-generated seed) ── */}
         <div className={styles.surpriseRow}>
           <button
@@ -400,6 +326,82 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             </span>
           </label>
         </div>
+
+        {/* ── Wikipedia RAG section (optional, collapsible — collapsed by default) ── */}
+        <hr className={styles.divider} />
+
+        <button
+          type="button"
+          className={`${styles.collapsibleHeader} ${wikiOpen ? styles.collapsibleHeaderOpen : ''}`}
+          onClick={() => setWikiOpen(o => !o)}
+          aria-expanded={wikiOpen}
+          aria-controls="wikipedia-section"
+        >
+          <span className={styles.collapsibleTitle}>🌐 Wikipedia Topic (optional)</span>
+          <span className={styles.collapsibleHint}>
+            {wikiOpen ? 'Hide' : 'Base your story on a real-world topic'}
+          </span>
+          <span className={styles.collapsibleChevron} aria-hidden="true">▾</span>
+        </button>
+
+        {wikiOpen && (
+          <div id="wikipedia-section" className={styles.collapsibleBody}>
+            <div className={styles.field}>
+              <label className={styles.label}>Real-world Topic</label>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="e.g. Marie Curie, Moon landing, Photosynthesis"
+                value={form.wikipedia_topic}
+                onChange={handleField('wikipedia_topic')}
+              />
+              <p className={styles.hint}>
+                Enter a topic and we'll pull real facts from Wikipedia to create or inspire the story.
+              </p>
+            </div>
+
+            <div className={styles.field}>
+              <label className={`${styles.label} ${!hasWikiTopic ? styles.labelDisabled : ''}`}>How should Wikipedia content be used?</label>
+              <div className={`${styles.modeCards} ${!hasWikiTopic ? styles.modeCardsDisabled : ''}`}>
+
+                  <label className={`${styles.modeCard} ${form.wikipedia_mode === 'full' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
+                    <input
+                      type="radio"
+                      name="wikipedia_mode"
+                      value="full"
+                      checked={form.wikipedia_mode === 'full'}
+                      onChange={handleField('wikipedia_mode')}
+                      className={styles.modeRadio}
+                    />
+                    <span className={styles.modeIcon}>📖</span>
+                    <span className={styles.modeLabel}>Full Wikipedia Story</span>
+                    <span className={styles.modeDesc}>
+                      The AI creates the <strong>entire story</strong> — characters, setting, moral,
+                      and plot — from the Wikipedia article. The fields above will be ignored.
+                    </span>
+                  </label>
+
+                  <label className={`${styles.modeCard} ${form.wikipedia_mode === 'influence' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
+                    <input
+                      type="radio"
+                      name="wikipedia_mode"
+                      value="influence"
+                      checked={form.wikipedia_mode === 'influence'}
+                      onChange={handleField('wikipedia_mode')}
+                      className={styles.modeRadio}
+                    />
+                    <span className={styles.modeIcon}>✨</span>
+                    <span className={styles.modeLabel}>Wikipedia-Influenced Story</span>
+                    <span className={styles.modeDesc}>
+                      Your characters, setting, and moral are kept — Wikipedia facts are woven in
+                      as <strong>background inspiration</strong>.
+                    </span>
+                  </label>
+
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Submit ────────────────────────────────────────────────── */}
         <div className={styles.submitRow}>
