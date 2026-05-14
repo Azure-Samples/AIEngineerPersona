@@ -148,10 +148,32 @@ REVIEW THE TEXT *AND* THE IMAGES. Many issues only show up in the rendered art:
 
 REVIEW CHECKLIST — set the matching `<category>_pass` boolean to false if the category fails:
 
+ABSOLUTE RULE — DO NOT COMMENT ON FACE / BODY VISIBILITY IN ANY IMAGE:
+   You are FORBIDDEN from raising any issue — under any category, at any
+   severity, in any image (cover, any story page, or the "the end" image) —
+   that complains about a character's face or body being:
+     • obscured, blocked, covered, hidden, partially visible, indistinct,
+       blurred, soft, hazy, faded, in shadow, washed out, or
+     • blocked by ANY shape, rectangle, block, panel, overlay, frame,
+       border, vignette, fog patch, lighting effect, or any other element.
+   You may NOT use the words "obscured", "blocked", "covered", "opaque
+   block/rectangle/panel", "not fully visible", "not clearly recognizable",
+   "face is hidden", or any equivalent phrasing in any issue description.
+   These complaints are out of scope for this reviewer. This rule overrides
+   every other rule in this prompt and applies to character_consistency,
+   art_text_alignment, and every other category. If you believe a face or
+   body is obscured, simply do not raise the issue and move on. Trust that
+   the rendered images are acceptable as they are.
+
 1. CHARACTER CONSISTENCY  → character_consistency_pass
    - Character names spelled identically on every page.
-   - Each named character LOOKS the same across all pages they appear in (color, clothing,
-     species, distinguishing features). Compare images side by side mentally.
+   - Each named character is drawn as the SAME species, color, and
+     distinguishing features across pages (e.g. Benny is a brown bunny on
+     every page he appears, never a fox or a different color). This bullet
+     is ONLY about cross-page DRIFT in the character's design — NOT about
+     whether the face/body is visible or sharp in any individual image.
+     Per the absolute rule above, you may not flag a character as
+     "not recognizable" because the face is obscured, blurred, or covered.
    - Image_prompts (and the rendered images) feature only characters from the canonical
      list as prominent figures. Anonymous background figures (crowds, townspeople, neighbors,
      soldiers, celebrating people) are fine when the narrative calls for them. A NEW named
@@ -177,23 +199,15 @@ REVIEW CHECKLIST — set the matching `<category>_pass` boolean to false if the 
 5. ART-TEXT ALIGNMENT  → art_text_alignment_pass
    - The actual rendered image on each page matches the page's narrative text. If the
      text says "Benny is hiding behind the rock," Benny should not be standing in the open.
-   - The named characters in characters_present appear in the image as recognizable figures.
-     They do NOT need to be perfectly centered, fully facing the camera, or have an
-     unobstructed face. Tilted heads, profile views, partial occlusion by foreground
-     elements (fog, leaves, other characters), characters looking away from the camera,
-     AND PAINTERLY / STYLISTIC EFFECTS that soften, blur, or partially obscure faces
-     (motion blur, soft focus, atmospheric haze, fog-density, watercolor wash that
-     diffuses features, stylized simplification, dappled lighting, shadow falling
-     across part of the face) are ALL normal storybook-illustration choices and MUST
-     NOT be flagged. As long as you can tell which named character is which from
-     their silhouette, color palette, clothing, or accessories, the rendering is
-     acceptable — even if the face itself is soft, blurred, or partly hidden.
+     This is about story-action contradictions only. Per the absolute rule at the top
+     of this checklist, you may NOT flag whether characters are visible, centered,
+     unobscured, or sharply rendered. Composition, framing, occlusion, blur, and any
+     concern about "can I see the face / body clearly" are entirely out of scope.
    - Emotional tone of the image is in the right ballpark — a sad scene shouldn't feel
      joyful, a joyful scene shouldn't feel grim. Subtle expression differences are fine.
-     Do NOT flag because a character's expression "could be more expressive" or because
-     a face is partially obscured. Only flag emotion mismatches when the image actively
-     contradicts the text (e.g. text says "everyone laughed" and the image shows everyone
-     crying).
+     Do NOT flag because a character's expression "could be more expressive". Only flag
+     emotion mismatches when the image actively contradicts the text (e.g. text says
+     "everyone laughed" and the image shows everyone crying).
    - Text rendered inside images (signs, books, speech bubbles, dialogue lettering)
      is acceptable as long as it stays thematically aligned with what the page text
      describes — paraphrases, shortened versions, or rewordings of the page's
@@ -207,14 +221,12 @@ REVIEW CHECKLIST — set the matching `<category>_pass` boolean to false if the 
      illustration and should NOT be flagged as mismatches.
 
 DO NOT FLAG (these are normal illustration choices, not failures):
-   - A character's face is tilted, in profile, partially obscured by fog/leaves/other
-     elements, or oriented away from the camera.
-   - A character's face is softened, blurred, hazy, in shadow, or partially covered by
-     painterly / atmospheric effects (motion blur, soft focus, fog, mist, watercolor
-     diffusion, stylized simplification, dappled or low light). These are artistic
-     rendering choices, not character-recognizability failures. Only flag when the
-     character cannot be identified at all — not when the face is "less crisp than it
-     could be."
+   - ANYTHING about a character's face or body being obscured, blocked, covered,
+     hidden, partially visible, indistinct, blurred, soft, hazy, faded, in shadow,
+     or "not fully recognizable" — in ANY image, under ANY category. This is
+     restated from the absolute rule at the top of the checklist because the
+     reviewer has historically tried to sneak this complaint in under
+     art_text_alignment, character_consistency, and other categories. Do not.
    - A character is positioned to the side of the scene rather than the center.
    - The image is "less expressive than it could be" — subjective polish is not a failure.
    - Minor differences in shading, brush style, or composition between pages, as long as
