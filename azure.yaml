@@ -2,36 +2,68 @@
 #
 # Azure Developer CLI (azd) project for Children's Story Studio.
 #
-# azd's built-in `services` block doesn't support deploying a custom container
-# to Azure App Service (the `docker:` block is containerapp/aks only).
-# Instead, this project deploys via a postprovision hook that runs:
-#   docker build → docker push to ACR → az webapp config container set
+# Container Apps deployment — mirrors the structure of the sibling
+# ai-marketing-campaign repo. The Bicep entrypoint (infra/main.bicep) is
+# subscription-scoped and creates the resource group itself, so a fresh
+# environment is a single `azd up` away.
 #
-# Workflow:
-#   azd up        → provision (Bicep) → postprovision hook (build/push/deploy)
-#   azd provision → same flow (re-runs the hook; cheap if no infra changes)
+# First-time setup (per environment):
+#   azd env new zavastory
+#   azd env set AZURE_LOCATION eastus2
+#   azd env set AZURE_FOUNDRY_RESOURCE_ID /subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.CognitiveServices/accounts/<account>
+#   azd env set AZURE_SPEECH_RESOURCE_ID  /subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.CognitiveServices/accounts/<account>
+#   azd env set AZURE_SPEECH_REGION       eastus2
+#   azd env set AZURE_STORAGE_ACCOUNT_NAME stzavastory<random6>
+#   azd env set FOUNDRY_PROJECT_ENDPOINT  https://<account>.services.ai.azure.com/
+#   azd up
 #
-# See docs/08-deploying-to-azure.md for one-time setup.
+# Optional: Microsoft Entra Easy Auth in front of the app
+#   bash infra/scripts/create_entra_app_reg.sh \
+#       --fqdn $(azd env get-value SERVICE_APP_FQDN)
+#   azd env set ENABLE_ENTRA_AUTH true
+#   azd env set ENTRA_CLIENT_ID     <from script>
+#   azd env set ENTRA_CLIENT_SECRET <from script>
+#   azd env set ENTRA_TENANT_ID     <from script>
+#   azd provision
 
 name: childrens-story-studio
 metadata:
   template: childrens-story-studio@1.0.0
 
-# Override `azd up` to skip the package/deploy steps (we have no `services`
-# block, so they would fail with "no package artifacts found").
-workflows:
-  up:
-    steps:
-      - azd: provision
+services:
+  app:
+    project: .
+    language: docker
+    host: containerapp
+    docker:
+      path: ./Dockerfile
+      # Container Apps runs amd64; build with the right platform so we don't
+      # accidentally push an arm64 image from a Mac dev box. `remoteBuild: true`
+      # offloads the build to ACR Tasks so a local Docker daemon is not
+      # required and platform headaches go away entirely.
+      platform: linux/amd64
+      remoteBuild: true
+    # Bind to the Container App created by Bicep. The Bicep output
+    # SERVICE_APP_NAME holds the resource name (default: <env>-app).
+    resourceName: ${SERVICE_APP_NAME}
 
 hooks:
   postprovision:
     posix:
       shell: sh
-      run: ./scripts/azd-build-and-deploy.sh
-      interactive: true
+      run: |
+        echo "[postprovision] Provision complete."
+        echo "[postprovision] App will self-seed demo stories on first boot via seed_demo_stories_if_empty()."
+        echo "[postprovision] App URL: ${SERVICE_APP_URI}"
+        if [ "${ENTRA_AUTH_ENABLED}" = "True" ] || [ "${ENTRA_AUTH_ENABLED}" = "true" ]; then
+            echo "[postprovision] Entra Easy Auth ENABLED. Login URL: ${LOGIN_URL}"
+        fi
     windows:
       shell: pwsh
       run: |
-        Write-Error "Windows hook not implemented. Run scripts/azd-build-and-deploy.sh from WSL or a POSIX shell."
-        exit 1
+        Write-Host "[postprovision] Provision complete."
+        Write-Host "[postprovision] App will self-seed demo stories on first boot via seed_demo_stories_if_empty()."
+        Write-Host "[postprovision] App URL: $env:SERVICE_APP_URI"
+        if ($env:ENTRA_AUTH_ENABLED -eq "True" -or $env:ENTRA_AUTH_ENABLED -eq "true") {
+            Write-Host "[postprovision] Entra Easy Auth ENABLED. Login URL: $env:LOGIN_URL"
+        }
