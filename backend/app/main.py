@@ -151,6 +151,22 @@ async def _storage_startup() -> None:
         logger.exception("Failed to clean up draft folders on startup")
 
 
+@app.on_event("startup")
+async def _foundry_agents_startup() -> None:
+    """When AGENT_HOSTING_MODE=foundry, validate that every expected
+    Foundry agent name resolves to exactly one agent in the project. We
+    intentionally let exceptions propagate so the process exits at boot
+    instead of nondeterministically failing requests later — that is the
+    desired fast-fail UX for this mode. In `local` mode this is a no-op.
+    """
+    if settings.agent_hosting_mode != "foundry":
+        return
+
+    from .foundry_agents import validate_foundry_agents  # local import keeps `local` cold path light
+
+    await validate_foundry_agents()
+
+
 @app.get("/api/demo-stories")
 async def demo_stories_list() -> list:
     """Return metadata for all available demo stories."""

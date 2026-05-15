@@ -20,10 +20,8 @@ import random
 import secrets
 
 from agent_framework import Agent
-from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
 
-from .config import settings
+from .agent_factory import build_chat_agent, run_structured
 from .models import StorySuggestion
 from .prompts import STORY_SUGGESTION_INSTRUCTIONS
 from .utils import record_llm_usage
@@ -105,25 +103,20 @@ class StorySuggestionService:
     """Single-method service used by the FastAPI endpoint."""
 
     def __init__(self) -> None:
-        self._agent = Agent(
-            client=OpenAIChatClient(
-                model=settings.foundry_model_deployment_name,
-                azure_endpoint=settings.foundry_project_endpoint,
-                credential=DefaultAzureCredential(),
-            ),
-            instructions=STORY_SUGGESTION_INSTRUCTIONS,
+        self._agent = build_chat_agent(
             name="StorySuggestionAgent",
+            instructions=STORY_SUGGESTION_INSTRUCTIONS,
         )
 
     async def suggest(self) -> StorySuggestion:
         prompt = _build_inspiration_prompt()
         logger.info("[Suggestion] Generating new story seed…")
-        result = await self._agent.run(
+        result, suggestion = await run_structured(
+            self._agent,
             prompt,
-            options={"response_format": StorySuggestion},
+            response_format=StorySuggestion,
         )
         record_llm_usage(result)
-        suggestion: StorySuggestion = result.value
         logger.info(
             "[Suggestion] Suggested main_character=%r, setting=%r",
             suggestion.main_character,

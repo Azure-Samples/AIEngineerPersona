@@ -15,12 +15,28 @@ python-dotenv>=1.0.0
 # `agent-framework-azure-ai` distribution was retired). Pinning the umbrella
 # `agent-framework-core` gets the workflow runtime; `agent-framework-openai`
 # gets the OpenAIChatClient that wraps AsyncOpenAI / AsyncAzureOpenAI.
+# `agent-framework-foundry` adds the FoundryAgent / FoundryChatClient classes
+# used when AGENT_HOSTING_MODE=foundry (see docs/09-guide-foundry-hosted-agents.md).
 agent-framework-core==1.3.0
 agent-framework-openai==1.3.0
+agent-framework-foundry==1.3.0
 
 # Azure auth & OpenAI client
 azure-identity>=1.21.0
 openai>=1.99.0
+
+# Microsoft Foundry control-plane SDK. Imported transitively by
+# agent-framework-foundry, but also imported directly by
+# `app.scripts.provision_foundry_agents` and `app.foundry_agents` for agent
+# CRUD and existence checks. Declared explicitly so direct imports stay
+# resilient if the agent-framework-foundry transitive ever changes.
+azure-ai-projects>=2.1.0,<3
+
+# Async HTTP transport for azure-core. Required when AGENT_HOSTING_MODE=foundry
+# because both `FoundryAgent` and `AIProjectClient.aio` instantiate the async
+# pipeline at construction time, which imports aiohttp eagerly. Harmless in
+# `local` mode (just an extra wheel on disk).
+aiohttp>=3.9.0
 
 # Azure Speech SDK (TTS)
 azure-cognitiveservices-speech>=1.40.0

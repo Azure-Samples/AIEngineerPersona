@@ -43,9 +43,8 @@ from agent_framework import (
     WorkflowContext,
     handler,
 )
-from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
 
+from ..agent_factory import build_chat_agent, run_structured
 from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import (
@@ -103,22 +102,19 @@ class StoryReviewerExecutor(Executor):
         )
 
         # Bursting through Azure OpenAI RPM limits would amplify retries and
-        # latency; cap the number of concurrent reviewer subcalls.
-        self._semaphore = asyncio.Semaphore(
-            max(1, settings.story_reviewer_max_concurrent_calls)
-        )
+        # latency; cap the number of concurrent reviewer subcalls. Foundry-
+        # hosted agents add per-call thread/session creation overhead, so we
+        # use a separate (lower) cap when in foundry mode to avoid hosted-
+        # agent rate limits.
+        if settings.agent_hosting_mode == "foundry":
+            cap = settings.foundry_reviewer_max_concurrent_calls
+        else:
+            cap = settings.story_reviewer_max_concurrent_calls
+        self._semaphore = asyncio.Semaphore(max(1, cap))
 
     @staticmethod
     def _build_agent(instructions: str, name: str) -> Agent:
-        return Agent(
-            client=OpenAIChatClient(
-                model=settings.foundry_model_deployment_name,
-                azure_endpoint=settings.foundry_project_endpoint,
-                credential=DefaultAzureCredential(),
-            ),
-            instructions=instructions,
-            name=name,
-        )
+        return build_chat_agent(name=name, instructions=instructions)
 
     @handler
     async def handle_illustrated_draft(
@@ -419,20 +415,18 @@ class StoryReviewerExecutor(Executor):
         ))
         try:
             async with self._semaphore:
-                result = await agent.run(
+                result, parsed = await run_structured(
+                    agent,
                     message,
-                    options={
-                        "response_format": response_format,
-                        # See orchestrator.py — bump max_tokens so reasoning-
-                        # model internal tokens don't truncate the issues-list
-                        # JSON. Reviewer outputs are small but the
-                        # cross-page-consistency call accumulates issues across
-                        # 8–10 pages so a generous cap is cheap insurance.
-                        "max_tokens": 8000,
-                    },
+                    response_format=response_format,
+                    # See orchestrator.py — bump max_tokens so reasoning-
+                    # model internal tokens don't truncate the issues-list
+                    # JSON. Reviewer outputs are small but the
+                    # cross-page-consistency call accumulates issues across
+                    # 8–10 pages so a generous cap is cheap insurance.
+                    max_tokens=8000,
                 )
             record_llm_usage(result)
-            parsed = result.value
             passed = self._is_call_passed(parsed)
             issues = list(getattr(parsed, "issues", []))
             await ctx.add_event(ProgressDetailEvent(

@@ -9,11 +9,10 @@ StoryArchitectExecutor.
 import logging
 from typing import Optional
 
-from agent_framework import Agent, Executor, WorkflowContext, handler
-from agent_framework.openai import OpenAIChatClient
+from agent_framework import Executor, WorkflowContext, handler
 from opentelemetry import trace
-from azure.identity import DefaultAzureCredential
 
+from ..agent_factory import build_chat_agent, run_structured
 from ..config import settings
 from ..models import StoryRequest, StoryOutline, StoryOutlineDraft
 from ..prompts import ORCHESTRATOR_INSTRUCTIONS
@@ -33,14 +32,9 @@ class OrchestratorExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="orchestrator")
-        self._agent = Agent(
-            client=OpenAIChatClient(
-                model=settings.foundry_model_deployment_name,
-                azure_endpoint=settings.foundry_project_endpoint,
-                credential=DefaultAzureCredential(),
-            ),
-            instructions=ORCHESTRATOR_INSTRUCTIONS,
+        self._agent = build_chat_agent(
             name="OrchestratorAgent",
+            instructions=ORCHESTRATOR_INSTRUCTIONS,
         )
 
     # ─── Initial run ──────────────────────────────────────────────────────────
@@ -229,25 +223,23 @@ class OrchestratorExecutor(Executor):
             detail_data={"prompt": prompt, "is_revision": revision_instructions is not None},
         ))
 
-        result = await self._agent.run(
+        result, draft = await run_structured(
+            self._agent,
             prompt,
-            options={
-                "response_format": StoryOutlineDraft,
-                # gpt-5.x is a reasoning model — give the response budget enough
-                # headroom for BOTH internal reasoning tokens AND the structured
-                # JSON output. Without an explicit cap the SDK default leaves
-                # only a few hundred output tokens after reasoning, which
-                # truncates the JSON mid-string and throws Pydantic
-                # `Invalid JSON: EOF while parsing` errors. 16k is comfortably
-                # above the largest legitimate StoryOutlineDraft we've seen.
-                "max_tokens": 16000,
-            },
+            response_format=StoryOutlineDraft,
+            # gpt-5.x is a reasoning model — give the response budget enough
+            # headroom for BOTH internal reasoning tokens AND the structured
+            # JSON output. Without an explicit cap the SDK default leaves
+            # only a few hundred output tokens after reasoning, which
+            # truncates the JSON mid-string and throws Pydantic
+            # `Invalid JSON: EOF while parsing` errors. 16k is comfortably
+            # above the largest legitimate StoryOutlineDraft we've seen.
+            max_tokens=16000,
         )
         record_llm_usage(result)
         # The model emits a StoryOutlineDraft (character_descriptions is a list
         # of {name, description}). Convert to StoryOutline (dict[str,str]) so
         # downstream executors keep their existing dict-based access pattern.
-        draft: StoryOutlineDraft = result.value
         outline = StoryOutline(
             title=draft.title,
             target_pages=draft.target_pages,

@@ -7,11 +7,9 @@ narrative text + image prompts for every page, producing a StoryDraft.
 
 import logging
 
-from agent_framework import Agent, Executor, WorkflowContext, handler
-from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
+from agent_framework import Executor, WorkflowContext, handler
 
-from ..config import settings
+from ..agent_factory import build_chat_agent, run_structured
 from ..models import StoryArchitectOutput, StoryDraft, StoryOutline, StoryPage
 from ..prompts import STORY_ARCHITECT_INSTRUCTIONS, get_art_style_phrase
 from ..utils import record_llm_usage
@@ -28,14 +26,9 @@ class StoryArchitectExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="story_architect")
-        self._agent = Agent(
-            client=OpenAIChatClient(
-                model=settings.foundry_model_deployment_name,
-                azure_endpoint=settings.foundry_project_endpoint,
-                credential=DefaultAzureCredential(),
-            ),
-            instructions=STORY_ARCHITECT_INSTRUCTIONS,
+        self._agent = build_chat_agent(
             name="StoryArchitectAgent",
+            instructions=STORY_ARCHITECT_INSTRUCTIONS,
         )
 
     @handler
@@ -62,17 +55,16 @@ class StoryArchitectExecutor(Executor):
             detail_data={"prompt": prompt, "title": outline.title, "page_count": outline.target_pages},
         ))
 
-        result = await self._agent.run(
+        result, output = await run_structured(
+            self._agent,
             prompt,
-            options={
-                "response_format": StoryArchitectOutput,
-                # See orchestrator.py for context — gpt-5.x reasoning tokens
-                # eat the default response budget and truncate the JSON mid-
-                # string. The architect's output is the largest in the workflow
-                # (full text + scene_description + image_prompt for 8–10 pages
-                # ≈ 8–12k JSON chars), so cap it generously.
-                "max_tokens": 24000,
-            },
+            response_format=StoryArchitectOutput,
+            # See orchestrator.py for context — gpt-5.x reasoning tokens
+            # eat the default response budget and truncate the JSON mid-
+            # string. The architect's output is the largest in the workflow
+            # (full text + scene_description + image_prompt for 8–10 pages
+            # ≈ 8–12k JSON chars), so cap it generously.
+            max_tokens=24000,
         )
         record_llm_usage(result)
 
@@ -80,7 +72,6 @@ class StoryArchitectExecutor(Executor):
         # runtime StoryDraft so downstream executors (ArtDirector, Reviewer,
         # FinalAssembly) can fill in image_url / cover_image_url /
         # the_end_image_url as they run.
-        output: StoryArchitectOutput = result.value
         draft = StoryDraft(
             title=output.title,
             pages=[StoryPage(**page.model_dump()) for page in output.pages],

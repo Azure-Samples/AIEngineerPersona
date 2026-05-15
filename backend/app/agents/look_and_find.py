@@ -8,11 +8,9 @@ Produces a LookAndFindActivity result forwarded to FinalAssemblyExecutor.
 
 import logging
 
-from agent_framework import Agent, Executor, WorkflowContext, handler
-from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
+from agent_framework import Executor, WorkflowContext, handler
 
-from ..config import settings
+from ..agent_factory import build_chat_agent, run_structured
 from ..events import ProgressDetailEvent
 from ..models import LookAndFindActivity, StoryResponse
 from ..prompts import LOOK_AND_FIND_INSTRUCTIONS
@@ -29,14 +27,9 @@ class LookAndFindActivityExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="look_and_find")
-        self._agent = Agent(
-            client=OpenAIChatClient(
-                model=settings.foundry_model_deployment_name,
-                azure_endpoint=settings.foundry_project_endpoint,
-                credential=DefaultAzureCredential(),
-            ),
-            instructions=LOOK_AND_FIND_INSTRUCTIONS,
+        self._agent = build_chat_agent(
             name="LookAndFindActivityAgent",
+            instructions=LOOK_AND_FIND_INSTRUCTIONS,
         )
 
     @handler
@@ -59,17 +52,15 @@ class LookAndFindActivityExecutor(Executor):
             detail_data={"prompt": prompt, "title": story.title},
         ))
 
-        result = await self._agent.run(
+        result, activity = await run_structured(
+            self._agent,
             prompt,
-            options={
-                "response_format": LookAndFindActivity,
-                # See orchestrator.py — bump max_tokens so reasoning-model
-                # internal tokens don't truncate the JSON output mid-string.
-                "max_tokens": 8000,
-            },
+            response_format=LookAndFindActivity,
+            # See orchestrator.py — bump max_tokens so reasoning-model
+            # internal tokens don't truncate the JSON output mid-string.
+            max_tokens=8000,
         )
         record_llm_usage(result)
-        activity: LookAndFindActivity = result.value
 
         logger.info(
             "[LookAndFind] Selected %d items to find for '%s'",

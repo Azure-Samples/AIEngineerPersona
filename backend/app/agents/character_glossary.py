@@ -8,11 +8,9 @@ Produces a CharacterGlossary result forwarded to FinalAssemblyExecutor.
 
 import logging
 
-from agent_framework import Agent, Executor, WorkflowContext, handler
-from agent_framework.openai import OpenAIChatClient
-from azure.identity import DefaultAzureCredential
+from agent_framework import Executor, WorkflowContext, handler
 
-from ..config import settings
+from ..agent_factory import build_chat_agent, run_structured
 from ..events import ProgressDetailEvent
 from ..models import CharacterGlossary, StoryOutline, StoryResponse
 from ..prompts import CHARACTER_GLOSSARY_INSTRUCTIONS
@@ -29,14 +27,9 @@ class CharacterGlossaryExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="character_glossary")
-        self._agent = Agent(
-            client=OpenAIChatClient(
-                model=settings.foundry_model_deployment_name,
-                azure_endpoint=settings.foundry_project_endpoint,
-                credential=DefaultAzureCredential(),
-            ),
-            instructions=CHARACTER_GLOSSARY_INSTRUCTIONS,
+        self._agent = build_chat_agent(
             name="CharacterGlossaryAgent",
+            instructions=CHARACTER_GLOSSARY_INSTRUCTIONS,
         )
 
     @handler
@@ -68,17 +61,15 @@ class CharacterGlossaryExecutor(Executor):
             detail_data={"prompt": prompt, "title": story.title},
         ))
 
-        result = await self._agent.run(
+        result, glossary = await run_structured(
+            self._agent,
             prompt,
-            options={
-                "response_format": CharacterGlossary,
-                # See orchestrator.py — bump max_tokens so reasoning-model
-                # internal tokens don't truncate the JSON output mid-string.
-                "max_tokens": 8000,
-            },
+            response_format=CharacterGlossary,
+            # See orchestrator.py — bump max_tokens so reasoning-model
+            # internal tokens don't truncate the JSON output mid-string.
+            max_tokens=8000,
         )
         record_llm_usage(result)
-        glossary: CharacterGlossary = result.value
 
         logger.info(
             "[CharacterGlossary] Generated %d glossary entries for '%s'",
