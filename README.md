@@ -7,6 +7,18 @@
 
 ![Children's Story Studio Demo](docs/storystudio.gif)
 
+## Branches in this Repo
+
+This repository is structured around a hands-on workshop. Pick a branch based on what you want to do:
+
+| Branch | What's in it | When to use it |
+| --- | --- | --- |
+| **`main`** | A **minimal version of the app** with the core multi-agent workflow only. Activity-page agents, text-to-speech, Wikipedia RAG, OpenTelemetry, and the art-style picker are deliberately left out. | The **workshop starting point**. Clone this branch and use **GitHub Copilot** (and the **Copilot CLI**) to build the additional features yourself by following the [Guides](#guides) below. |
+| **`all-features`** | The **fully-built reference application** with every feature from every guide already implemented. | When you want to see the finished product, run a polished demo, or compare your workshop output against a working reference. |
+| Single-feature branches (`activity-page-agents`, `story-tts`, `wikipedia-rag`, `activity-page-agents-and-tts`) | Each adds one guide's output on top of `main`. | Backup references for individual guides — see [Reference Branches](#reference-branches). |
+
+Either `main` or `all-features` can be deployed to Azure with a single `azd up` — see [Deploying to Azure](docs/08-deploying-to-azure.md).
+
 ## How It Works
 
 A user fills in story details (characters, setting, moral, etc.) and the application orchestrates **five specialized AI agents** through a coordinated workflow to produce a fully illustrated children's storybook — complete with cover art, per-page illustrations, and narrative text — all streamed to the browser in real time.
@@ -21,7 +33,8 @@ Orchestrator → StoryArchitect → ArtDirector → StoryReviewer → Decision
 
 1. **Set up prerequisites** — [Prerequisites & Environment Setup](docs/01-prerequisites-and-setup.md)
 2. **Understand the architecture** — [Architecture Overview](docs/02-architecture-overview.md)
-3. **Run the demo** — [Running the Demo](docs/03-running-the-demo.md)
+3. **Run the demo locally** — [Running the Demo](docs/03-running-the-demo.md)
+4. **Deploy to Azure** — [Deploying to Azure](docs/08-deploying-to-azure.md)
 
 ## Guides
 
@@ -60,6 +73,7 @@ The following branches contain working implementations of the guided extensions.
 | [Guide: Wikipedia RAG](docs/06-guide-wikipedia-rag.md) | Add Wikipedia-powered story generation with retrieval-augmented context |
 | [Guide: OTEL Observability (AI Toolkit)](docs/07.a-guide-otel-observability-ai-toolkit.md) | Add OpenTelemetry tracing viewable in VS Code via AI Toolkit |
 | [Guide: OTEL Observability (Aspire)](docs/07.b-guide-otel-observability-aspire.md) | Add OpenTelemetry tracing viewable in the .NET Aspire Dashboard |
+| [Deploying to Azure](docs/08-deploying-to-azure.md) | One-command `azd up` deploy to Azure Container Apps, including optional Microsoft Entra sign-in |
 
 ## License
 

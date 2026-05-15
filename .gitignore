@@ -19,6 +19,9 @@ env/
 .env
 !.env.example
 
+# Per-developer azd env config (only the .example.sh template is committed)
+infra/scripts/azd-env.local.sh
+
 # Node
 node_modules/
 frontend/dist/
