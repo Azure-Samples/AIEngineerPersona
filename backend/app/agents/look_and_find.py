@@ -6,18 +6,17 @@ select 3–5 visually interesting items for the child to search for across the s
 Produces a LookAndFindActivity result forwarded to FinalAssemblyExecutor.
 """
 
-import json
 import logging
 
-from agent_framework import ChatAgent, Executor, WorkflowContext, handler
-from agent_framework.azure import AzureOpenAIChatClient
+from agent_framework import Agent, Executor, WorkflowContext, handler
+from agent_framework.openai import OpenAIChatClient
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import LookAndFindActivity, StoryResponse
 from ..prompts import LOOK_AND_FIND_INSTRUCTIONS
-from ..utils import parse_llm_json, record_llm_usage
+from ..utils import record_llm_usage
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +29,14 @@ class LookAndFindActivityExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="look_and_find")
-        self._agent = ChatAgent(
-            name="LookAndFindActivityAgent",
-            instructions=LOOK_AND_FIND_INSTRUCTIONS,
-            chat_client=AzureOpenAIChatClient(
-                endpoint=settings.foundry_project_endpoint,
-                deployment_name=settings.foundry_model_deployment_name,
+        self._agent = Agent(
+            client=OpenAIChatClient(
+                model=settings.foundry_model_deployment_name,
+                azure_endpoint=settings.foundry_project_endpoint,
                 credential=DefaultAzureCredential(),
             ),
+            instructions=LOOK_AND_FIND_INSTRUCTIONS,
+            name="LookAndFindActivityAgent",
         )
 
     @handler
@@ -60,9 +59,12 @@ class LookAndFindActivityExecutor(Executor):
             detail_data={"prompt": prompt, "title": story.title},
         ))
 
-        result = await self._agent.run(prompt)
+        result = await self._agent.run(
+            prompt,
+            options={"response_format": LookAndFindActivity},
+        )
         record_llm_usage(result)
-        activity = LookAndFindActivity.model_validate(parse_llm_json(result.text))
+        activity: LookAndFindActivity = result.value
 
         logger.info(
             "[LookAndFind] Selected %d items to find for '%s'",

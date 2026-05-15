@@ -8,7 +8,8 @@ Executors call:
         detail_data={"page_number": 1, "total_pages": 8, "prompt": "..."},
     ))
 
-main.py translates these into SSE events of type "detail" for the frontend.
+story_generator.py translates these into SSE events of type "detail" for the
+frontend.
 """
 
 from typing import Any
@@ -16,10 +17,15 @@ from typing import Any
 from agent_framework import WorkflowEvent
 
 
-class ProgressDetailEvent(WorkflowEvent):
+class ProgressDetailEvent(WorkflowEvent[dict[str, Any]]):
     """
     Emitted by individual executor handlers to provide sub-step detail
-    that goes beyond the built-in ExecutorInvokedEvent / ExecutorCompletedEvent.
+    that goes beyond the built-in executor_invoked / executor_completed events.
+
+    Carries `type="data"` (the framework's "executor emitted data during
+    execution" channel) plus a `detail_type` discriminator and a
+    `detail_data` payload that story_generator.py forwards verbatim to the
+    SSE wire as a `detail` event.
 
     detail_type values:
         "prompt_sent"         — the exact prompt sent to the LLM
@@ -36,7 +42,7 @@ class ProgressDetailEvent(WorkflowEvent):
         detail_type: str,
         detail_data: dict[str, Any] | None = None,
     ) -> None:
-        super().__init__(data=detail_data)
-        self.executor_id = executor_id
+        payload = detail_data or {}
+        super().__init__("data", data=payload, executor_id=executor_id)
         self.detail_type = detail_type
-        self.detail_data: dict[str, Any] = detail_data or {}
+        self.detail_data: dict[str, Any] = payload

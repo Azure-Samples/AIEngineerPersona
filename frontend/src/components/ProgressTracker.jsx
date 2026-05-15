@@ -223,6 +223,164 @@ function RevisionStartedBlock({ data }) {
   );
 }
 
+/* ─── Reviewer per-call checklist ──────────────────────────────────────────
+ * Renders the StoryReviewer's parallel sub-call progress as a checklist.
+ * Seeds rows from the prompt_sent.data.calls array (every expected call in
+ * `pending` state immediately) and walks review_call_started /
+ * review_call_completed / review_call_failed events to update each row.
+ * One row per call_id; the latest event for a row wins.
+ *
+ * Visuals:
+ * - Cover, Page N, and "The End" rows use a tiny thumbnail of the actual
+ *   generated image (looked up by page_number slot: cover=0, page=N,
+ *   the_end=page_count+1).
+ * - Story text and Cross-page consistency rows have no icon at all.
+ */
+function ReviewerCallList({ promptEvt, callEvts, imageUrlByPageNumber = {} }) {
+  const [expandedCallId, setExpandedCallId] = useState(null);
+  const seedCalls = promptEvt?.data?.calls;
+  if (!Array.isArray(seedCalls) || seedCalls.length === 0) return null;
+
+  const pageCount = promptEvt?.data?.page_count ?? 0;
+
+  // Walk lifecycle events in order; latest event for a call_id wins.
+  const stateByCallId = {};
+  for (const seed of seedCalls) {
+    if (!seed?.call_id) continue;
+    stateByCallId[seed.call_id] = {
+      ...seed,
+      status: 'pending',
+      passed: null,
+      issue_count: 0,
+      issues: [],
+      error: null,
+    };
+  }
+  for (const ev of callEvts) {
+    const cid = ev.data?.call_id;
+    if (!cid || !stateByCallId[cid]) continue;
+    if (ev.detail_type === 'review_call_started') {
+      stateByCallId[cid] = { ...stateByCallId[cid], status: 'running' };
+    } else if (ev.detail_type === 'review_call_completed') {
+      stateByCallId[cid] = {
+        ...stateByCallId[cid],
+        status: 'completed',
+        passed: ev.data?.passed === true,
+        issue_count: ev.data?.issue_count || 0,
+        issues: Array.isArray(ev.data?.issues) ? ev.data.issues : [],
+      };
+    } else if (ev.detail_type === 'review_call_failed') {
+      stateByCallId[cid] = {
+        ...stateByCallId[cid],
+        status: 'failed',
+        error: ev.data?.error || 'unknown error',
+      };
+    }
+  }
+
+  const rows = seedCalls.map(s => stateByCallId[s.call_id]).filter(Boolean);
+  const total = rows.length;
+  const completedCount = rows.filter(r => r.status === 'completed' || r.status === 'failed').length;
+
+  const renderStatus = (row) => {
+    if (row.status === 'pending') {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallPending}`}>queued…</span>;
+    }
+    if (row.status === 'running') {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallRunning}`}>reviewing…</span>;
+    }
+    if (row.status === 'failed') {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallFailed}`}>❌ technical failure</span>;
+    }
+    // completed
+    if (row.passed && row.issue_count === 0) {
+      return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallClean}`}>✅ passed</span>;
+    }
+    return <span className={`${styles.reviewerCallStatus} ${styles.reviewerCallIssues}`}>⚠️ {row.issue_count} {row.issue_count === 1 ? 'issue' : 'issues'}</span>;
+  };
+
+  const renderLeading = (row) => {
+    // Cover / page / the_end → render a tiny thumbnail of the actual image.
+    // Story text / cross_page → no icon at all (per design).
+    let slot = null;
+    if (row.call_kind === 'cover') slot = 0;
+    else if (row.call_kind === 'page' && row.page_number != null) slot = row.page_number;
+    else if (row.call_kind === 'the_end') slot = pageCount + 1;
+    else return null;
+
+    const url = imageUrlByPageNumber[slot];
+    if (url) {
+      return (
+        <img
+          src={url}
+          alt={row.call_label}
+          className={styles.reviewerCallThumb}
+          loading="lazy"
+        />
+      );
+    }
+    // Image slot exists for this kind but the URL isn't available — leave a
+    // neutral placeholder so the row stays aligned with siblings that do have
+    // thumbnails.
+    return <span className={`${styles.reviewerCallThumb} ${styles.reviewerCallThumbMissing}`} aria-hidden="true" />;
+  };
+
+  return (
+    <div className={styles.reviewerCallList}>
+      <div className={styles.reviewerCallListHeader}>
+        <span className={styles.detailLabel}>🔍 Reviewer subcalls</span>
+        <span className={styles.reviewerCallProgress}>{completedCount} / {total} complete</span>
+      </div>
+      <div className={styles.reviewerCallProgressBarOuter}>
+        <div
+          className={styles.reviewerCallProgressBarInner}
+          style={{ width: total > 0 ? `${(completedCount / total) * 100}%` : '0%' }}
+        />
+      </div>
+      <div className={styles.reviewerCallRows}>
+        {rows.map(row => {
+          const leading = renderLeading(row);
+          const hasDetails = (row.issues && row.issues.length > 0) || row.error;
+          const isExpanded = expandedCallId === row.call_id;
+          return (
+            <div key={row.call_id} className={styles.reviewerCallRow}>
+              <div
+                className={hasDetails ? styles.reviewerCallRowHeaderClickable : styles.reviewerCallRowHeader}
+                onClick={hasDetails ? () => setExpandedCallId(isExpanded ? null : row.call_id) : undefined}
+              >
+                {leading}
+                <span className={styles.reviewerCallLabel}>{row.call_label}</span>
+                {renderStatus(row)}
+                {hasDetails && (
+                  <span className={styles.reviewerCallExpandHint}>{isExpanded ? '▲' : '▼'}</span>
+                )}
+              </div>
+              {isExpanded && row.issues && row.issues.length > 0 && (
+                <div className={styles.reviewerCallDetails}>
+                  {row.issues.map((issue, i) => (
+                    <div key={i} className={styles.issueRow}>
+                      <span className={styles.issueCategory}>{issue.severity}</span>
+                      <span className={styles.issueCategory}>{issue.category}</span>
+                      <span>{issue.description}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {isExpanded && row.error && (
+                <div className={styles.reviewerCallDetails}>
+                  <div className={styles.issueRow}>
+                    <span>{row.error}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function PageContentBlock({ pages }) {
   if (!pages?.length) return null;
   return (
@@ -270,15 +428,23 @@ function Lightbox({ images, currentIndex, onClose, onPrev, onNext }) {
   );
 }
 
-function ImageGrid({ imageEvents, totalPages }) {
+function ImageGrid({ imageEvents, totalPages, batchEvt }) {
   const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const isPartial = batchEvt?.data?.partial === true;
+  const affectedSlots = isPartial
+    ? new Set(
+        (batchEvt?.data?.affected_slots ?? [])
+          .filter(n => typeof n === 'number')
+      )
+    : null;
+  const revisionRound = batchEvt?.data?.revision_round;
 
   const imageMap = useMemo(() => {
     const map = {};
     for (const ev of imageEvents) {
       const pn = ev.data?.page_number;
       if (pn != null) {
-        // Later events always win, preserving completed over started over queued
         const priority = { image_queued: 0, image_started: 1, image_completed: 2, image_failed: 2 };
         const cur = map[pn];
         if (!cur || (priority[ev.detail_type] ?? -1) >= (priority[cur.detail_type] ?? -1)) {
@@ -289,22 +455,38 @@ function ImageGrid({ imageEvents, totalPages }) {
     return map;
   }, [imageEvents]);
 
-  if (!imageEvents.length) return null;
+  if (!imageEvents.length && !isPartial) return null;
 
-  const count = totalPages || Math.max(...imageEvents.map(e => e.data?.total_pages ?? 0), 0);
+  const count = totalPages
+    || batchEvt?.data?.total_pages
+    || Math.max(...imageEvents.map(e => e.data?.total_pages ?? 0), 0);
 
-  // Slots: cover (0), story pages (1..count), "The End" (count+1)
-  const slots = count > 0
-    ? [0, ...Array.from({ length: count }, (_, i) => i + 1), count + 1]
-    : [...new Set(imageEvents.map(e => e.data?.page_number).filter(n => n != null))].sort((a, b) => a - b);
+  let slots;
+  if (isPartial) {
+    // Partial revision: only render the slots that are actually being
+    // regenerated. Prefer the batch event's `affected_slots` (authoritative,
+    // present at round-start) and fall back to event-derived slots if the
+    // backend ever omits it.
+    if (affectedSlots && affectedSlots.size > 0) {
+      slots = [...affectedSlots].sort((a, b) => a - b);
+    } else {
+      slots = [...new Set(imageEvents.map(e => e.data?.page_number).filter(n => n != null))]
+        .sort((a, b) => a - b);
+    }
+  } else if (count > 0) {
+    // Full pass: cover (0), story pages (1..count), "The End" (count+1)
+    slots = [0, ...Array.from({ length: count }, (_, i) => i + 1), count + 1];
+  } else {
+    slots = [...new Set(imageEvents.map(e => e.data?.page_number).filter(n => n != null))]
+      .sort((a, b) => a - b);
+  }
 
   const slotLabel = (n) => {
     if (n === 0) return 'Cover';
-    if (n === count + 1) return 'The End';
+    if (count > 0 && n === count + 1) return 'The End';
     return `Page ${n}`;
   };
 
-  // Build ordered list of completed images for lightbox paging
   const completedImages = useMemo(() =>
     slots
       .filter(pn => imageMap[pn]?.detail_type === 'image_completed' && imageMap[pn]?.data?.image_url)
@@ -315,12 +497,14 @@ function ImageGrid({ imageEvents, totalPages }) {
   const completedCount = Object.values(imageMap).filter(e => e.detail_type === 'image_completed').length;
   const activeCount = Object.values(imageMap).filter(e => e.detail_type === 'image_started').length;
 
+  const headerLabel = isPartial
+    ? `🖼 Partial revision${revisionRound != null ? ` (round ${revisionRound})` : ''} — ${completedCount}/${slots.length} regenerated${activeCount > 0 ? `, ${activeCount} in progress` : ''}`
+    : `🖼 Illustrations (${completedCount}/${slots.length} done${activeCount > 0 ? `, ${activeCount} generating` : ''})`;
+
   return (
     <>
       <div className={styles.imageGridBlock}>
-        <div className={styles.detailLabel}>
-          🖼 Illustrations ({completedCount}/{slots.length} done{activeCount > 0 ? `, ${activeCount} generating` : ''})
-        </div>
+        <div className={styles.detailLabel}>{headerLabel}</div>
         <div className={styles.imageGrid}>
           {slots.map(pageNum => {
             const ev = imageMap[pageNum];
@@ -377,6 +561,18 @@ function StepDetailPanel({ stepId, details }) {
   const stepEvts = details.filter(d => d.executor_id === stepId);
   if (!stepEvts.length) return null;
 
+  // Reviewer thumbnails: pull the latest completed image_url per page_number
+  // out of the FULL details stream (image events are emitted by art_director,
+  // not story_reviewer, so they aren't in stepEvts above).
+  const imageUrlByPageNumber = {};
+  if (stepId === 'story_reviewer') {
+    for (const ev of details) {
+      if (ev.detail_type === 'image_completed' && ev.data?.page_number != null && ev.data?.image_url) {
+        imageUrlByPageNumber[ev.data.page_number] = ev.data.image_url;
+      }
+    }
+  }
+
   // Group events into rounds.
   // orchestrator rounds pivot on executor_started / revision_started.
   // art_director rounds pivot on images_batch_started.
@@ -424,6 +620,12 @@ function StepDetailPanel({ stepId, details }) {
           d.detail_type === 'image_completed' ||
           d.detail_type === 'image_failed'
         );
+        const batchEvt = round.find(d => d.detail_type === 'images_batch_started');
+        const reviewerCallEvts = round.filter(d =>
+          d.detail_type === 'review_call_started'   ||
+          d.detail_type === 'review_call_completed' ||
+          d.detail_type === 'review_call_failed'
+        );
         const totalPages = round.find(d => d.data?.total_pages)?.data?.total_pages ?? pageEvts.length ?? 0;
 
         return (
@@ -440,7 +642,14 @@ function StepDetailPanel({ stepId, details }) {
             {revisionStartedEvt  && <RevisionStartedBlock data={revisionStartedEvt.data} />}
             {promptEvt   && <PromptBlock text={promptEvt.data?.prompt} />}
             {pageEvts.length  > 0 && <PageContentBlock pages={pageEvts} />}
-            {imageEvts.length > 0 && <ImageGrid imageEvents={imageEvts} totalPages={totalPages} />}
+            {imageEvts.length > 0 && <ImageGrid imageEvents={imageEvts} totalPages={totalPages} batchEvt={batchEvt} />}
+            {stepId === 'story_reviewer' && promptEvt?.data?.calls && (
+              <ReviewerCallList
+                promptEvt={promptEvt}
+                callEvts={reviewerCallEvts}
+                imageUrlByPageNumber={imageUrlByPageNumber}
+              />
+            )}
             {responseEvt && <ResponseBlock data={responseEvt.data} executorId={stepId} />}
           </div>
         );

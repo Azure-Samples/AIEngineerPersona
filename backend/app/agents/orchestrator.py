@@ -6,20 +6,19 @@ DecisionExecutor on subsequent loops) and produces a StoryOutline for the
 StoryArchitectExecutor.
 """
 
-import json
 import logging
 from typing import Optional
 
-from agent_framework import ChatAgent, Executor, WorkflowContext, handler
+from agent_framework import Agent, Executor, WorkflowContext, handler
+from agent_framework.openai import OpenAIChatClient
 from opentelemetry import trace
-from agent_framework.azure import AzureOpenAIChatClient
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
-from ..models import StoryRequest, StoryOutline
+from ..models import StoryRequest, StoryOutline, StoryOutlineDraft
 from ..prompts import ORCHESTRATOR_INSTRUCTIONS
 from ..signals import RevisionSignal
-from ..utils import parse_llm_json, record_llm_usage
+from ..utils import record_llm_usage
 from ..events import ProgressDetailEvent
 from ..wikipedia import fetch_wikipedia
 
@@ -34,14 +33,14 @@ class OrchestratorExecutor(Executor):
 
     def __init__(self) -> None:
         super().__init__(id="orchestrator")
-        self._agent = ChatAgent(
-            name="OrchestratorAgent",
-            instructions=ORCHESTRATOR_INSTRUCTIONS,
-            chat_client=AzureOpenAIChatClient(
-                endpoint=settings.foundry_project_endpoint,
-                deployment_name=settings.foundry_model_deployment_name,
+        self._agent = Agent(
+            client=OpenAIChatClient(
+                model=settings.foundry_model_deployment_name,
+                azure_endpoint=settings.foundry_project_endpoint,
                 credential=DefaultAzureCredential(),
             ),
+            instructions=ORCHESTRATOR_INSTRUCTIONS,
+            name="OrchestratorAgent",
         )
 
     # ─── Initial run ──────────────────────────────────────────────────────────
@@ -79,11 +78,11 @@ class OrchestratorExecutor(Executor):
         ))
 
         # Persist the original request so revision runs can reference it
-        await ctx.set_shared_state("story_request", request.model_dump_json())
-        await ctx.set_shared_state("revision_count", 0)
+        ctx.set_state("story_request", request.model_dump_json())
+        ctx.set_state("revision_count", 0)
         # ArtDirector reads this to scope on-disk draft images per generation.
         if request.session_id:
-            await ctx.set_shared_state("session_id", request.session_id)
+            ctx.set_state("session_id", request.session_id)
 
         outline = await self._create_outline(request, revision_instructions=None, ctx=ctx)
         logger.info("[Orchestrator] Outline created: '%s' (%d pages)", outline.title, outline.target_pages)
@@ -104,8 +103,8 @@ class OrchestratorExecutor(Executor):
         ctx: WorkflowContext[StoryOutline],
     ) -> None:
         """Called by DecisionExecutor when the StoryReviewer rejects the story."""
-        revision_count = (await ctx.get_shared_state("revision_count") or 0) + 1
-        await ctx.set_shared_state("revision_count", revision_count)
+        revision_count = (ctx.get_state("revision_count") or 0) + 1
+        ctx.set_state("revision_count", revision_count)
         logger.info("[Orchestrator] Starting revision round %d", revision_count)
 
         span = trace.get_current_span()
@@ -121,7 +120,7 @@ class OrchestratorExecutor(Executor):
             },
         ))
 
-        request_json = await ctx.get_shared_state("story_request")
+        request_json = ctx.get_state("story_request")
         request = StoryRequest.model_validate_json(request_json)
 
         outline = await self._create_outline(request, revision_instructions=signal.revision_instructions, ctx=ctx)
@@ -230,11 +229,23 @@ class OrchestratorExecutor(Executor):
             detail_data={"prompt": prompt, "is_revision": revision_instructions is not None},
         ))
 
-        result = await self._agent.run(prompt)
-        outline = StoryOutline.model_validate(parse_llm_json(result.text))
-        outline.revision_instructions = revision_instructions
-
+        result = await self._agent.run(
+            prompt,
+            options={"response_format": StoryOutlineDraft},
+        )
         record_llm_usage(result)
+        # The model emits a StoryOutlineDraft (character_descriptions is a list
+        # of {name, description}). Convert to StoryOutline (dict[str,str]) so
+        # downstream executors keep their existing dict-based access pattern.
+        draft: StoryOutlineDraft = result.value
+        outline = StoryOutline(
+            title=draft.title,
+            target_pages=draft.target_pages,
+            character_descriptions={cd.name: cd.description for cd in draft.character_descriptions},
+            plot_summary=draft.plot_summary,
+            page_outlines=draft.page_outlines,
+            revision_instructions=revision_instructions,
+        )
 
         await ctx.add_event(ProgressDetailEvent(
             executor_id="orchestrator",

@@ -17,6 +17,9 @@ const DEFAULT_FORM = {
 
 export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [wikiOpen, setWikiOpen] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestError, setSuggestError] = useState(null);
 
   const hasWikiTopic = form.wikipedia_topic.trim().length > 0;
   const isFullMode   = hasWikiTopic && form.wikipedia_mode === 'full';
@@ -49,6 +52,41 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
     }));
   }
 
+  // ─── Auto-fill ("Surprise Me") ─────────────────────────────────────────────
+
+  async function handleSurpriseMe() {
+    if (isSuggesting || isGenerating) return;
+    setIsSuggesting(true);
+    setSuggestError(null);
+    try {
+      const res = await fetch('/api/suggest-story', { method: 'POST' });
+      if (!res.ok) {
+        let msg = `Suggestion request failed (${res.status})`;
+        try {
+          const body = await res.json();
+          if (body?.detail) msg = body.detail;
+        } catch { /* ignore parse errors */ }
+        throw new Error(msg);
+      }
+      const data = await res.json();
+      setForm(prev => ({
+        ...prev,
+        main_character:        data.main_character        ?? prev.main_character,
+        supporting_characters: Array.isArray(data.supporting_characters) && data.supporting_characters.length > 0
+                                 ? data.supporting_characters
+                                 : prev.supporting_characters,
+        setting:               data.setting               ?? prev.setting,
+        moral:                 data.moral                 ?? prev.moral,
+        main_problem:          data.main_problem          ?? prev.main_problem,
+        additional_details:    data.additional_details    ?? prev.additional_details,
+      }));
+    } catch (err) {
+      setSuggestError(err?.message || 'Failed to fetch a suggestion. Please try again.');
+    } finally {
+      setIsSuggesting(false);
+    }
+  }
+
   // ─── Submit ────────────────────────────────────────────────────────────────
 
   function handleSubmit(e) {
@@ -79,62 +117,33 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
 
       <form onSubmit={handleSubmit}>
 
-        {/* ── Wikipedia RAG section ─────────────────────────────────── */}
-        <div className={styles.sectionTitle}>🌐 Wikipedia Topic (optional)</div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Real-world Topic</label>
-          <input
-            className={styles.input}
-            type="text"
-            placeholder="e.g. Marie Curie, Moon landing, Photosynthesis"
-            value={form.wikipedia_topic}
-            onChange={handleField('wikipedia_topic')}
-          />
-          <p className={styles.hint}>
-            Enter a topic and we'll pull real facts from Wikipedia to create or inspire the story.
+        {/* ── Surprise Me (auto-fill text fields with an LLM-generated seed) ── */}
+        <div className={styles.surpriseRow}>
+          <button
+            type="button"
+            className={styles.btnSurprise}
+            onClick={handleSurpriseMe}
+            disabled={isSuggesting || isGenerating || isFullMode}
+            title={isFullMode
+              ? 'Auto-fill is disabled in Full Wikipedia Story mode — those fields will be derived from the article.'
+              : 'Generate a fresh, creative set of values for every text field below.'}
+          >
+            {isSuggesting ? (
+              <>
+                <span className="spinner" />
+                Dreaming up a new story…
+              </>
+            ) : (
+              <>✨ Surprise Me — Auto-fill the Form</>
+            )}
+          </button>
+          <p className={styles.surpriseHint}>
+            Replaces the character, setting, moral, problem, and details fields with a brand-new idea.
+            Wikipedia and bonus settings are left alone.
           </p>
-        </div>
-
-        <div className={styles.field}>
-          <label className={`${styles.label} ${!hasWikiTopic ? styles.labelDisabled : ''}`}>How should Wikipedia content be used?</label>
-          <div className={`${styles.modeCards} ${!hasWikiTopic ? styles.modeCardsDisabled : ''}`}>
-
-              <label className={`${styles.modeCard} ${form.wikipedia_mode === 'full' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
-                <input
-                  type="radio"
-                  name="wikipedia_mode"
-                  value="full"
-                  checked={form.wikipedia_mode === 'full'}
-                  onChange={handleField('wikipedia_mode')}
-                  className={styles.modeRadio}
-                />
-                <span className={styles.modeIcon}>📖</span>
-                <span className={styles.modeLabel}>Full Wikipedia Story</span>
-                <span className={styles.modeDesc}>
-                  The AI creates the <strong>entire story</strong> — characters, setting, moral,
-                  and plot — from the Wikipedia article. The fields below will be ignored.
-                </span>
-              </label>
-
-              <label className={`${styles.modeCard} ${form.wikipedia_mode === 'influence' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
-                <input
-                  type="radio"
-                  name="wikipedia_mode"
-                  value="influence"
-                  checked={form.wikipedia_mode === 'influence'}
-                  onChange={handleField('wikipedia_mode')}
-                  className={styles.modeRadio}
-                />
-                <span className={styles.modeIcon}>✨</span>
-                <span className={styles.modeLabel}>Wikipedia-Influenced Story</span>
-                <span className={styles.modeDesc}>
-                  Your characters, setting, and moral are kept — Wikipedia facts are woven in
-                  as <strong>background inspiration</strong>.
-                </span>
-              </label>
-
-          </div>
+          {suggestError && (
+            <p className={styles.surpriseError} role="alert">{suggestError}</p>
+          )}
         </div>
 
         <hr className={styles.divider} />
@@ -211,9 +220,8 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             <label className={styles.label}>
               Setting {!isFullMode && <span className={styles.required}>*</span>}
             </label>
-            <input
-              className={styles.input}
-              type="text"
+            <textarea
+              className={styles.textarea}
               placeholder="e.g. A magical forest with talking trees and glowing fireflies"
               value={form.setting}
               onChange={handleField('setting')}
@@ -225,9 +233,8 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             <label className={styles.label}>
               Moral of the Story {!isFullMode && <span className={styles.required}>*</span>}
             </label>
-            <input
-              className={styles.input}
-              type="text"
+            <textarea
+              className={styles.textarea}
               placeholder="e.g. True courage means helping others even when you're scared"
               value={form.moral}
               onChange={handleField('moral')}
@@ -266,6 +273,80 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             />
           </div>
         </fieldset>
+
+        {/* ── Wikipedia RAG section (optional, collapsible — collapsed by default) ── */}
+        <button
+          type="button"
+          className={`${styles.collapsibleHeader} ${wikiOpen ? styles.collapsibleHeaderOpen : ''}`}
+          onClick={() => setWikiOpen(o => !o)}
+          aria-expanded={wikiOpen}
+          aria-controls="wikipedia-section"
+        >
+          <span className={styles.collapsibleTitle}>🌐 Wikipedia Topic (optional)</span>
+          <span className={styles.collapsibleHint}>
+            {wikiOpen ? 'Hide' : 'Base your story on a real-world topic'}
+          </span>
+          <span className={styles.collapsibleChevron} aria-hidden="true">▾</span>
+        </button>
+
+        {wikiOpen && (
+          <div id="wikipedia-section" className={styles.collapsibleBody}>
+            <div className={styles.field}>
+              <label className={styles.label}>Real-world Topic</label>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="e.g. Marie Curie, Moon landing, Photosynthesis"
+                value={form.wikipedia_topic}
+                onChange={handleField('wikipedia_topic')}
+              />
+              <p className={styles.hint}>
+                Enter a topic and we'll pull real facts from Wikipedia to create or inspire the story.
+              </p>
+            </div>
+
+            <div className={styles.field}>
+              <label className={`${styles.label} ${!hasWikiTopic ? styles.labelDisabled : ''}`}>How should Wikipedia content be used?</label>
+              <div className={`${styles.modeCards} ${!hasWikiTopic ? styles.modeCardsDisabled : ''}`}>
+
+                  <label className={`${styles.modeCard} ${form.wikipedia_mode === 'full' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
+                    <input
+                      type="radio"
+                      name="wikipedia_mode"
+                      value="full"
+                      checked={form.wikipedia_mode === 'full'}
+                      onChange={handleField('wikipedia_mode')}
+                      className={styles.modeRadio}
+                    />
+                    <span className={styles.modeIcon}>📖</span>
+                    <span className={styles.modeLabel}>Full Wikipedia Story</span>
+                    <span className={styles.modeDesc}>
+                      The AI creates the <strong>entire story</strong> — characters, setting, moral,
+                      and plot — from the Wikipedia article. The fields above will be ignored.
+                    </span>
+                  </label>
+
+                  <label className={`${styles.modeCard} ${form.wikipedia_mode === 'influence' && hasWikiTopic ? styles.modeCardSelected : ''}`}>
+                    <input
+                      type="radio"
+                      name="wikipedia_mode"
+                      value="influence"
+                      checked={form.wikipedia_mode === 'influence'}
+                      onChange={handleField('wikipedia_mode')}
+                      className={styles.modeRadio}
+                    />
+                    <span className={styles.modeIcon}>✨</span>
+                    <span className={styles.modeLabel}>Wikipedia-Influenced Story</span>
+                    <span className={styles.modeDesc}>
+                      Your characters, setting, and moral are kept — Wikipedia facts are woven in
+                      as <strong>background inspiration</strong>.
+                    </span>
+                  </label>
+
+              </div>
+            </div>
+          </div>
+        )}
 
         <hr className={styles.divider} />
 

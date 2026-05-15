@@ -2,19 +2,95 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "environmentName": { "value": "${AZURE_ENV_NAME}" },
-    "location":        { "value": "${AZURE_LOCATION}" },
-
-    "foundryResourceGroup":             { "value": "${FOUNDRY_RESOURCE_GROUP}" },
-    "foundryAccountName":               { "value": "${FOUNDRY_ACCOUNT_NAME}" },
-    "foundryProjectEndpoint":           { "value": "${FOUNDRY_PROJECT_ENDPOINT}" },
-    "foundryModelDeploymentName":       { "value": "${FOUNDRY_MODEL_DEPLOYMENT_NAME=gpt-4o}" },
-    "foundryImageModelDeploymentName":  { "value": "${FOUNDRY_IMAGE_MODEL_DEPLOYMENT_NAME=gpt-image-1.5}" },
-
-    "speechResourceGroup":   { "value": "${SPEECH_RESOURCE_GROUP}" },
-    "speechAccountName":     { "value": "${SPEECH_ACCOUNT_NAME}" },
-    "azureSpeechRegion":     { "value": "${AZURE_SPEECH_REGION}" },
-
-    "principalId":           { "value": "${AZURE_PRINCIPAL_ID=}" }
+    "environmentName": {
+      "value": "${AZURE_ENV_NAME}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "resourceGroupName": {
+      "value": "${RESOURCE_GROUP_NAME=}"
+    },
+    "appImageName": {
+      "value": "${SERVICE_APP_IMAGE_NAME=}"
+    },
+    "acrName": {
+      "value": "${ACR_NAME=}"
+    },
+    "storageAccountName": {
+      "value": "${AZURE_STORAGE_ACCOUNT_NAME}"
+    },
+    "storageContainerName": {
+      "value": "${AZURE_STORAGE_CONTAINER_NAME=demo-stories}"
+    },
+    "foundryProjectEndpoint": {
+      "value": "${FOUNDRY_PROJECT_ENDPOINT}"
+    },
+    "foundryModelDeploymentName": {
+      "value": "${FOUNDRY_MODEL_DEPLOYMENT_NAME=gpt-5.2}"
+    },
+    "foundryImageModelDeploymentName": {
+      "value": "${FOUNDRY_IMAGE_MODEL_DEPLOYMENT_NAME=gpt-image-1.5}"
+    },
+    "foundryResourceId": {
+      "value": "${AZURE_FOUNDRY_RESOURCE_ID}"
+    },
+    "azureSpeechRegion": {
+      "value": "${AZURE_SPEECH_REGION=eastus2}"
+    },
+    "azureSpeechEndpoint": {
+      "value": "${AZURE_SPEECH_ENDPOINT=}"
+    },
+    "azureSpeechResourceId": {
+      "value": "${AZURE_SPEECH_RESOURCE_ID=}"
+    },
+    "containerCpu": {
+      "value": "${CONTAINER_CPU=1.0}"
+    },
+    "containerMemory": {
+      "value": "${CONTAINER_MEMORY=2Gi}"
+    },
+    "minReplicas": {
+      "value": "${MIN_REPLICAS=1}"
+    },
+    "maxReplicas": {
+      "value": "${MAX_REPLICAS=3}"
+    },
+    "corsOrigin": {
+      "value": "${CORS_ORIGIN=http://localhost:5173}"
+    },
+    "vnetName": {
+      "value": "${VNET_NAME=}"
+    },
+    "vnetAddressPrefix": {
+      "value": "${VNET_ADDRESS_PREFIX=10.20.0.0/22}"
+    },
+    "caeSubnetName": {
+      "value": "${CAE_SUBNET_NAME=cae-infra}"
+    },
+    "caeSubnetAddressPrefix": {
+      "value": "${CAE_SUBNET_ADDRESS_PREFIX=10.20.0.0/23}"
+    },
+    "privateEndpointsSubnetName": {
+      "value": "${PRIVATE_ENDPOINTS_SUBNET_NAME=private-endpoints}"
+    },
+    "privateEndpointsSubnetAddressPrefix": {
+      "value": "${PRIVATE_ENDPOINTS_SUBNET_ADDRESS_PREFIX=10.20.2.0/26}"
+    },
+    "storageBlobPeName": {
+      "value": "${STORAGE_BLOB_PE_NAME=}"
+    },
+    "enableEntraAuth": {
+      "value": "${ENABLE_ENTRA_AUTH=false}"
+    },
+    "entraClientId": {
+      "value": "${ENTRA_CLIENT_ID=}"
+    },
+    "entraClientSecret": {
+      "value": "${ENTRA_CLIENT_SECRET=}"
+    },
+    "entraTenantId": {
+      "value": "${ENTRA_TENANT_ID=}"
+    }
   }
 }
