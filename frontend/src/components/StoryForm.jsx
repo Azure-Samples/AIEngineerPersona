@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './StoryForm.module.css';
+import watercolorSrc   from '../assets/sample_art/watercolor.png';
+import comicBookSrc    from '../assets/sample_art/comic_book.png';
+import crayonSrc       from '../assets/sample_art/crayon.png';
+import paperCollageSrc from '../assets/sample_art/paper_collage.png';
 
 const DEFAULT_FORM = {
   wikipedia_topic:            '',
@@ -9,17 +13,54 @@ const DEFAULT_FORM = {
   setting:                    'A magical forest',
   moral:                      "True courage means helping others even when you're scared",
   main_problem:               "A mysterious fog has covered the forest and Thomas' friend, Benny the Bunny, is lost inside it. Thomas must find Benny and bring him back safely.",
+  art_style:                  'watercolor',
   additional_details:         '',
   include_look_and_find:      true,
   include_character_glossary: true,
   enable_story_reviewer:      true,
 };
 
+const ART_STYLES = [
+  {
+    id:    'watercolor',
+    label: 'Watercolor',
+    desc:  'Soft, painted look with warm washes of color',
+    sample: watercolorSrc,
+  },
+  {
+    id:    'comic_book',
+    label: 'Comic Book',
+    desc:  'Bold ink outlines and bright, saturated colors',
+    sample: comicBookSrc,
+  },
+  {
+    id:    'crayon',
+    label: 'Crayon Sketch',
+    desc:  'Hand-drawn crayon strokes with a charming, childlike feel',
+    sample: crayonSrc,
+  },
+  {
+    id:    'paper_collage',
+    label: 'Paper Collage',
+    desc:  'Eric Carle-inspired cut-paper textures and bold shapes',
+    sample: paperCollageSrc,
+  },
+];
+
 export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [wikiOpen, setWikiOpen] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestError, setSuggestError] = useState(null);
+  const [stylePreview, setStylePreview] = useState(null); // {src, label} | null
+
+  // Close art-style preview lightbox on Escape.
+  useEffect(() => {
+    if (!stylePreview) return;
+    const onKey = (e) => { if (e.key === 'Escape') setStylePreview(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [stylePreview]);
 
   const hasWikiTopic = form.wikipedia_topic.trim().length > 0;
   const isFullMode   = hasWikiTopic && form.wikipedia_mode === 'full';
@@ -255,6 +296,48 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
             />
           </div>
 
+          {/* ── Art-style pill selector (single-select; affects all illustrations) ── */}
+          <div className={styles.field}>
+            <label className={styles.label}>Art Style</label>
+            <div className={styles.artStylePills} role="radiogroup" aria-label="Artistic style for the illustrations">
+              {ART_STYLES.map(style => {
+                const selected = form.art_style === style.id;
+                return (
+                  <div key={style.id} className={styles.artStylePillWrapper}>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      className={`${styles.artStylePill} ${selected ? styles.artStylePillSelected : ''}`}
+                      onClick={() => setForm(prev => ({ ...prev, art_style: style.id }))}
+                    >
+                      <span className={styles.artStylePillName}>{style.label}</span>
+                      <span className={styles.artStylePillDesc}>{style.desc}</span>
+                      <img
+                        src={style.sample}
+                        alt={`Example illustration in ${style.label} style`}
+                        className={styles.artStylePillSample}
+                        loading="lazy"
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.artStylePillMagnifier}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStylePreview({ src: style.sample, label: style.label });
+                      }}
+                      aria-label={`View larger ${style.label} example`}
+                      title="View a larger example of this art style"
+                    >
+                      🔍
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
         </fieldset>
 
         <hr className={styles.divider} />
@@ -418,6 +501,34 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         </div>
 
       </form>
+
+      {stylePreview && (
+        <div
+          className={styles.stylePreviewBackdrop}
+          onClick={() => setStylePreview(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Larger example of ${stylePreview.label} art style`}
+        >
+          <div className={styles.stylePreviewContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className={styles.stylePreviewClose}
+              onClick={() => setStylePreview(null)}
+              aria-label="Close preview"
+              title="Close (Esc)"
+            >
+              ✕
+            </button>
+            <img
+              src={stylePreview.src}
+              alt={`Larger example of ${stylePreview.label} art style`}
+              className={styles.stylePreviewImage}
+            />
+            <div className={styles.stylePreviewLabel}>{stylePreview.label}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

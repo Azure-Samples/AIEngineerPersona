@@ -61,7 +61,12 @@ class LookAndFindActivityExecutor(Executor):
 
         result = await self._agent.run(
             prompt,
-            options={"response_format": LookAndFindActivity},
+            options={
+                "response_format": LookAndFindActivity,
+                # See orchestrator.py — bump max_tokens so reasoning-model
+                # internal tokens don't truncate the JSON output mid-string.
+                "max_tokens": 8000,
+            },
         )
         record_llm_usage(result)
         activity: LookAndFindActivity = result.value

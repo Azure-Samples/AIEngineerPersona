@@ -42,6 +42,13 @@ class StoryRequest(BaseModel):
             "'influence' = Wikipedia provides background context blended with the user's story parameters"
         ),
     )
+    art_style: Literal["watercolor", "comic_book", "crayon", "paper_collage"] = Field(
+        default="watercolor",
+        description=(
+            "Artistic style for every illustration in the story. "
+            "Determines the style descriptor baked into the image_prompt for each page."
+        ),
+    )
 
     # Bonus content flags — drive the optional fan-out agents
     include_look_and_find: bool = Field(
@@ -89,6 +96,10 @@ class StoryOutline(BaseModel):
     page_outlines: list[PageOutline]
     # Populated during revision cycles
     revision_instructions: Optional[str] = None
+    # Carried forward from the originating StoryRequest so downstream
+    # executors (StoryArchitect, ArtDirector) can render in the chosen style
+    # without reaching back into ctx.state for the request.
+    art_style: Literal["watercolor", "comic_book", "crayon", "paper_collage"] = "watercolor"
 
 
 class StoryPage(BaseModel):

@@ -420,7 +420,16 @@ class StoryReviewerExecutor(Executor):
         try:
             async with self._semaphore:
                 result = await agent.run(
-                    message, options={"response_format": response_format}
+                    message,
+                    options={
+                        "response_format": response_format,
+                        # See orchestrator.py — bump max_tokens so reasoning-
+                        # model internal tokens don't truncate the issues-list
+                        # JSON. Reviewer outputs are small but the
+                        # cross-page-consistency call accumulates issues across
+                        # 8–10 pages so a generous cap is cheap insurance.
+                        "max_tokens": 8000,
+                    },
                 )
             record_llm_usage(result)
             parsed = result.value

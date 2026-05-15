@@ -231,7 +231,17 @@ class OrchestratorExecutor(Executor):
 
         result = await self._agent.run(
             prompt,
-            options={"response_format": StoryOutlineDraft},
+            options={
+                "response_format": StoryOutlineDraft,
+                # gpt-5.x is a reasoning model — give the response budget enough
+                # headroom for BOTH internal reasoning tokens AND the structured
+                # JSON output. Without an explicit cap the SDK default leaves
+                # only a few hundred output tokens after reasoning, which
+                # truncates the JSON mid-string and throws Pydantic
+                # `Invalid JSON: EOF while parsing` errors. 16k is comfortably
+                # above the largest legitimate StoryOutlineDraft we've seen.
+                "max_tokens": 16000,
+            },
         )
         record_llm_usage(result)
         # The model emits a StoryOutlineDraft (character_descriptions is a list
@@ -245,6 +255,7 @@ class OrchestratorExecutor(Executor):
             plot_summary=draft.plot_summary,
             page_outlines=draft.page_outlines,
             revision_instructions=revision_instructions,
+            art_style=request.art_style,
         )
 
         await ctx.add_event(ProgressDetailEvent(

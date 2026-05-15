@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import styles from './ProgressTracker.module.css';
 
 /* ─── Static step definitions ─────────────────────────────────────────────── */
@@ -235,7 +235,21 @@ function RevisionStartedBlock({ data }) {
  *   generated image (looked up by page_number slot: cover=0, page=N,
  *   the_end=page_count+1).
  * - Story text and Cross-page consistency rows have no icon at all.
+ * - A single grouped description appears above all image rows (cover/page/
+ *   the_end). Story text and Cross-page consistency rows each get their own
+ *   inline description below the row header.
  */
+
+const IMAGE_KINDS = new Set(['cover', 'page', 'the_end']);
+
+const REVIEWER_GROUP_DESCRIPTION_IMAGES =
+  'Checking each illustration for consistency with the page text, character likeness, and age-appropriate visuals.';
+
+const REVIEWER_ROW_DESCRIPTIONS = {
+  text:       'Reviewing the story text for narrative coherence, age-appropriate vocabulary, and faithful integration of the moral.',
+  cross_page: 'Comparing characters across all pages to ensure they look consistent throughout the book.',
+};
+
 function ReviewerCallList({ promptEvt, callEvts, imageUrlByPageNumber = {} }) {
   const [expandedCallId, setExpandedCallId] = useState(null);
   const seedCalls = promptEvt?.data?.calls;
@@ -338,44 +352,71 @@ function ReviewerCallList({ promptEvt, callEvts, imageUrlByPageNumber = {} }) {
         />
       </div>
       <div className={styles.reviewerCallRows}>
-        {rows.map(row => {
-          const leading = renderLeading(row);
-          const hasDetails = (row.issues && row.issues.length > 0) || row.error;
-          const isExpanded = expandedCallId === row.call_id;
-          return (
-            <div key={row.call_id} className={styles.reviewerCallRow}>
-              <div
-                className={hasDetails ? styles.reviewerCallRowHeaderClickable : styles.reviewerCallRowHeader}
-                onClick={hasDetails ? () => setExpandedCallId(isExpanded ? null : row.call_id) : undefined}
-              >
-                {leading}
-                <span className={styles.reviewerCallLabel}>{row.call_label}</span>
-                {renderStatus(row)}
-                {hasDetails && (
-                  <span className={styles.reviewerCallExpandHint}>{isExpanded ? '▲' : '▼'}</span>
-                )}
-              </div>
-              {isExpanded && row.issues && row.issues.length > 0 && (
-                <div className={styles.reviewerCallDetails}>
-                  {row.issues.map((issue, i) => (
-                    <div key={i} className={styles.issueRow}>
-                      <span className={styles.issueCategory}>{issue.severity}</span>
-                      <span className={styles.issueCategory}>{issue.category}</span>
-                      <span>{issue.description}</span>
+        {(() => {
+          let imageGroupHeaderEmitted = false;
+          return rows.map(row => {
+            const leading = renderLeading(row);
+            const hasDetails = (row.issues && row.issues.length > 0) || row.error;
+            const isExpanded = expandedCallId === row.call_id;
+            const isImageKind = IMAGE_KINDS.has(row.call_kind);
+            const inlineDesc = REVIEWER_ROW_DESCRIPTIONS[row.call_kind];
+
+            // Emit a one-time grouped description above the FIRST image-kind
+            // row so the user gets context for what the cover/page/the_end
+            // reviewers are checking, without repeating it per row.
+            let groupHeader = null;
+            if (isImageKind && !imageGroupHeaderEmitted) {
+              imageGroupHeaderEmitted = true;
+              groupHeader = (
+                <div className={styles.reviewerCallGroupHeader} key="__image_group_header">
+                  {REVIEWER_GROUP_DESCRIPTION_IMAGES}
+                </div>
+              );
+            }
+
+            return (
+              <Fragment key={row.call_id}>
+                {groupHeader}
+                <div className={styles.reviewerCallRow}>
+                  <div
+                    className={hasDetails ? styles.reviewerCallRowHeaderClickable : styles.reviewerCallRowHeader}
+                    onClick={hasDetails ? () => setExpandedCallId(isExpanded ? null : row.call_id) : undefined}
+                  >
+                    <div className={styles.reviewerCallRowHeaderInner}>
+                      {leading}
+                      <span className={styles.reviewerCallLabel}>{row.call_label}</span>
+                      {renderStatus(row)}
+                      {hasDetails && (
+                        <span className={styles.reviewerCallExpandHint}>{isExpanded ? '▲' : '▼'}</span>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-              {isExpanded && row.error && (
-                <div className={styles.reviewerCallDetails}>
-                  <div className={styles.issueRow}>
-                    <span>{row.error}</span>
+                    {inlineDesc && (
+                      <div className={styles.reviewerCallRowDescription}>{inlineDesc}</div>
+                    )}
                   </div>
+                  {isExpanded && row.issues && row.issues.length > 0 && (
+                    <div className={styles.reviewerCallDetails}>
+                      {row.issues.map((issue, i) => (
+                        <div key={i} className={styles.issueRow}>
+                          <span className={styles.issueCategory}>{issue.severity}</span>
+                          <span className={styles.issueCategory}>{issue.category}</span>
+                          <span>{issue.description}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {isExpanded && row.error && (
+                    <div className={styles.reviewerCallDetails}>
+                      <div className={styles.issueRow}>
+                        <span>{row.error}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          );
-        })}
+              </Fragment>
+            );
+          });
+        })()}
       </div>
     </div>
   );

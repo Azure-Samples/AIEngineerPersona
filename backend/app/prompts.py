@@ -2,6 +2,60 @@
 System instruction strings for each agent in the children's story workflow.
 """
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Art-style catalog
+# ─────────────────────────────────────────────────────────────────────────────
+# Drives the style descriptor that the StoryArchitect bakes into every
+# image_prompt. Selected by the user via StoryRequest.art_style. Keep these
+# phrases concrete and image-model-friendly: nouns + adjectives, no negative
+# constraints. The architect prepends `prompt_phrase` to every image_prompt;
+# the reviewer is intentionally style-agnostic and is NOT given this catalog
+# (so it doesn't false-positive on style-specific artifacts).
+# ─────────────────────────────────────────────────────────────────────────────
+
+ART_STYLES = {
+    "watercolor": {
+        "label": "Watercolor",
+        "prompt_phrase": (
+            "warm, inviting watercolor children's storybook illustration with soft "
+            "painted washes of color, gentle paper-grain texture, and dreamy diffuse edges"
+        ),
+    },
+    "comic_book": {
+        "label": "Comic Book",
+        "prompt_phrase": (
+            "bold comic-book children's storybook illustration with crisp black ink "
+            "outlines, dynamic poses, flat saturated colors, and subtle halftone shading"
+        ),
+    },
+    "crayon": {
+        "label": "Crayon Sketch",
+        "prompt_phrase": (
+            "hand-drawn crayon and marker children's storybook illustration with "
+            "sketchy waxy strokes, visible paper texture, and a charming childlike feel"
+        ),
+    },
+    "paper_collage": {
+        "label": "Paper Collage",
+        "prompt_phrase": (
+            "Eric Carle-inspired cut-paper collage children's storybook illustration "
+            "with bold layered paper shapes, visible torn edges, painted paper textures, "
+            "and warm vibrant colors"
+        ),
+    },
+}
+
+
+def get_art_style_phrase(style_id: str) -> str:
+    """Returns the image-prompt-ready style phrase for a given art_style id.
+
+    Falls back to watercolor if the id is unknown so missing/migrated values
+    never break image generation.
+    """
+    style = ART_STYLES.get(style_id) or ART_STYLES["watercolor"]
+    return style["prompt_phrase"]
+
+
 ORCHESTRATOR_INSTRUCTIONS = """
 You are the Orchestrator for a children's story creation system. Your job is to transform
 user-provided story parameters into a detailed, structured story outline that guides the
@@ -83,9 +137,13 @@ FOR EACH PAGE, you must also provide:
   expressions, lighting, background details. ENSURE that the description of the scene includes all relevant details
   to guarantee that the image generation agent can create an illustration that perfectly matches the narrative text and emotional tone.
 - image_prompt: A concise DALL-E style prompt for generating the illustration. ALWAYS begin
-  the prompt with the exact character descriptions from the outline (copy them verbatim; ENSURE that the ONLY character descriptions included are the ones that are in this scene. DO NOT include characters that are not present on this page),
-  then describe the scene. Use the style: "children's storybook illustration, watercolor style,
-  warm colors, [character descriptions], [scene details]".  If the characters happen to be animals, you may also include instructions ensuring
+  the prompt with the EXACT art-style descriptor provided in the user prompt (it will be
+  labeled "ART STYLE"; copy it verbatim as the very first phrase of every image_prompt),
+  then the exact character descriptions from the outline (copy them verbatim; ENSURE that
+  the ONLY character descriptions included are the ones that are in this scene. DO NOT
+  include characters that are not present on this page), then describe the scene. Use the
+  pattern: "[ART STYLE descriptor], [character descriptions], [scene details]".  If the
+  characters happen to be animals, you may also include instructions ensuring
   that they are anatomically correct in each image.
   CRITICAL — every image_prompt MUST end with this exact negative constraint (fill in the
   character name(s) for that page): "Only [name(s)] should appear as prominent, named characters
@@ -104,7 +162,8 @@ For each page, you will receive the image_prompt and must generate an illustrati
 the image generation tool.
 
 ILLUSTRATION STYLE GUIDELINES:
-1. Always use a warm, inviting children's storybook style (watercolor or soft digital art).
+1. Render every image in the storybook art style baked into the page's image_prompt
+   (the StoryArchitect prepends a style descriptor to each prompt — honor it exactly).
 2. Characters must look IDENTICAL across every page — use the character descriptions exactly.
 3. Colors should be bright but soft — avoid harsh or dark colors.
 4. Expressions should be clear and readable by young children.
@@ -325,9 +384,10 @@ NOT use the words "obscured", "blocked", "covered", "opaque rectangle/block/
 panel", "not fully visible", "not clearly recognizable", "face is hidden",
 or any equivalent phrasing. Painterly elements, accessories (satchels,
 clothing, hats, scarves), shell patterns, fur textures, atmospheric haze,
-soft focus, watercolor diffusion, and decorative borders are all NORMAL
-illustration choices — not "overlays" or "obscurations". Trust that the
-rendered image is acceptable as-is and move on.
+soft focus, watercolor diffusion, comic-book ink lines and panel borders,
+crayon strokes, cut-paper collage edges, and decorative borders are all
+NORMAL illustration choices — not "overlays" or "obscurations". Trust that
+the rendered image is acceptable as-is and move on.
 
 WHAT TO CHECK FOR THIS PAGE:
 

@@ -70,7 +70,12 @@ class CharacterGlossaryExecutor(Executor):
 
         result = await self._agent.run(
             prompt,
-            options={"response_format": CharacterGlossary},
+            options={
+                "response_format": CharacterGlossary,
+                # See orchestrator.py — bump max_tokens so reasoning-model
+                # internal tokens don't truncate the JSON output mid-string.
+                "max_tokens": 8000,
+            },
         )
         record_llm_usage(result)
         glossary: CharacterGlossary = result.value

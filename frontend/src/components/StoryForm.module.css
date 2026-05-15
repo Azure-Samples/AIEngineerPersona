@@ -273,6 +273,178 @@
   line-height: 1.45;
 }
 
+/* ─── Art-style pill selector ────────────────────────────────────────────── */
+
+.artStylePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.artStylePillWrapper {
+  flex: 1 1 180px;
+  position: relative;
+  display: flex;
+}
+
+.artStylePill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s, transform 0.06s;
+  font-family: inherit;
+  color: var(--color-text);
+  min-height: 56px;
+  justify-content: flex-start;
+}
+
+.artStylePill:hover {
+  border-color: var(--color-primary);
+}
+
+.artStylePill:active {
+  transform: translateY(1px);
+}
+
+.artStylePillSelected {
+  border-color: var(--color-primary);
+  background: rgba(24, 61, 76, 0.08);
+  box-shadow: 0 0 0 3px rgba(24, 61, 76, 0.15);
+}
+
+.artStylePillName {
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+.artStylePillDesc {
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+  /* Reserve space for ~3 lines so the sample image starts at the same
+     vertical position across every pill, regardless of how many lines
+     the description wraps to. */
+  min-height: calc(3 * 1.35em);
+}
+
+.artStylePillSample {
+  margin-top: 10px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: #ECECEC;
+  display: block;
+}
+
+.artStylePillMagnifier {
+  position: absolute;
+  /* Anchor inside the pill's sample image, top-right corner. The pill has
+     12px horizontal padding + 1 line gap (10px) above the image, so the
+     image's actual top sits below the description block; tuning the offset
+     visually places the icon over the image's top-right. */
+  bottom: 18px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.06s;
+  z-index: 1;
+  padding: 0;
+}
+
+.artStylePillMagnifier:hover {
+  background: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.artStylePillMagnifier:active {
+  transform: translateY(1px);
+}
+
+/* ─── Art-style preview lightbox ─────────────────────────────────────────── */
+
+.stylePreviewBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+  cursor: zoom-out;
+}
+
+.stylePreviewContent {
+  position: relative;
+  max-width: min(90vw, 900px);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: default;
+}
+
+.stylePreviewImage {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  background: #FFFFFF;
+}
+
+.stylePreviewLabel {
+  margin-top: 12px;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.stylePreviewClose {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #FFFFFF;
+  color: #1F2A2E;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.stylePreviewClose:hover {
+  background: #F3F3F3;
+}
+
 /* ─── Full-Wikipedia disabled state ─────────────────────────────────────── */
 
 .fieldset {

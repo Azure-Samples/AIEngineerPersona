@@ -748,6 +748,22 @@
   gap: 4px;
 }
 
+.reviewerCallGroupHeader {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 6px 4px 2px;
+  line-height: 1.4;
+}
+
+.reviewerCallRowDescription {
+  font-size: 0.74rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: 0;
+  line-height: 1.4;
+}
+
 .reviewerCallRow {
   display: flex;
   flex-direction: column;
@@ -757,13 +773,19 @@
 .reviewerCallRowHeader,
 .reviewerCallRowHeaderClickable {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   padding: 6px 8px;
   border-radius: 6px;
   background: var(--color-bg, #FFFFFF);
   border: 1px solid var(--color-border);
   font-size: 0.82rem;
+}
+
+.reviewerCallRowHeaderInner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .reviewerCallRowHeaderClickable {

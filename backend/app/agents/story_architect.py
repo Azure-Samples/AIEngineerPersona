@@ -13,7 +13,7 @@ from azure.identity import DefaultAzureCredential
 
 from ..config import settings
 from ..models import StoryArchitectOutput, StoryDraft, StoryOutline, StoryPage
-from ..prompts import STORY_ARCHITECT_INSTRUCTIONS
+from ..prompts import STORY_ARCHITECT_INSTRUCTIONS, get_art_style_phrase
 from ..utils import record_llm_usage
 from ..events import ProgressDetailEvent
 
@@ -64,7 +64,15 @@ class StoryArchitectExecutor(Executor):
 
         result = await self._agent.run(
             prompt,
-            options={"response_format": StoryArchitectOutput},
+            options={
+                "response_format": StoryArchitectOutput,
+                # See orchestrator.py for context — gpt-5.x reasoning tokens
+                # eat the default response budget and truncate the JSON mid-
+                # string. The architect's output is the largest in the workflow
+                # (full text + scene_description + image_prompt for 8–10 pages
+                # ≈ 8–12k JSON chars), so cap it generously.
+                "max_tokens": 24000,
+            },
         )
         record_llm_usage(result)
 
@@ -144,8 +152,13 @@ class StoryArchitectExecutor(Executor):
             for p in outline.page_outlines
         )
 
+        style_phrase = get_art_style_phrase(outline.art_style)
+
         return "\n".join([
             f"Write the complete story for '{outline.title}'.",
+            "",
+            "ART STYLE — every image_prompt MUST begin with this exact phrase, copied verbatim:",
+            f'  "{style_phrase}"',
             "",
             "IMPORTANT — use these EXACT character visual descriptions in every image prompt:",
             char_desc_lines,
