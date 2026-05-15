@@ -48,6 +48,8 @@ These step-by-step walkthroughs guide you through extending the base application
 | [Adding OTEL Observability (AI Toolkit)](docs/07.a-guide-otel-observability-ai-toolkit.md) | Distributed tracing across all agents, viewable in VS Code via AI Toolkit | OpenTelemetry, distributed tracing, AI Toolkit trace viewer, prompt inspection |
 | [Adding OTEL Observability (Aspire)](docs/07.b-guide-otel-observability-aspire.md) | Distributed tracing across all agents, viewable in the Aspire Dashboard | OpenTelemetry, distributed tracing, OTLP export, .NET Aspire Dashboard, Application Insights |
 | [Hosting the Agents in Microsoft Foundry](docs/09-guide-foundry-hosted-agents.md) | Switch every chat agent in the workflow from in-process to a Foundry-hosted agent with one env var; provision via an idempotent script | Microsoft Foundry agents, `FoundryAgent`, idempotent provisioning, source-of-truth contract |
+| [Running LLM Evals Locally (AI Toolkit / Foundry Toolkit)](docs/10.a-guide-evals-ai-toolkit.md) | Score the agents' outputs from inside VS Code using the Foundry Toolkit extension, with the sample dataset shipped in `evals/` and a custom "Moral Honored" evaluator | LLM evaluation, JSONL datasets, built-in evaluators (Coherence/Fluency/Similarity), custom prompt-based evaluators |
+| [Running Cloud Evals on Foundry-Hosted Agents](docs/10.b-guide-evals-foundry.md) | Run evaluations in the Microsoft Foundry portal against your provisioned hosted agents, including continuous evaluation against production traces | Foundry portal evals, agent target evaluations, continuous evaluation, Application Insights monitoring |
 
 > **Approach:** Each guide walks you through using GitHub Copilot in **Plan mode** (with Claude Opus, or your preferred model) to design the implementation, then **Agent mode** (with Claude Sonnet, or your preferred model) to execute it. The goal is to experience how an AI engineer would use Copilot to extend an existing agent-based application.
 
@@ -66,6 +68,8 @@ These step-by-step walkthroughs guide you through extending the base application
 | [Guide: OTEL Observability (Aspire)](docs/07.b-guide-otel-observability-aspire.md) | Add OpenTelemetry tracing viewable in the .NET Aspire Dashboard |
 | [Deploying to Azure](docs/08-deploying-to-azure.md) | One-command `azd up` deploy to Azure Container Apps, including optional Microsoft Entra sign-in |
 | [Guide: Foundry-Hosted Agents](docs/09-guide-foundry-hosted-agents.md) | Run the chat agents as Microsoft Foundry-hosted agents instead of in-process; provision via an idempotent script |
+| [Guide: LLM Evals — AI Toolkit / Foundry Toolkit (local)](docs/10.a-guide-evals-ai-toolkit.md) | Run offline LLM evaluations against the agents inside VS Code using the Foundry Toolkit extension |
+| [Guide: LLM Evals — Microsoft Foundry portal (cloud)](docs/10.b-guide-evals-foundry.md) | Run cloud evaluations in the Foundry portal against your hosted agents, with continuous-eval and CI options |
 
 ## License
 
