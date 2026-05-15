@@ -39,7 +39,7 @@
     },
     {
       "page_number": 4,
-      "text": "Lilly and Ben did not want the wall to quiet their friendship. So Lilly made a bright drawing and carefully taped it to her side of the wall. On the other side, Ben pressed up one of his own pictures, hoping it would meet hers through the cold stone. They could not share footsteps anymore, but they could still share colors, shapes, and love. Each picture was like a little wave that said, \u201cI\u2019m still here.\u201d Seeing those drawings made both friends feel a small, brave spark of hope.",
+      "text": "Lilly and Ben did not want the wall to quiet their friendship. So Lilly made a bright drawing and carefully taped it to her side of the wall. On the other side, Ben pressed up one of his own pictures, hoping it would meet hers through the cold stone. They could not share footsteps anymore, but they could still share colors, shapes, and love. Each picture was like a little wave that said, “I’m still here.” Seeing those drawings made both friends feel a small, brave spark of hope.",
       "scene_description": "The scene shows both children still separated by the wall, but now acting with tenderness and creativity. Lilly stands close to her side of the wall, carefully taping up a colorful childlike drawing, her expression focused and hopeful. On the other side, Ben presses his own drawing against the wall, smiling gently with quiet determination. The wall remains large and separating, but the bright papers add warmth and human feeling to it. The composition should suggest that their pictures are placed in matching spots on opposite sides, symbolizing connection despite distance. The lighting should feel softer and kinder than the previous page, with a hopeful glow.",
       "characters_present": [
         "Lilly",
@@ -51,8 +51,8 @@
     },
     {
       "page_number": 5,
-      "text": "Days passed, and the wall seemed colder and bigger than before. Lilly sat beside it and read one of Ben\u2019s notes again, tracing the words with her finger. On the other side, Ben held Lilly\u2019s note and smiled a small, sad smile. They missed their games, their chalk drawings, and the easy sound of talking face to face. Sometimes the loneliness felt large, like a long shadow stretching over the street. But every note reminded them that their friendship was still alive and strong.",
-      "scene_description": "The image should show the passage of time and the emotional weight of separation. Lilly sits on the ground beside the wall on one side, reading a note carefully, her face thoughtful and lonely but comforted. On the opposite side, Ben also sits or kneels close to the wall, reading Lilly\u2019s note with a sad but loving smile. The wall looms large and cold between them, making the children appear small by comparison. The colors should be slightly muted, with a quiet, reflective feeling, while still preserving warmth in their expressions and the notes themselves. The overall composition should communicate loneliness held together by love and determination.",
+      "text": "Days passed, and the wall seemed colder and bigger than before. Lilly sat beside it and read one of Ben’s notes again, tracing the words with her finger. On the other side, Ben held Lilly’s note and smiled a small, sad smile. They missed their games, their chalk drawings, and the easy sound of talking face to face. Sometimes the loneliness felt large, like a long shadow stretching over the street. But every note reminded them that their friendship was still alive and strong.",
+      "scene_description": "The image should show the passage of time and the emotional weight of separation. Lilly sits on the ground beside the wall on one side, reading a note carefully, her face thoughtful and lonely but comforted. On the opposite side, Ben also sits or kneels close to the wall, reading Lilly’s note with a sad but loving smile. The wall looms large and cold between them, making the children appear small by comparison. The colors should be slightly muted, with a quiet, reflective feeling, while still preserving warmth in their expressions and the notes themselves. The overall composition should communicate loneliness held together by love and determination.",
       "characters_present": [
         "Lilly",
         "Ben"
@@ -75,8 +75,8 @@
     },
     {
       "page_number": 7,
-      "text": "At last, cracks began to spread across the wall. Small openings appeared, and Lilly hurried close, hardly daring to blink. Ben pressed near from the other side, and through a new gap they could finally see each other\u2019s faces clearly again. Their eyes grew wide with surprise and joy. For a moment, neither one spoke because the feeling was too big for words. Then both of them smiled the biggest smiles they had smiled in a very long time.",
-      "scene_description": "The wall is beginning to break open, with visible cracks and a fresh gap large enough for the children to see one another\u2019s faces through it. Lilly stands very near the opening on one side, her expression breathless and astonished, one hand perhaps touching the wall carefully. Ben mirrors her on the other side, close to the gap, his face lit with wonder and excitement. The broken wall should still clearly separate them for now, but the opening offers a powerful symbol of reunion. The scene should feel dynamic and emotionally electric, with fragments, rough edges, and movement in the air. The lighting should brighten slightly, signaling hope and change.",
+      "text": "At last, cracks began to spread across the wall. Small openings appeared, and Lilly hurried close, hardly daring to blink. Ben pressed near from the other side, and through a new gap they could finally see each other’s faces clearly again. Their eyes grew wide with surprise and joy. For a moment, neither one spoke because the feeling was too big for words. Then both of them smiled the biggest smiles they had smiled in a very long time.",
+      "scene_description": "The wall is beginning to break open, with visible cracks and a fresh gap large enough for the children to see one another’s faces through it. Lilly stands very near the opening on one side, her expression breathless and astonished, one hand perhaps touching the wall carefully. Ben mirrors her on the other side, close to the gap, his face lit with wonder and excitement. The broken wall should still clearly separate them for now, but the opening offers a powerful symbol of reunion. The scene should feel dynamic and emotionally electric, with fragments, rough edges, and movement in the air. The lighting should brighten slightly, signaling hope and change.",
       "characters_present": [
         "Lilly",
         "Ben"
@@ -126,54 +126,5 @@
   "cover_image_url": "/api/demo-stories/lilly-and-ben-on-both-sides-of-the-wall/images/cover.png",
   "the_end_image_url": "/api/demo-stories/lilly-and-ben-on-both-sides-of-the-wall/images/the_end.png",
   "review_notes": "Story approved with no issues.",
-  "revision_rounds": 2,
-  "look_and_find": {
-    "instructions": "Can you find these special story treasures? Flip through the pictures and look very carefully!",
-    "items": [
-      {
-        "page_number": 1,
-        "item_name": "Lilly's small blue satchel",
-        "item_description": "Look for Lilly's little blue satchel while she draws on the cobbled street with Ben.",
-        "hint": "It's close to Lilly in the foreground."
-      },
-      {
-        "page_number": 4,
-        "item_name": "Lilly's bright drawing taped to the wall",
-        "item_description": "Can you spot the colorful picture Lilly carefully taped onto her side of the wall?",
-        "hint": "Look right where Lilly is standing near the wall."
-      },
-      {
-        "page_number": 5,
-        "item_name": "Ben's note in Lilly's hands",
-        "item_description": "Find the note Lilly is reading as she sits by the wall and thinks about her friend.",
-        "hint": "It's a small paper close to Lilly's face and hands."
-      },
-      {
-        "page_number": 7,
-        "item_name": "the new crack and gap in the wall",
-        "item_description": "Look for the fresh opening in the wall where Lilly and Ben can finally see each other again.",
-        "hint": "Check the middle of the wall between the two friends."
-      },
-      {
-        "page_number": 9,
-        "item_name": "the spread-out crayons",
-        "item_description": "Can you find the crayons scattered between Lilly and Ben as they draw one big picture together?",
-        "hint": "Look on the fallen wall piece where they are sitting side by side."
-      }
-    ]
-  },
-  "character_glossary": {
-    "entries": [
-      {
-        "name": "Lilly",
-        "description": "Lilly is a cheerful little girl with curly dark pigtails, a sunny yellow coat, and a small blue satchel. She loves drawing, playing games, and finding brave ways to show Ben that their friendship still matters. Lilly is kind, hopeful, and full of heart.",
-        "role": "the brave and caring main character"
-      },
-      {
-        "name": "Ben",
-        "description": "Ben is a fun-loving little boy with messy sandy blond hair, a green striped sweater, and a bright red backpack. He misses Lilly very much, but he never gives up on their friendship and keeps sharing notes, pictures, and hope. Ben is loyal, gentle, and wonderfully brave too.",
-        "role": "the loyal best friend"
-      }
-    ]
-  }
+  "revision_rounds": 2
 }

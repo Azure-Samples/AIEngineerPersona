@@ -66,7 +66,6 @@ from ..prompts import (
     THE_END_REVIEWER_INSTRUCTIONS,
 )
 from ..storage import get_backend
-from ..utils import record_llm_usage
 
 logger = logging.getLogger(__name__)
 
@@ -408,9 +407,6 @@ class StoryReviewerExecutor(Executor):
     ) -> tuple[str, Any]:
         """Run one focused review subcall, emitting started/completed/failed
         ProgressDetailEvents and returning ``(call_id, parsed_result | Exception)``.
-
-        Per-subcall ``record_llm_usage`` is called inside the success branch so
-        OTEL token telemetry doesn't regress with the fan-out.
         """
         await ctx.add_event(ProgressDetailEvent(
             executor_id="story_reviewer",
@@ -431,7 +427,6 @@ class StoryReviewerExecutor(Executor):
                         "max_tokens": 8000,
                     },
                 )
-            record_llm_usage(result)
             parsed = result.value
             passed = self._is_call_passed(parsed)
             issues = list(getattr(parsed, "issues", []))

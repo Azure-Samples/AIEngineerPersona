@@ -14,7 +14,6 @@ from azure.identity import DefaultAzureCredential
 from ..config import settings
 from ..models import StoryArchitectOutput, StoryDraft, StoryOutline, StoryPage
 from ..prompts import STORY_ARCHITECT_INSTRUCTIONS, get_art_style_phrase
-from ..utils import record_llm_usage
 from ..events import ProgressDetailEvent
 
 logger = logging.getLogger(__name__)
@@ -74,7 +73,6 @@ class StoryArchitectExecutor(Executor):
                 "max_tokens": 24000,
             },
         )
-        record_llm_usage(result)
 
         # The model emits a StoryArchitectOutput (text-only). Convert to the
         # runtime StoryDraft so downstream executors (ArtDirector, Reviewer,

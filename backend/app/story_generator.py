@@ -38,10 +38,6 @@ class StoryGenerator:
         "art_director":       "Art Director",
         "story_reviewer":     "Story Reviewer",
         "decision":           "Decision",
-        "approval_gateway":   "Approval Gateway",
-        "look_and_find":      "Look & Find",
-        "character_glossary": "Character Glossary",
-        "final_assembly":     "Final Assembly",
     }
 
     EXECUTOR_MESSAGES: dict[str, str] = {
@@ -50,10 +46,6 @@ class StoryGenerator:
         "art_director":       "Generating illustrations for each page...",
         "story_reviewer":     "Reviewing story for quality & consistency...",
         "decision":           "Making final decisions...",
-        "approval_gateway":   "Routing approved story...",
-        "look_and_find":      "Creating the Look & Find activity page...",
-        "character_glossary": "Writing the Character Glossary...",
-        "final_assembly":     "Assembling the final story...",
     }
 
     # ── Public API ────────────────────────────────────────────────────────

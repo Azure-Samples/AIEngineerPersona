@@ -13,16 +13,8 @@ class Settings(BaseSettings):
     foundry_model_deployment_name: str = "gpt-4o"
     foundry_image_model_deployment_name: str = "gpt-image-1"
 
-    # Azure Speech Service (TTS)
-    azure_speech_region: str = ""
-    azure_speech_resource_id: str = ""   # /subscriptions/.../resourceGroups/.../providers/Microsoft.CognitiveServices/accounts/<name>
-    azure_speech_endpoint: str = ""       # optional custom endpoint override
-
     # CORS origin for the React dev server
     cors_origin: str = "http://localhost:5173"
-
-    # OpenTelemetry — master switch (set to False to disable without removing env vars)
-    otel_enabled: bool = True
 
     # StoryReviewer fan-out concurrency cap. The reviewer dispatches N+3
     # focused LLM calls (per-page + cover + end + text + cross-page) in
@@ -34,3 +26,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

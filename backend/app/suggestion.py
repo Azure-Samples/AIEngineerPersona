@@ -26,7 +26,6 @@ from azure.identity import DefaultAzureCredential
 from .config import settings
 from .models import StorySuggestion
 from .prompts import STORY_SUGGESTION_INSTRUCTIONS
-from .utils import record_llm_usage
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +121,6 @@ class StorySuggestionService:
             prompt,
             options={"response_format": StorySuggestion},
         )
-        record_llm_usage(result)
         suggestion: StorySuggestion = result.value
         logger.info(
             "[Suggestion] Suggested main_character=%r, setting=%r",

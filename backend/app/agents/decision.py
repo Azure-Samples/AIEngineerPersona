@@ -1,20 +1,18 @@
 """
-DecisionExecutor — Routing node in the workflow.
+DecisionExecutor — Routing & terminal node in the workflow.
 
 Receives the ReviewResult and decides:
-  - If approved OR max revision cycles reached → assemble StoryResponse and send_message
-    downstream to FinalAssemblyExecutor (or fan-out to bonus agents)
-  - If rejected AND revision budget remains → send RevisionSignal back to OrchestratorExecutor
-
-NOTE: This node no longer calls ctx.yield_output() directly. The terminal yield_output
-call has moved to FinalAssemblyExecutor, which is always the last node in the graph.
+  - If approved OR max revision cycles reached → assemble StoryResponse and
+    yield_output to end the workflow
+  - If rejected AND revision budget remains → send RevisionSignal back to
+    OrchestratorExecutor (full regen) or ImageRevisionSignal back to
+    ArtDirectorExecutor (selective image regen)
 """
 
 import logging
 
 from agent_framework import Executor, WorkflowContext, handler
 
-from ..config import settings
 from ..events import ProgressDetailEvent
 from ..models import ReviewResult, StoryDraft, StoryResponse
 from ..signals import ImageRevisionSignal, RevisionSignal
@@ -26,7 +24,7 @@ MAX_REVISION_ROUNDS = 2
 
 class DecisionExecutor(Executor):
     """
-    Routes the workflow: approve & emit final story, or loop back for revision.
+    Routes the workflow: approve & yield final story, or loop back for revision.
     """
 
     def __init__(self) -> None:
@@ -75,10 +73,7 @@ class DecisionExecutor(Executor):
                 )
 
             story_response = await self._assemble_story(review, revision_count, ctx)
-            # Persist the approved StoryResponse so FinalAssemblyExecutor can always
-            # read it from shared state, regardless of which bonus agents executed.
-            ctx.set_state("approved_story", story_response.model_dump_json())
-            await ctx.send_message(story_response)
+            await ctx.yield_output(story_response)
 
         elif (
             review.revision_scope == "images_only"
@@ -160,3 +155,4 @@ class DecisionExecutor(Executor):
             review_notes=issue_summary if issue_summary else "Story approved with no issues.",
             revision_rounds=revision_rounds,
         )
+

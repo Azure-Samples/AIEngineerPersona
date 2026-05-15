@@ -22,6 +22,11 @@ env/
 # Per-developer azd env config (only the .example.sh template is committed)
 infra/scripts/azd-env.local.sh
 
+# Per-session draft images created by the storage backend at runtime.
+# Drafts are promoted into a permanent demo-story folder when the user clicks
+# "Save Story"; otherwise they remain here as ephemeral local artifacts.
+backend/demo_stories/_drafts/
+
 # Node
 node_modules/
 frontend/dist/

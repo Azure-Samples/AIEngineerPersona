@@ -11,16 +11,13 @@ from typing import Optional
 
 from agent_framework import Agent, Executor, WorkflowContext, handler
 from agent_framework.openai import OpenAIChatClient
-from opentelemetry import trace
 from azure.identity import DefaultAzureCredential
 
 from ..config import settings
 from ..models import StoryRequest, StoryOutline, StoryOutlineDraft
 from ..prompts import ORCHESTRATOR_INSTRUCTIONS
 from ..signals import RevisionSignal
-from ..utils import record_llm_usage
 from ..events import ProgressDetailEvent
-from ..wikipedia import fetch_wikipedia
 
 logger = logging.getLogger(__name__)
 
@@ -54,21 +51,11 @@ class OrchestratorExecutor(Executor):
         """Called once with the user's form input on the very first run."""
         logger.info("[Orchestrator] Received initial story request for: %s", request.main_character)
 
-        span = trace.get_current_span()
-        span.set_attribute("orchestrator.mode", "initial")
-        span.set_attribute("orchestrator.main_character", request.main_character)
-        span.set_attribute("orchestrator.setting", request.setting or "")
-        span.set_attribute("orchestrator.moral", request.moral or "")
-        if request.wikipedia_topic:
-            span.set_attribute("orchestrator.wikipedia_topic", request.wikipedia_topic)
-
         await ctx.add_event(ProgressDetailEvent(
             executor_id="orchestrator",
             detail_type="executor_started",
             detail_data={
                 "mode": "initial",
-                "wikipedia_topic": request.wikipedia_topic,
-                "wikipedia_mode": request.wikipedia_mode if request.wikipedia_topic else None,
                 "main_character": request.main_character,
                 "supporting_characters": request.supporting_characters or [],
                 "setting": request.setting,
@@ -86,11 +73,6 @@ class OrchestratorExecutor(Executor):
 
         outline = await self._create_outline(request, revision_instructions=None, ctx=ctx)
         logger.info("[Orchestrator] Outline created: '%s' (%d pages)", outline.title, outline.target_pages)
-        span.add_event("outline_created", {
-            "title": outline.title,
-            "page_count": outline.target_pages,
-            "plot_summary": outline.plot_summary or "",
-        })
 
         await ctx.send_message(outline)
 
@@ -107,10 +89,6 @@ class OrchestratorExecutor(Executor):
         ctx.set_state("revision_count", revision_count)
         logger.info("[Orchestrator] Starting revision round %d", revision_count)
 
-        span = trace.get_current_span()
-        span.set_attribute("orchestrator.mode", "revision")
-        span.set_attribute("orchestrator.revision_number", revision_count)
-
         await ctx.add_event(ProgressDetailEvent(
             executor_id="orchestrator",
             detail_type="revision_started",
@@ -125,10 +103,6 @@ class OrchestratorExecutor(Executor):
 
         outline = await self._create_outline(request, revision_instructions=signal.revision_instructions, ctx=ctx)
         logger.info("[Orchestrator] Revised outline ready: '%s'", outline.title)
-        span.add_event("revised_outline_ready", {
-            "title": outline.title,
-            "page_count": outline.target_pages,
-        })
 
         await ctx.send_message(outline)
 
@@ -143,74 +117,15 @@ class OrchestratorExecutor(Executor):
         characters_str = ", ".join(request.supporting_characters) if request.supporting_characters else "none"
         additional = request.additional_details or "No additional details provided."
 
-        # ── Optional Wikipedia RAG context ────────────────────────────────────
-        wikipedia_context_parts: list[str] = []
-        wiki_full_mode = False
-        if request.wikipedia_topic and request.wikipedia_topic.strip():
-            wiki = await fetch_wikipedia(request.wikipedia_topic.strip())
-            if wiki:
-                wiki_full_mode = request.wikipedia_mode == "full"
-                await ctx.add_event(ProgressDetailEvent(
-                    executor_id="orchestrator",
-                    detail_type="wikipedia_fetched",
-                    detail_data={
-                        "topic": request.wikipedia_topic,
-                        "resolved_title": wiki.title,
-                        "url": wiki.url,
-                        "extract_length": len(wiki.extract),
-                        "mode": request.wikipedia_mode,
-                    },
-                ))
-                if wiki_full_mode:
-                    wikipedia_context_parts = [
-                        "",
-                        "WIKIPEDIA CONTEXT (FULL MODE) — The entire story must be based on this content.",
-                        "Invent appropriate characters, setting, moral, and plot entirely from",
-                        "this real-world information. Retell it as a children's story.",
-                        f"Topic: {wiki.title}",
-                        f"Source: {wiki.url}",
-                        "",
-                        wiki.extract,
-                    ]
-                else:
-                    wikipedia_context_parts = [
-                        "",
-                        "WIKIPEDIA CONTEXT (INFLUENCE MODE) — Use this real-world information as",
-                        "background inspiration, blended with the user's characters, setting,",
-                        "moral, and plot parameters listed above.",
-                        f"Topic: {wiki.title}",
-                        f"Source: {wiki.url}",
-                        "",
-                        wiki.extract,
-                    ]
-            else:
-                await ctx.add_event(ProgressDetailEvent(
-                    executor_id="orchestrator",
-                    detail_type="wikipedia_not_found",
-                    detail_data={"topic": request.wikipedia_topic},
-                ))
-
-        if wiki_full_mode:
-            # Full mode: user's manual story fields are ignored; prompt is built
-            # purely from the Wikipedia content.
-            prompt_parts = [
-                "Create a children's story outline based entirely on the Wikipedia",
-                "content provided below. Invent appropriate characters (with vivid",
-                "visual descriptions), a setting, a moral lesson, and a plot that",
-                "faithfully retells the real-world information for young readers.",
-            ]
-        else:
-            prompt_parts = [
-                "Create a story outline based on these parameters:",
-                f"- Main character: {request.main_character}",
-                f"- Supporting characters: {characters_str}",
-                f"- Setting: {request.setting}",
-                f"- Moral of the story: {request.moral}",
-                f"- Main problem: {request.main_problem}",
-                f"- Additional details: {additional}",
-            ]
-
-        prompt_parts += wikipedia_context_parts
+        prompt_parts = [
+            "Create a story outline based on these parameters:",
+            f"- Main character: {request.main_character}",
+            f"- Supporting characters: {characters_str}",
+            f"- Setting: {request.setting}",
+            f"- Moral of the story: {request.moral}",
+            f"- Main problem: {request.main_problem}",
+            f"- Additional details: {additional}",
+        ]
 
         if revision_instructions:
             prompt_parts += [
@@ -243,7 +158,6 @@ class OrchestratorExecutor(Executor):
                 "max_tokens": 16000,
             },
         )
-        record_llm_usage(result)
         # The model emits a StoryOutlineDraft (character_descriptions is a list
         # of {name, description}). Convert to StoryOutline (dict[str,str]) so
         # downstream executors keep their existing dict-based access pattern.
@@ -270,3 +184,4 @@ class OrchestratorExecutor(Executor):
         ))
 
         return outline
+

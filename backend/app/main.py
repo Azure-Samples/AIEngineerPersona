@@ -4,19 +4,17 @@ main.py — FastAPI application entry point.
 Endpoints:
   GET  /api/health              — health check
   POST /api/generate-story      — runs the story workflow; streams SSE progress events
-  GET  /api/sample-stories      — list saved story snapshots
-  GET  /api/sample-stories/{id} — load a full story snapshot
-  POST /api/sample-stories      — save a story snapshot
+  POST /api/suggest-story       — returns a fresh "Surprise Me" set of seed values
+  GET  /api/demo-stories        — list saved story snapshots
+  GET  /api/demo-stories/{id}   — load a full story snapshot
+  POST /api/demo-stories        — save a story snapshot
 """
 
-import json
 import logging
-import re
 from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
@@ -50,16 +48,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Telemetry (must be configured BEFORE importing StoryGenerator) ───────────
-
-from .telemetry import configure_telemetry  # noqa: E402
-
-configure_telemetry(app)
-
 # ─── Service instances ────────────────────────────────────────────────────────
 
 from .story_generator import StoryGenerator  # noqa: E402
-from .tts import TTSService, TTSRequest  # noqa: E402
 from .suggestion import StorySuggestionService  # noqa: E402
 
 _story_generator = StoryGenerator()
@@ -82,19 +73,6 @@ async def generate_story(request: StoryRequest) -> EventSourceResponse:
     full illustrated StoryResponse.
     """
     return _story_generator.event_source_response(request)
-
-
-# ─── Text-to-Speech (TTS) ─────────────────────────────────────────────────────
-
-_tts = TTSService()
-
-@app.post("/api/tts")
-async def text_to_speech(req: TTSRequest):
-    """Synthesize speech and stream audio/mpeg chunks to the client."""
-    if not req.text or not req.text.strip():
-        raise HTTPException(status_code=400, detail="Text is required.")
-    _tts.validate_config()
-    return _tts.streaming_response(req.text.strip())
 
 
 # ─── Story suggestion ("Surprise Me" auto-fill) ───────────────────────────────
