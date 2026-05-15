@@ -15,9 +15,8 @@ This repository is structured around a hands-on workshop. Pick a branch based on
 | --- | --- | --- |
 | **`main`** | A **minimal version of the app** with the core multi-agent workflow only. Activity-page agents, text-to-speech, Wikipedia RAG, OpenTelemetry, and the art-style picker are deliberately left out. | The **workshop starting point**. Clone this branch and use **GitHub Copilot** (and the **Copilot CLI**) to build the additional features yourself by following the [Guides](#guides) below. |
 | **`all-features`** | The **fully-built reference application** with every feature from every guide already implemented. | When you want to see the finished product, run a polished demo, or compare your workshop output against a working reference. |
-| Single-feature branches (`activity-page-agents`, `story-tts`, `wikipedia-rag`, `activity-page-agents-and-tts`) | Each adds one guide's output on top of `main`. | Backup references for individual guides — see [Reference Branches](#reference-branches). |
 
-Either `main` or `all-features` can be deployed to Azure with a single `azd up` — see [Deploying to Azure](docs/08-deploying-to-azure.md).
+Either branch can be deployed to Azure with a single `azd up` — see [Deploying to Azure](docs/08-deploying-to-azure.md).
 
 ## How It Works
 
@@ -31,10 +30,11 @@ Orchestrator → StoryArchitect → ArtDirector → StoryReviewer → Decision
 
 ## Quick Start
 
-1. **Set up prerequisites** — [Prerequisites & Environment Setup](docs/01-prerequisites-and-setup.md)
-2. **Understand the architecture** — [Architecture Overview](docs/02-architecture-overview.md)
-3. **Run the demo locally** — [Running the Demo](docs/03-running-the-demo.md)
-4. **Deploy to Azure** — [Deploying to Azure](docs/08-deploying-to-azure.md)
+1. **Get running locally in minutes** — [Local Quickstart](docs/00-local-quickstart.md)
+2. **(Deeper dive) Prerequisites & Setup** — [Prerequisites & Environment Setup](docs/01-prerequisites-and-setup.md)
+3. **Understand the architecture** — [Architecture Overview](docs/02-architecture-overview.md)
+4. **Walk through the demo flow** — [Running the Demo](docs/03-running-the-demo.md)
+5. **Deploy to Azure** — [Deploying to Azure](docs/08-deploying-to-azure.md)
 
 ## Guides
 
@@ -50,21 +50,11 @@ These step-by-step walkthroughs guide you through extending the base application
 
 > **Approach:** Each guide walks you through using GitHub Copilot in **Plan mode** (with Claude Opus, or your preferred model) to design the implementation, then **Agent mode** (with Claude Sonnet, or your preferred model) to execute it. The goal is to experience how an AI engineer would use Copilot to extend an existing agent-based application.
 
-## Reference Branches
-
-The following branches contain working implementations of the guided extensions. They exist as **backup references** — the intended workflow is to generate these features yourself using GitHub Copilot by following the guides above.
-
-| Branch | Description |
-|---|---|
-| `activity-page-agents` | Look & Find + Character Glossary agents added to the workflow |
-| `story-tts` | Text-to-Speech narration on every story page |
-| `wikipedia-rag` | Wikipedia-powered story generation with Full and Influence modes |
-| `activity-page-agents-and-tts` | All features combined (activity pages + TTS) |
-
 ## Documentation
 
 | Document | Description |
 |---|---|
+| [Local Quickstart](docs/00-local-quickstart.md) | The shortest path to running the app locally |
 | [Prerequisites & Environment Setup](docs/01-prerequisites-and-setup.md) | Tools, Azure resources, environment configuration, and local setup |
 | [Architecture Overview](docs/02-architecture-overview.md) | System design, agent descriptions, workflow graph, SSE streaming, and data flow |
 | [Running the Demo](docs/03-running-the-demo.md) | Step-by-step instructions for running the app and demo talking points |

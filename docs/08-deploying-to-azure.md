@@ -74,7 +74,7 @@ The repo ships three template files — each maps to a different stage of the wo
 
 | File | Used by | What it's for |
 | ---- | ------- | ------------- |
-| [`backend/.env.example`](../backend/.env.example) | **Local dev only** (`uvicorn` on your laptop) | Copy to `backend/.env` and fill in. The Container App **never reads this file** — runtime env vars are injected by Bicep. |
+| [`backend/.env.example`](../backend/.env.example) | **Local dev only** (`uvicorn` running locally) | Copy to `backend/.env` and fill in. The Container App **never reads this file** — runtime env vars are injected by Bicep. |
 | [`infra/scripts/azd-env.example.sh`](../infra/scripts/azd-env.example.sh) | **Deploy only** (`azd up`) | Copy to `infra/scripts/azd-env.local.sh` (gitignored), edit the placeholders, and `bash` it once. It runs all the `azd env set` commands in one go so you don't have to remember them. |
 | [`infra/main.parameters.json`](../infra/main.parameters.json) | **Bicep** (read by `azd up`) | Don't edit this. It maps Bicep parameters to azd-env values like `${AZURE_STORAGE_ACCOUNT_NAME}` — the variables you set via the script above. |
 | [`azure.yaml`](../azure.yaml) | **azd** (read by every `azd` command) | The `azd` project definition. Already configured for Container Apps with remote-build. |
