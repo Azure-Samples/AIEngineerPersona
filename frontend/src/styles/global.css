@@ -160,7 +160,7 @@ button {
 /* v2 logo is white-on-transparent and designed to sit directly on the
  * dark header background — no white card or shadow needed. */
 .app-header__logo {
-  height: 110px;
+  height: 90px;
   width: auto;
   display: block;
   object-fit: contain;
