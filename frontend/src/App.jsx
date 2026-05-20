@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './styles/global.css';
 import logoSrc from './assets/logo.png';
-import brandSrc from './assets/image.png';
+import brandSrc from './assets/logo-transparentv2.png';
 import StoryForm from './components/StoryForm';
 import StoryGallery from './components/StoryGallery';
 import ProgressTracker from './components/ProgressTracker';
@@ -77,7 +77,18 @@ function App() {
     <>
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="app-header">
-        <h1 onClick={handleReset} style={{ cursor: 'pointer' }}><img src={brandSrc} alt="Zava" className="header-brand" /> Publishing - Children's Story Studio</h1>
+        <button
+          type="button"
+          className="app-header__brand"
+          onClick={handleReset}
+          aria-label="Return to home"
+        >
+          <img src={brandSrc} alt="" className="app-header__logo" />
+          <div className="app-header__text">
+            <h1 className="app-header__title">Children&apos;s Story Studio</h1>
+            <p className="app-header__tagline">Imagine. Create. Inspire.</p>
+          </div>
+        </button>
       </header>
 
       {/* ── Main content ───────────────────────────────────────────── */}
