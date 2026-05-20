@@ -89,38 +89,137 @@ button {
 /* ─── App shell ─────────────────────────────────────────────────────────── */
 
 .app-header {
+  position: relative;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #183D4C 0%, #3D7288 100%);
+  /* Starry-sky panorama anchored to the left, covering the full header.
+   * Fallback navy in case the image fails to load. */
+  background-color: #0a1932;
+  background-image: url('../assets/header-background-left.png');
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
   color: white;
-  padding: 16px 32px;
+  padding: 22px 32px;
   display: flex;
   align-items: center;
   gap: 14px;
   box-shadow: var(--shadow-md);
+  overflow: hidden;
+  min-height: 180px;
 }
 
-.app-header h1 {
-  font-size: 1.6rem;
-  color: white;
-  letter-spacing: 0.5px;
+/* Castle/book illustration anchored to the right edge, layered on top of
+ * the starry-sky background. The pseudo's aspect ratio (2.4/1) is slightly
+ * narrower than the source PNG's native 3/1, and `background-size: cover`
+ * + `background-position: right center` keeps the image at its true
+ * proportions (no horizontal stretching) while cropping a small slice of
+ * the leftmost sky — which the mask was fading into the sky background
+ * anyway. The mask still fades the visible left edge over ~30% for a
+ * seamless blend with the underlying starry-sky background. */
+.app-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  aspect-ratio: 2.4 / 1;
+  background-image: url('../assets/header-background-right.png');
+  background-size: cover;
+  background-position: right center;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 30%);
+  mask-image: linear-gradient(to right, transparent 0%, black 30%);
+  pointer-events: none;
+}
+
+/* Keep logo & title above the background pseudo-element. */
+.app-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app-header__brand {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 16px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
 }
 
-.app-header .header-brand {
-  height: 2.2rem;
-  width: auto;
-  display: inline-block;
-  object-fit: contain;
-  vertical-align: middle;
+.app-header__brand:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
 }
 
-.app-header .header-icon {
-  height: 40px;
+/* v2 logo is white-on-transparent and designed to sit directly on the
+ * dark header background — no white card or shadow needed. */
+.app-header__logo {
+  height: 110px;
   width: auto;
   display: block;
   object-fit: contain;
+}
+
+.app-header__text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 20px;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.app-header__title {
+  font-size: 1.85rem;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.app-header__tagline {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.3px;
+  font-weight: 400;
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    padding: 14px 16px;
+    min-height: 100px;
+  }
+  .app-header::before {
+    /* Cap the castle image's vertical footprint on mobile so it doesn't
+     * crowd the logo on narrow screens. */
+    bottom: auto;
+    height: 80%;
+    top: 10%;
+  }
+  .app-header__brand {
+    gap: 12px;
+  }
+  .app-header__logo {
+    height: 70px;
+  }
+  .app-header__text {
+    padding-left: 14px;
+    gap: 4px;
+  }
+  .app-header__title {
+    font-size: 1.25rem;
+    letter-spacing: 0.1px;
+  }
+  .app-header__tagline {
+    font-size: 0.85rem;
+  }
 }
 
 .app-main {
