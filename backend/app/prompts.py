@@ -147,10 +147,11 @@ FOR EACH PAGE, you must also provide:
   that they are anatomically correct in each image.
   CRITICAL — every image_prompt MUST end with this exact negative constraint (fill in the
   character name(s) for that page): "Only [name(s)] should appear as prominent, named characters
-  in this image. Do not include any other animals or living creatures in the scene — only
-  the characters listed in character_descriptions may appear as animals or creatures.
-  Anonymous background figures (crowds, townspeople, soldiers, passersby, etc.)
-  are acceptable when the narrative describes them, but they should remain small, non-detailed,
+  in this image. Do not invent any additional NAMED characters that are not in
+  character_descriptions. Anonymous background figures and creatures
+  (crowds, townspeople, soldiers, passersby, woodland animals, birds, insects, fish,
+  fantastical creatures, etc.) ARE welcome whenever the narrative text or scene
+  description references them — but they must remain small, non-detailed, unnamed,
   and clearly secondary to the named characters."
 """
 
@@ -412,9 +413,19 @@ WHAT TO CHECK FOR THIS PAGE:
    - Background details present in the image but not mentioned in the text
      (decorative flowers, atmospheric mist, distant scenery) are NEVER an
      art-text contradiction unless they directly conflict with the text.
-   - Anonymous background figures (crowds, townspeople, neighbours, soldiers)
-     are fine when the narrative calls for them. A NEW named character not
-     in the canonical list, drawn as a prominent figure, IS a failure.
+   - Anonymous background figures and creatures (crowds, townspeople,
+     neighbours, soldiers, woodland animals, birds, insects, fish, fantastical
+     creatures, etc.) are fine when the narrative calls for them — and they
+     are EXPECTED in the illustration whenever the page text or scene
+     description references them (e.g. "wobbling silhouettes",
+     "fluttering fireflies", "darting fish in the stream", "a few curious
+     forest critters watched from the bushes"). DO NOT flag such background
+     creatures as "unauthorized characters", "extra figures", or art-text
+     mismatches just because they aren't in character_descriptions; the
+     canonical character list only governs PROMINENT, NAMED characters. The
+     only real failure here is a NEW named character (or an unmistakably
+     prominent, focal new creature/person that the text does not reference at
+     all) drawn alongside the canonical cast.
 
 3. age_appropriateness_pass — does the image contain anything genuinely
    frightening, gory, or unsuitable for ages 5–8? Mild tension and "spooky"
