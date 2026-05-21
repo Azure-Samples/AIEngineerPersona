@@ -56,7 +56,16 @@ body {
 
 html, body {
   font-family: var(--font-body);
-  background-color: var(--color-bg);
+  /* Starry-sky body background. background-attachment: fixed keeps the
+   * sky pinned to the viewport so the content scrolls over it (rather
+   * than stretching the image to the full page height). Fallback color
+   * roughly matches the average sky tone if the image fails to load. */
+  background-color: #0e1e74;
+  background-image: url('../assets/bodybackground.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--color-text);
   font-size: 16px;
   line-height: 1.6;
@@ -106,6 +115,12 @@ button {
   box-shadow: var(--shadow-md);
   overflow: hidden;
   min-height: 180px;
+  /* Feather the bottom edge of the header so the sky imagery blends into
+   * the matching navy body background. Top 80% fully opaque, bottom 20%
+   * fades to transparent. (Only affects the header element; form fields
+   * live in .app-main and are not touched by this mask.) */
+  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
 }
 
 /* Castle/book illustration anchored to the right edge, layered on top of
