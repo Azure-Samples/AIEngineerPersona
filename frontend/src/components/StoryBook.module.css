@@ -16,13 +16,15 @@
 
 .title {
   font-size: 2.2rem;
-  color: var(--color-primary);
+  color: #ffffff;
   margin-bottom: 6px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
 }
 
 .meta {
   font-size: 0.9rem;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Revision / review notes banner */
@@ -173,4 +175,21 @@
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 8px;
+}
+
+/* Light-on-dark override for the Save Story / Create Another Story buttons,
+ * which sit directly on the navy body background (outside any white card).
+ * Scoped to .actions so the .btn-secondary used inside cards elsewhere
+ * (e.g. the "Try Again" button on the generating screen) is unaffected. */
+.actions :global(.btn-secondary) {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(2px);
+}
+
+.actions :global(.btn-secondary):hover {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--color-primary);
+  border-color: #ffffff;
 }
