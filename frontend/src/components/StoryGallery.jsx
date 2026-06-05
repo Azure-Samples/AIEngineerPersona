@@ -57,7 +57,7 @@ export default function StoryGallery({ onLoadStory }) {
                 <div className={styles.description}>{story.description}</div>
               )}
               {story.moral && (
-                <div className={styles.moral}>💡 {story.moral}</div>
+                <div className={styles.moral}>{story.moral}</div>
               )}
               {story.models_used?.length > 0 && (
                 <div className={styles.models}>

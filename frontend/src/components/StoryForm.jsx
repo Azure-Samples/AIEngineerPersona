@@ -47,7 +47,7 @@ const ART_STYLES = [
   },
 ];
 
-export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
+export default function StoryForm({ onSubmit, isGenerating }) {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [wikiOpen, setWikiOpen] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
@@ -148,10 +148,6 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>
-        {logoSrc && <img src={logoSrc} alt="" className={styles.titleIcon} />}
-        Create a Children's Story
-      </h2>
       <p className={styles.subtitle}>
         Fill in the details below and let the AI agents craft a magical illustrated story!
       </p>
@@ -175,7 +171,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
                 Dreaming up a new story…
               </>
             ) : (
-              <>✨ Surprise Me — Auto-fill the Form</>
+              <>Surprise Me — Auto-fill the Form</>
             )}
           </button>
           <p className={styles.surpriseHint}>
@@ -190,7 +186,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── Main characters section ───────────────────────────────── */}
-        <div className={`${styles.sectionTitle} ${isFullMode ? styles.sectionDisabled : ''}`}>🐰 Characters</div>
+        <div className={`${styles.sectionTitle} ${isFullMode ? styles.sectionDisabled : ''}`}>Characters</div>
 
         {isFullMode && (
           <p className={styles.disabledNotice}>
@@ -247,7 +243,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── World & story section ─────────────────────────────────── */}
-        <div className={`${styles.sectionTitle} ${isFullMode ? styles.sectionDisabled : ''}`}>🌿 The World & Story</div>
+        <div className={`${styles.sectionTitle} ${isFullMode ? styles.sectionDisabled : ''}`}>The World &amp; Story</div>
 
         {isFullMode && (
           <p className={styles.disabledNotice}>
@@ -343,7 +339,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── Additional details ────────────────────────────────────── */}
-        <div className={`${styles.sectionTitle} ${isFullMode ? styles.sectionDisabled : ''}`}>✏️ Additional Details (optional)</div>
+        <div className={`${styles.sectionTitle} ${isFullMode ? styles.sectionDisabled : ''}`}>Additional Details (optional)</div>
 
         <fieldset disabled={isFullMode} className={styles.fieldset}>
           <div className={styles.field}>
@@ -365,7 +361,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
           aria-expanded={wikiOpen}
           aria-controls="wikipedia-section"
         >
-          <span className={styles.collapsibleTitle}>🌐 Wikipedia Topic (optional)</span>
+          <span className={styles.collapsibleTitle}>Wikipedia Topic (optional)</span>
           <span className={styles.collapsibleHint}>
             {wikiOpen ? 'Hide' : 'Base your story on a real-world topic'}
           </span>
@@ -434,7 +430,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── Bonus content ─────────────────────────────────────────── */}
-        <div className={styles.sectionTitle}>🌟 Bonus Content</div>
+        <div className={styles.sectionTitle}>Bonus Content</div>
 
         <div className={styles.checkboxGroup}>
           <label className={styles.checkboxLabel}>
@@ -445,7 +441,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
               onChange={e => setForm(prev => ({ ...prev, include_look_and_find: e.target.checked }))}
             />
             <span className={styles.checkboxText}>
-              <strong>🔎 Generate Look &amp; Find Activity Page</strong>
+              <strong>Generate Look &amp; Find Activity Page</strong>
               <span className={styles.checkboxHint}>Challenges the child to find 3–5 hidden items across the story's illustrations</span>
             </span>
           </label>
@@ -458,14 +454,14 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
               onChange={e => setForm(prev => ({ ...prev, include_character_glossary: e.target.checked }))}
             />
             <span className={styles.checkboxText}>
-              <strong>📖 Generate Character Glossary</strong>
+              <strong>Generate Character Glossary</strong>
               <span className={styles.checkboxHint}>Adds a "Meet the Characters" page with fun descriptions of each character</span>
             </span>
           </label>
         </div>
 
         {/* ── Advanced Options ──────────────────────────────────────── */}
-        <div className={styles.sectionTitle}>⚙️ Advanced Options</div>
+        <div className={styles.sectionTitle}>Advanced Options</div>
 
         <div className={styles.checkboxGroup}>
           <label className={styles.checkboxLabel}>
@@ -495,7 +491,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
                 Creating your story…
               </>
             ) : (
-              '🪄 Create My Story!'
+              'Create My Story'
             )}
           </button>
         </div>

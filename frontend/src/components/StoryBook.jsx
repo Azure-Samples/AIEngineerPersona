@@ -149,13 +149,13 @@ export default function StoryBook({ story, onReset, onSave }) {
             disabled={saveStatus === 'saving'}
           >
             {saveStatus === 'saving' ? 'Saving…' :
-             saveStatus === 'saved'  ? '✓ Saved!' :
+             saveStatus === 'saved'  ? 'Saved' :
              saveStatus === 'error'  ? 'Save Failed' :
-             '💾 Save Story'}
+             'Save Story'}
           </button>
         )}
         <button className="btn-secondary" onClick={onReset}>
-          ✨ Create Another Story
+          Create Another Story
         </button>
       </div>
     </div>

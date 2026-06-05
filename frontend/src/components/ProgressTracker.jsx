@@ -61,7 +61,7 @@ function PromptBlock({ text }) {
   const preview = text.length > 300 ? text.slice(0, 300) + '…' : text;
   return (
     <div className={styles.promptBlock}>
-      <div className={styles.detailLabel}>🗨 Prompt sent</div>
+      <div className={styles.detailLabel}>Prompt sent</div>
       <pre className={styles.promptText}>{expanded ? text : preview}</pre>
       {text.length > 300 && (
         <button className={styles.toggleBtn} onClick={() => setExpanded(e => !e)}>
@@ -75,7 +75,7 @@ function PromptBlock({ text }) {
 function AutoApprovedBlock() {
   return (
     <div className={`${styles.responseBlock} ${styles.approved}`}>
-      <div className={styles.detailLabel}>⚡ Auto-approved — story reviewer skipped</div>
+      <div className={styles.detailLabel}>Auto-approved — story reviewer skipped</div>
     </div>
   );
 }
@@ -123,7 +123,7 @@ function ResponseBlock({ data, executorId }) {
   if (executorId === 'look_and_find') {
     return (
       <div className={styles.responseBlock}>
-        <div className={styles.detailLabel}>🔎 Activity created — {data.item_count} items to find</div>
+        <div className={styles.detailLabel}>Activity created — {data.item_count} items to find</div>
         {data.items?.map((item, i) => (
           <div key={i} className={styles.responseRow}>
             <span className={styles.responseKey}>Page {item.page}</span>
@@ -136,7 +136,7 @@ function ResponseBlock({ data, executorId }) {
   if (executorId === 'character_glossary') {
     return (
       <div className={styles.responseBlock}>
-        <div className={styles.detailLabel}>📖 Glossary complete — {data.entry_count} characters</div>
+        <div className={styles.detailLabel}>Glossary complete — {data.entry_count} characters</div>
         {data.characters?.map((name, i) => (
           <div key={i} className={styles.responseRow}>
             <span className={styles.responseKey}>{name}</span>
@@ -153,11 +153,11 @@ function ExecutorStartedBlock({ data }) {
   const isFullMode = data.wikipedia_mode === 'full';
   return (
     <div className={styles.responseBlock}>
-      <div className={styles.detailLabel}>📥 Story request received</div>
+      <div className={styles.detailLabel}>Story request received</div>
       {isFullMode ? (
         <div className={styles.responseRow}>
           <span className={styles.responseKey}>Mode</span>
-          <span>📖 Full Wikipedia Story — characters, setting &amp; plot derived from article</span>
+          <span>Full Wikipedia Story — characters, setting &amp; plot derived from article</span>
         </div>
       ) : (
         <>
@@ -179,7 +179,7 @@ function WikipediaFetchedBlock({ data }) {
   const isFullMode = data.mode === 'full';
   return (
     <div className={styles.responseBlock}>
-      <div className={styles.detailLabel}>🌐 Wikipedia content retrieved</div>
+      <div className={styles.detailLabel}>Wikipedia content retrieved</div>
       <div className={styles.responseRow}>
         <span className={styles.responseKey}>Topic</span>
         <span>{data.resolved_title}</span>
@@ -187,8 +187,8 @@ function WikipediaFetchedBlock({ data }) {
       <div className={styles.responseRow}>
         <span className={styles.responseKey}>Mode</span>
         <span>{isFullMode
-          ? '📖 Full — story created entirely from Wikipedia'
-          : '✨ Influence — blended with your story details'}
+          ? 'Full — story created entirely from Wikipedia'
+          : 'Influence — blended with your story details'}
         </span>
       </div>
       <div className={styles.responseRow}>
@@ -203,7 +203,7 @@ function WikipediaNotFoundBlock({ data }) {
   if (!data) return null;
   return (
     <div className={`${styles.responseBlock} ${styles.rejected}`}>
-      <div className={styles.detailLabel}>🌐 Wikipedia topic not found: &quot;{data.topic}&quot;</div>
+      <div className={styles.detailLabel}>Wikipedia topic not found: &quot;{data.topic}&quot;</div>
       <div className={styles.revisionInstructions}>
         The story will be generated without Wikipedia content.
       </div>
@@ -342,7 +342,7 @@ function ReviewerCallList({ promptEvt, callEvts, imageUrlByPageNumber = {} }) {
   return (
     <div className={styles.reviewerCallList}>
       <div className={styles.reviewerCallListHeader}>
-        <span className={styles.detailLabel}>🔍 Reviewer subcalls</span>
+        <span className={styles.detailLabel}>Reviewer subcalls</span>
         <span className={styles.reviewerCallProgress}>{completedCount} / {total} complete</span>
       </div>
       <div className={styles.reviewerCallProgressBarOuter}>
@@ -426,7 +426,7 @@ function PageContentBlock({ pages }) {
   if (!pages?.length) return null;
   return (
     <div className={styles.pagesBlock}>
-      <div className={styles.detailLabel}>📝 Pages written ({pages.length})</div>
+      <div className={styles.detailLabel}>Pages written ({pages.length})</div>
       <div className={styles.pagesList}>
         {pages.map(page => (
           <div key={page.page_number} className={styles.pageCard}>
@@ -435,7 +435,7 @@ function PageContentBlock({ pages }) {
               <span className={styles.pageTone}>{page.emotional_tone}</span>
             </div>
             <p className={styles.pageText}>{page.text}</p>
-            <div className={styles.pageImagePromptLabel}>🖼 Image prompt:</div>
+            <div className={styles.pageImagePromptLabel}>Image prompt:</div>
             <p className={styles.pageImagePrompt}>{page.image_prompt}</p>
           </div>
         ))}
@@ -539,8 +539,8 @@ function ImageGrid({ imageEvents, totalPages, batchEvt }) {
   const activeCount = Object.values(imageMap).filter(e => e.detail_type === 'image_started').length;
 
   const headerLabel = isPartial
-    ? `🖼 Partial revision${revisionRound != null ? ` (round ${revisionRound})` : ''} — ${completedCount}/${slots.length} regenerated${activeCount > 0 ? `, ${activeCount} in progress` : ''}`
-    : `🖼 Illustrations (${completedCount}/${slots.length} done${activeCount > 0 ? `, ${activeCount} generating` : ''})`;
+    ? `Partial revision${revisionRound != null ? ` (round ${revisionRound})` : ''} — ${completedCount}/${slots.length} regenerated${activeCount > 0 ? `, ${activeCount} in progress` : ''}`
+    : `Illustrations (${completedCount}/${slots.length} done${activeCount > 0 ? `, ${activeCount} generating` : ''})`;
 
   return (
     <>
@@ -727,7 +727,7 @@ export default function ProgressTracker({
           {/* Header */}
           {!isSidebar ? (
             <>
-              <h2 className={styles.title}>📖 Writing Your Story…</h2>
+              <h2 className={styles.title}>Writing Your Story…</h2>
               <p className={styles.subtitle}>
                 Our AI agents are crafting a magical story just for you.
                 <br />This may take a minute or two — good things take time!
@@ -735,7 +735,7 @@ export default function ProgressTracker({
             </>
           ) : (
             <div className={styles.sidebarHeader}>
-              <span className={styles.sidebarTitle}>⚙ Generation Log</span>
+              <span className={styles.sidebarTitle}>Generation Log</span>
               <button className={styles.collapseBtn} onClick={onToggle} title="Hide log">✕</button>
             </div>
           )}
@@ -788,7 +788,7 @@ export default function ProgressTracker({
           {/* Reviewer notes — shown in sidebar mode after all steps */}
           {isSidebar && reviewNotes && reviewNotes !== 'Story approved with no issues.' && (
             <div className={styles.reviewBanner}>
-              📝 {reviewNotes}
+              {reviewNotes}
             </div>
           )}
 

@@ -56,15 +56,11 @@ body {
 
 html, body {
   font-family: var(--font-body);
-  /* Starry-sky body background. background-attachment: fixed keeps the
-   * sky pinned to the viewport so the content scrolls over it (rather
-   * than stretching the image to the full page height). Fallback color
-   * roughly matches the average sky tone if the image fails to load. */
-  background-color: #0e1e74;
-  background-image: url('../assets/bodybackground.png');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
+  /* Calm light surface — the brand voice (starry sky + castle) lives in
+   * the header. The body is the workspace and should let the form pop.
+   * Subtle vertical gradient gives a hint of depth without busy imagery. */
+  background-color: var(--color-bg);
+  background-image: linear-gradient(to bottom, #F5F8FA 0%, #E7EDF1 100%);
   background-attachment: fixed;
   color: var(--color-text);
   font-size: 16px;
@@ -112,38 +108,45 @@ button {
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: var(--shadow-md);
+  /* Solid bottom edge — replaces the mask-fade, which used to dissolve the
+   * header into the body and made the page feel like the header wasn't a
+   * real bar. Hairline + soft drop shadow gives the header weight. */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
   overflow: hidden;
   min-height: 180px;
-  /* Feather the bottom edge of the header so the sky imagery blends into
-   * the matching navy body background. Top 80% fully opaque, bottom 20%
-   * fades to transparent. (Only affects the header element; form fields
-   * live in .app-main and are not touched by this mask.) */
-  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+/* Soft vertical darken applied only to the bottom 35% of the header — gives
+ * the hairline border something to sit on top of and makes the title/logo
+ * read cleanly without affecting the sky's upper portion. */
+.app-header::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 35%;
+  background: linear-gradient(to bottom, rgba(10, 25, 50, 0) 0%, rgba(10, 25, 50, 0.55) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Castle/book illustration anchored to the right edge, layered on top of
- * the starry-sky background. The pseudo's aspect ratio (2.4/1) is slightly
- * narrower than the source PNG's native 3/1, and `background-size: cover`
- * + `background-position: right center` keeps the image at its true
- * proportions (no horizontal stretching) while cropping a small slice of
- * the leftmost sky — which the mask was fading into the sky background
- * anyway. The mask still fades the visible left edge over ~30% for a
- * seamless blend with the underlying starry-sky background. */
+ * the starry-sky background. Narrowed aspect-ratio + earlier left-edge
+ * mask + reduced opacity keep it from competing with the title. */
 .app-header::before {
   content: '';
   position: absolute;
   top: 0;
   right: 0;
   bottom: 0;
-  aspect-ratio: 2.4 / 1;
+  aspect-ratio: 1.7 / 1;
   background-image: url('../assets/header-background-right.png');
   background-size: cover;
   background-position: right center;
   background-repeat: no-repeat;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 30%);
-  mask-image: linear-gradient(to right, transparent 0%, black 30%);
+  opacity: 0.75;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 55%);
+  mask-image: linear-gradient(to right, transparent 0%, black 55%);
   pointer-events: none;
 }
 
@@ -173,12 +176,15 @@ button {
 }
 
 /* v2 logo is white-on-transparent and designed to sit directly on the
- * dark header background — no white card or shadow needed. */
+ * dark header background — no white card or shadow needed. The brighten
+ * filter lifts the "Zava Publishing" wordmark, which is rendered in a
+ * pale gray that otherwise disappears against the dark sky. */
 .app-header__logo {
   height: 90px;
   width: auto;
   display: block;
   object-fit: contain;
+  filter: brightness(1.35) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
 }
 
 .app-header__text {
@@ -195,15 +201,17 @@ button {
   letter-spacing: 0.2px;
   font-weight: 700;
   line-height: 1.15;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 .app-header__tagline {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.92);
   letter-spacing: 0.3px;
-  font-weight: 400;
+  font-weight: 500;
   margin: 0;
   white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 @media (max-width: 600px) {
@@ -213,10 +221,12 @@ button {
   }
   .app-header::before {
     /* Cap the castle image's vertical footprint on mobile so it doesn't
-     * crowd the logo on narrow screens. */
+     * crowd the logo on narrow screens, and dim it further so the title
+     * stays the dominant element. */
     bottom: auto;
     height: 80%;
     top: 10%;
+    opacity: 0.5;
   }
   .app-header__brand {
     gap: 12px;
@@ -242,10 +252,19 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 20px 80px;
-  max-width: 900px;
+  padding: 24px 20px 80px;
+  max-width: 1080px;
   margin: 0 auto;
   width: 100%;
+}
+
+/* When the right-rail preview is visible (≥1400px), expand the main
+ * working area so the card stays at least as wide as it was on
+ * smaller screens and doesn't get squeezed by the rail. */
+@media (min-width: 1400px) {
+  .app-main {
+    max-width: 1360px;
+  }
 }
 
 /* Split layout used in storybook view */
@@ -314,9 +333,161 @@ button {
 .card {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  /* Layered shadow tuned for a light body background — softer and more
+   * diffuse than the earlier dark-bg version, which would otherwise read
+   * as a heavy bruise on the page. The inset top highlight + 1px hairline
+   * border still ground the card as a solid object. */
+  border: 1px solid rgba(24, 61, 76, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 32px -12px rgba(24, 61, 76, 0.22),
+    0 4px 10px -4px rgba(24, 61, 76, 0.12);
   padding: 36px;
   width: 100%;
+}
+
+/* ─── Form layout (card + right rail) ───────────────────────────────────── */
+
+/* Default: single column — the rail stacks underneath the card on narrow
+ * viewports. The grid switches to two columns at ≥1280px so wide-screen
+ * users get a "what's coming next" preview alongside the form, which
+ * also turns the previously empty wallpaper space into useful surface. */
+.form-layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 1400px) {
+  .form-layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 32px;
+  }
+}
+
+.form-rail {
+  /* Hide on narrow viewports — the form already fills the page and the
+   * rail content (a preview teaser) would feel like clutter underneath. */
+  display: none;
+}
+
+@media (min-width: 1400px) {
+  .form-rail {
+    display: block;
+    position: sticky;
+    top: 24px;
+  }
+}
+
+.form-rail__card {
+  /* Light surface tuned to match the form card — sits on the light body
+   * background as a peer info panel, not as a glassmorphism overlay. */
+  background: var(--color-surface);
+  border: 1px solid rgba(24, 61, 76, 0.10);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 22px 22px 24px;
+  color: var(--color-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 6px 18px -8px rgba(24, 61, 76, 0.18);
+}
+
+.form-rail__eyebrow {
+  /* Now functions as the card's title since the redundant h3 was removed.
+   * Slightly larger margin-bottom and small font bump compared to the
+   * original eyebrow treatment so it carries the visual weight of a
+   * section heading without screaming. */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin: 0 0 14px;
+}
+
+.form-rail__body {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+  margin: 0 0 18px;
+}
+
+.form-rail__steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  counter-reset: rail-step;
+}
+
+.form-rail__steps li {
+  position: relative;
+  padding-left: 30px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--color-text);
+  counter-increment: rail-step;
+}
+
+.form-rail__steps li::before {
+  content: counter(rail-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.form-rail__divider {
+  border: none;
+  border-top: 1px solid rgba(24, 61, 76, 0.10);
+  margin: 0 0 16px;
+}
+
+.form-rail__tips-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 10px;
+}
+
+.form-rail__tips {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-rail__tips li {
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.form-rail__tips strong {
+  color: var(--color-text);
+  font-weight: 700;
 }
 
 /* ─── Tab bar ────────────────────────────────────────────────────────────── */
@@ -330,11 +501,14 @@ button {
 
 .tab-btn {
   flex: 1;
-  padding: 14px 20px;
-  font-size: 0.95rem;
+  padding: 16px 20px;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-muted);
-  background: var(--color-bg-section);
+  /* Cooler inactive tone so the contrast with the active tab (white) is
+   * obvious at a glance — the previous --color-bg-section was so close
+   * to white that both tabs read with the same weight. */
+  background: #DCE6EC;
   border: none;
   cursor: pointer;
   transition: color 0.18s, background 0.18s, box-shadow 0.18s;
@@ -357,7 +531,14 @@ button {
 .tab-btn--active {
   color: var(--color-primary);
   background: var(--color-surface);
-  box-shadow: inset 0 -3px 0 var(--color-primary);
+  /* Thicker bottom indicator — was 3px, now 4px so the active tab reads
+   * as clearly selected even with the louder inactive background. */
+  box-shadow: inset 0 -4px 0 var(--color-primary);
+}
+
+.tab-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -4px;
 }
 
 /* ─── Primary button ─────────────────────────────────────────────────────── */
@@ -423,4 +604,24 @@ button {
 .spinner--dark {
   border-color: rgba(61,47,30,0.2);
   border-top-color: var(--color-primary);
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+/* Respect users who request reduced motion: kill long transitions and any
+ * non-essential animation. The spinner is allowed because it conveys
+ * "loading" state, but slowed substantially. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .spinner,
+  .spinner--dark {
+    animation-duration: 1.5s !important;
+    animation-iteration-count: infinite !important;
+  }
 }
