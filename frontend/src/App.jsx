@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import './styles/global.css';
-import logoSrc from './assets/logo.png';
-import brandSrc from './assets/logo-transparentv2.png';
+import logoHeaderSrc from './assets/logo-transparentv2.png';
 import StoryForm from './components/StoryForm';
 import StoryGallery from './components/StoryGallery';
 import ProgressTracker from './components/ProgressTracker';
@@ -83,7 +82,7 @@ function App() {
           onClick={handleReset}
           aria-label="Return to home"
         >
-          <img src={brandSrc} alt="" className="app-header__logo" />
+          <img src={logoHeaderSrc} alt="" className="app-header__logo" />
           <div className="app-header__text">
             <h1 className="app-header__title">Children&apos;s Story Studio</h1>
             <p className="app-header__tagline">Imagine. Create. Inspire.</p>
@@ -95,29 +94,69 @@ function App() {
       <main className={`app-main${view === 'storybook' ? ' app-main--split' : ''}`}>
 
         {view === 'form' && (
-          <div className="card">
-            <div className="tab-bar">
-              <button
-                className={`tab-btn${formTab === 'create' ? ' tab-btn--active' : ''}`}
-                onClick={() => setFormTab('create')}
-              >
-                ✏️ Create Story
-              </button>
-              <button
-                className={`tab-btn${formTab === 'saved' ? ' tab-btn--active' : ''}`}
-                onClick={() => setFormTab('saved')}
-              >
-                📚 Saved Stories
-              </button>
+          <div className="form-layout">
+            <div className="card">
+              <div className="tab-bar" role="tablist" aria-label="Story Studio sections">
+                <button
+                  role="tab"
+                  aria-selected={formTab === 'create'}
+                  aria-controls="tab-panel-create"
+                  id="tab-create"
+                  className={`tab-btn${formTab === 'create' ? ' tab-btn--active' : ''}`}
+                  onClick={() => setFormTab('create')}
+                >
+                  Create Story
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={formTab === 'saved'}
+                  aria-controls="tab-panel-saved"
+                  id="tab-saved"
+                  className={`tab-btn${formTab === 'saved' ? ' tab-btn--active' : ''}`}
+                  onClick={() => setFormTab('saved')}
+                >
+                  Saved Stories
+                </button>
+              </div>
+
+              {formTab === 'create' && (
+                <div role="tabpanel" id="tab-panel-create" aria-labelledby="tab-create">
+                  <StoryForm onSubmit={handleSubmit} isGenerating={isGenerating} />
+                </div>
+              )}
+
+              {formTab === 'saved' && (
+                <div role="tabpanel" id="tab-panel-saved" aria-labelledby="tab-saved">
+                  <StoryGallery onLoadStory={handleLoadDemo} />
+                </div>
+              )}
             </div>
 
-            {formTab === 'create' && (
-              <StoryForm onSubmit={handleSubmit} isGenerating={isGenerating} logoSrc={logoSrc} />
-            )}
-
-            {formTab === 'saved' && (
-              <StoryGallery onLoadStory={handleLoadDemo} />
-            )}
+            {/* Right rail — only visible on wide viewports (handled in CSS).
+                Acts as an info card that explains the multi-agent generation
+                process so users know what to expect after submitting. The
+                actual storybook does NOT render here — it appears in the
+                progress-tracker view and then the full storybook view. */}
+            <aside className="form-rail" aria-label="How it works">
+              <div className="form-rail__card">
+                <p className="form-rail__eyebrow">How it works</p>
+                <p className="form-rail__body">
+                  A team of AI agents collaborates to build the book —
+                  you&apos;ll watch each step happen live.
+                </p>
+                <ol className="form-rail__steps">
+                  <li>Writer agents plan and draft the story page by page</li>
+                  <li>An illustrator agent generates an image for every page</li>
+                  <li>A reviewer agent checks the result and can send pages back for revision before approving</li>
+                </ol>
+                <hr className="form-rail__divider" />
+                <p className="form-rail__tips-label">Tips before you start</p>
+                <ul className="form-rail__tips">
+                  <li>Try <strong>Surprise Me</strong> to have AI auto-fill the form with different values</li>
+                  <li>Pick an <strong>art style</strong> to set the visual tone</li>
+                </ul>
+              </div>
+            </aside>
           </div>
         )}
 
@@ -163,7 +202,7 @@ function App() {
                   onClick={() => setSidebarOpen(true)}
                   title="Show generation log"
                 >
-                  📋
+                  Log
                 </button>
               )}
               <StoryBook story={story} onReset={handleReset} onSave={handleSaveStory} />

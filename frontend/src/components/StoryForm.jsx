@@ -43,7 +43,7 @@ const ART_STYLES = [
   },
 ];
 
-export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
+export default function StoryForm({ onSubmit, isGenerating }) {
   const [form, setForm] = useState(DEFAULT_FORM);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestError, setSuggestError] = useState(null);
@@ -135,10 +135,6 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>
-        {logoSrc && <img src={logoSrc} alt="" className={styles.titleIcon} />}
-        Create a Children's Story
-      </h2>
       <p className={styles.subtitle}>
         Fill in the details below and let the AI agents craft a magical illustrated story!
       </p>
@@ -160,7 +156,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
                 Dreaming up a new story…
               </>
             ) : (
-              <>✨ Surprise Me — Auto-fill the Form</>
+              <>Surprise Me — Auto-fill the Form</>
             )}
           </button>
           <p className={styles.surpriseHint}>
@@ -174,7 +170,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── Main characters section ───────────────────────────────── */}
-        <div className={styles.sectionTitle}>🐰 Characters</div>
+        <div className={styles.sectionTitle}>Characters</div>
 
         <fieldset className={styles.fieldset}>
 
@@ -225,7 +221,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── World & story section ─────────────────────────────────── */}
-        <div className={styles.sectionTitle}>🌿 The World & Story</div>
+        <div className={styles.sectionTitle}>The World &amp; Story</div>
 
         <fieldset className={styles.fieldset}>
 
@@ -315,7 +311,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── Additional details ────────────────────────────────────── */}
-        <div className={styles.sectionTitle}>✏️ Additional Details (optional)</div>
+        <div className={styles.sectionTitle}>Additional Details (optional)</div>
 
         <fieldset className={styles.fieldset}>
           <div className={styles.field}>
@@ -332,7 +328,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
         <hr className={styles.divider} />
 
         {/* ── Advanced Options ──────────────────────────────────────── */}
-        <div className={styles.sectionTitle}>⚙️ Advanced Options</div>
+        <div className={styles.sectionTitle}>Advanced Options</div>
 
         <div className={styles.checkboxGroup}>
           <label className={styles.checkboxLabel}>
@@ -362,7 +358,7 @@ export default function StoryForm({ onSubmit, isGenerating, logoSrc }) {
                 Creating your story…
               </>
             ) : (
-              '🪄 Create My Story!'
+              'Create My Story'
             )}
           </button>
         </div>

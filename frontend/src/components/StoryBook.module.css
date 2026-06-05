@@ -18,6 +18,7 @@
   font-size: 2.2rem;
   color: var(--color-primary);
   margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 
 .meta {
@@ -173,4 +174,18 @@
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 8px;
+}
+
+/* Save Story / Create Another Story buttons sit on the light page background
+ * outside any white card. Use standard secondary styling that reads on light. */
+.actions :global(.btn-secondary) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.actions :global(.btn-secondary):hover {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
 }
