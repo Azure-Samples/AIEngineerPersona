@@ -594,17 +594,64 @@
   cursor: not-allowed;
 }
 
-.surpriseHint {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
-  text-align: center;
-  margin: 0;
-  font-style: italic;
+.btnSurprise[data-loading="true"] {
+  opacity: 1;
+  cursor: progress;
+  background: color-mix(in srgb, var(--color-secondary) 8%, white);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  animation: btnSurpriseLoading 1.6s ease-in-out infinite;
 }
 
-.surpriseError {
-  font-size: 0.85rem;
-  color: var(--color-error);
-  text-align: center;
+@keyframes btnSurpriseLoading {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-secondary) 28%, transparent); }
+  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-secondary) 0%,  transparent); }
+}
+
+.surpriseStatus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3em;
   margin: 4px 0 0;
+  padding: 0 4px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--color-text-muted);
+  text-align: center;
+  font-style: italic;
+  animation: surpriseFadeIn 0.35s ease-out;
+}
+
+.surpriseStatus span {
+  margin-right: 0.25em;
+}
+
+.surpriseStatusSuccess {
+  color: var(--color-secondary);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.surpriseStatusError {
+  color: var(--color-error);
+  font-style: normal;
+  font-weight: 600;
+}
+
+@keyframes surpriseFadeIn {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

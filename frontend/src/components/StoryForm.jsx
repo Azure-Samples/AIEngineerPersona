@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './StoryForm.module.css';
 import watercolorSrc   from '../assets/sample_art/watercolor.png';
 import comicBookSrc    from '../assets/sample_art/comic_book.png';
@@ -52,7 +52,13 @@ export default function StoryForm({ onSubmit, isGenerating }) {
   const [wikiOpen, setWikiOpen] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [suggestError, setSuggestError] = useState(null);
+  const [suggestSuccess, setSuggestSuccess] = useState(false);
+  const successTimerRef = useRef(null);
   const [stylePreview, setStylePreview] = useState(null); // {src, label} | null
+
+  useEffect(() => () => {
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+  }, []);
 
   // Close art-style preview lightbox on Escape.
   useEffect(() => {
@@ -99,6 +105,11 @@ export default function StoryForm({ onSubmit, isGenerating }) {
     if (isSuggesting || isGenerating) return;
     setIsSuggesting(true);
     setSuggestError(null);
+    setSuggestSuccess(false);
+    if (successTimerRef.current) {
+      clearTimeout(successTimerRef.current);
+      successTimerRef.current = null;
+    }
     try {
       const res = await fetch('/api/suggest-story', { method: 'POST' });
       if (!res.ok) {
@@ -121,6 +132,11 @@ export default function StoryForm({ onSubmit, isGenerating }) {
         main_problem:          data.main_problem          ?? prev.main_problem,
         additional_details:    data.additional_details    ?? prev.additional_details,
       }));
+      setSuggestSuccess(true);
+      successTimerRef.current = setTimeout(() => {
+        setSuggestSuccess(false);
+        successTimerRef.current = null;
+      }, 4500);
     } catch (err) {
       setSuggestError(err?.message || 'Failed to fetch a suggestion. Please try again.');
     } finally {
@@ -161,26 +177,48 @@ export default function StoryForm({ onSubmit, isGenerating }) {
             className={styles.btnSurprise}
             onClick={handleSurpriseMe}
             disabled={isSuggesting || isGenerating || isFullMode}
+            aria-busy={isSuggesting}
+            data-loading={isSuggesting ? 'true' : undefined}
             title={isFullMode
               ? 'Auto-fill is disabled in Full Wikipedia Story mode — those fields will be derived from the article.'
               : 'Generate a fresh, creative set of values for every text field below.'}
           >
             {isSuggesting ? (
               <>
-                <span className="spinner" />
+                <span className="spinner spinner--dark" aria-hidden="true" />
                 Dreaming up a new story…
               </>
             ) : (
               <>Surprise Me — Auto-fill the Form</>
             )}
           </button>
-          <p className={styles.surpriseHint}>
-            Replaces the character, setting, moral, problem, and details fields with a brand-new idea.
-            Wikipedia and bonus settings are left alone.
-          </p>
-          {suggestError && (
-            <p className={styles.surpriseError} role="alert">{suggestError}</p>
-          )}
+          {(() => {
+            const statusKey = suggestError ? 'error' : suggestSuccess ? 'success' : 'hint';
+            const statusClass = suggestError
+              ? `${styles.surpriseStatus} ${styles.surpriseStatusError}`
+              : suggestSuccess
+                ? `${styles.surpriseStatus} ${styles.surpriseStatusSuccess}`
+                : styles.surpriseStatus;
+            const statusRole = suggestError ? 'alert' : undefined;
+            return (
+              <p key={statusKey} className={statusClass} role={statusRole}>
+                {suggestError ? (
+                  suggestError
+                ) : suggestSuccess ? (
+                  <><span aria-hidden="true">✨</span> Filled in fresh ideas — tweak anything before creating</>
+                ) : (
+                  <>Replaces the character, setting, moral, problem, and details fields with a brand-new idea. Wikipedia and bonus settings are left alone.</>
+                )}
+              </p>
+            );
+          })()}
+          <span className={styles.visuallyHidden} role="status" aria-live="polite">
+            {isSuggesting
+              ? 'Generating a new story idea, please wait.'
+              : suggestSuccess
+                ? 'Form has been filled with new story ideas. Review and edit before creating.'
+                : ''}
+          </span>
         </div>
 
         <hr className={styles.divider} />
