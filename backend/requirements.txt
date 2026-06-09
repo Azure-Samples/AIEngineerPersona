@@ -48,3 +48,10 @@ azure-storage-blob>=12.20.0
 opentelemetry-exporter-otlp-proto-grpc>=1.41.0
 opentelemetry-exporter-otlp-proto-http>=1.41.0
 opentelemetry-instrumentation-fastapi>=0.62b0
+
+# Azure Monitor OTEL exporter. Activated by `app.telemetry` when
+# APPLICATIONINSIGHTS_CONNECTION_STRING is set on the environment (the case
+# for the Azure Container Apps deployment); otherwise the OTLP exporter path
+# above is used. Made an explicit dep so production telemetry doesn't depend
+# on a transitive that could shift versions.
+azure-monitor-opentelemetry>=1.8.0
