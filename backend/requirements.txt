@@ -45,13 +45,18 @@ azure-cognitiveservices-speech>=1.40.0
 azure-storage-blob>=12.20.0
 
 # OpenTelemetry (api + sdk are already included via agent-framework-core)
-opentelemetry-exporter-otlp-proto-grpc>=1.41.0
-opentelemetry-exporter-otlp-proto-http>=1.41.0
-opentelemetry-instrumentation-fastapi>=0.62b0
+# These are intentionally pinned to the 1.40 / 0.61b0 generation because
+# azure-monitor-opentelemetry 1.8.x strictly pins opentelemetry-sdk==1.40 and
+# opentelemetry-instrumentation-fastapi==0.61b0 — looser bounds let pip
+# backtrack to an old azure-monitor-opentelemetry-exporter that imports the
+# removed `LogData` symbol and crashes at import time on Python 3.12.
+opentelemetry-exporter-otlp-proto-grpc>=1.40.0,<1.41
+opentelemetry-exporter-otlp-proto-http>=1.40.0,<1.41
+opentelemetry-instrumentation-fastapi>=0.61b0,<0.62
 
 # Azure Monitor OTEL exporter. Activated by `app.telemetry` when
 # APPLICATIONINSIGHTS_CONNECTION_STRING is set on the environment (the case
 # for the Azure Container Apps deployment); otherwise the OTLP exporter path
 # above is used. Made an explicit dep so production telemetry doesn't depend
 # on a transitive that could shift versions.
-azure-monitor-opentelemetry>=1.8.0
+azure-monitor-opentelemetry>=1.8.0,<2
