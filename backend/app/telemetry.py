@@ -13,15 +13,32 @@ import logging
 import os
 from typing import Any
 
-from agent_framework.observability import (
+# These env vars must be set BEFORE any azure.ai.projects / azure.monitor.opentelemetry
+# imports, because configure_azure_monitor() may try to auto-instrument
+# azure-ai-projects on its first run and bails with a misleading
+# "GenAI tracing is not enabled" warning if the flag isn't already on the
+# environment. Setdefault so an operator can still override.
+#
+# * AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING=true → unlocks AIProjectInstrumentor.
+# * AZURE_TRACING_GEN_AI_INSTRUMENT_RESPONSES_API=false → skips the bundled
+#   OpenAI Responses-API wrapper. The Foundry agent client already goes through
+#   agent-framework's GenAI instrumentation, and layering the AI Projects
+#   responses wrapper on top crashes inside a nested-INTERNAL span context
+#   (azure-core hands back a NonRecordingSpan → AttributeError on .attributes).
+#   The AI Agents spans (create_thread/create_run/etc.) and the trace-context
+#   propagation hook on get_openai_client() are unaffected by this opt-out.
+os.environ.setdefault("AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING", "true")
+os.environ.setdefault("AZURE_TRACING_GEN_AI_INSTRUMENT_RESPONSES_API", "false")
+
+from agent_framework.observability import (  # noqa: E402 — must follow env-var setdefault above.
     configure_otel_providers,
     enable_instrumentation,
 )
-from fastapi import FastAPI
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.trace import Span
+from fastapi import FastAPI  # noqa: E402
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor  # noqa: E402
+from opentelemetry.trace import Span  # noqa: E402
 
-from .config import settings
+from .config import settings  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -104,22 +121,25 @@ def _try_instrument_azure_ai_projects() -> None:
     ``trace_id`` and appear as orphaned, "dangling" traces alongside the
     Agent Framework workflow trace.
 
-    Two things are required to activate it:
+    Two env vars (set at module load time, see top of file) gate the
+    behaviour:
 
-    * ``AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING=true`` must be set on the
-      process environment. We ``setdefault`` it so it's on by default in
-      this app, but an operator can opt out by explicitly setting the env
-      var to anything else.
-    * ``AIProjectInstrumentor().instrument(...)`` must be called once at
-      startup (no-op on subsequent calls).
+    * ``AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING=true`` — unlocks the
+      experimental GenAI tracing path inside ``AIProjectInstrumentor``.
+    * ``AZURE_TRACING_GEN_AI_INSTRUMENT_RESPONSES_API=false`` — skips the
+      bundled OpenAI Responses-API wrapper to avoid double-instrumenting
+      calls that agent-framework already wraps (which would otherwise
+      crash with ``'NonRecordingSpan' object has no attribute 'attributes'``
+      on every Foundry-hosted agent invocation).
+
+    ``AIProjectInstrumentor().instrument(...)`` must be called once at
+    startup (no-op on subsequent calls); this function does that.
 
     The whole thing is wrapped in try/except: telemetry must never block
     application startup. In ``local`` agent-hosting mode the instrumentor
     is harmless — it patches the AIProjectClient class globally, but the
     code path is never exercised.
     """
-    os.environ.setdefault("AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING", "true")
-
     try:
         from azure.ai.projects.telemetry import AIProjectInstrumentor
     except ImportError as exc:
