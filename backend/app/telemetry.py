@@ -93,6 +93,61 @@ def _try_configure_azure_monitor() -> bool:
     return True
 
 
+def _try_instrument_azure_ai_projects() -> None:
+    """Enable the Azure AI Projects GenAI instrumentor (Foundry tracing).
+
+    The instrumentor adds rich GenAI semantic-convention spans
+    (``create_thread``, ``create_run``, ``process_thread_run``, etc.) and
+    — critically — injects W3C ``traceparent`` / ``tracestate`` headers on
+    outbound HTTP requests to the Foundry agent endpoints. Without that
+    header, server-side Foundry spans land in App Insights with a fresh
+    ``trace_id`` and appear as orphaned, "dangling" traces alongside the
+    Agent Framework workflow trace.
+
+    Two things are required to activate it:
+
+    * ``AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING=true`` must be set on the
+      process environment. We ``setdefault`` it so it's on by default in
+      this app, but an operator can opt out by explicitly setting the env
+      var to anything else.
+    * ``AIProjectInstrumentor().instrument(...)`` must be called once at
+      startup (no-op on subsequent calls).
+
+    The whole thing is wrapped in try/except: telemetry must never block
+    application startup. In ``local`` agent-hosting mode the instrumentor
+    is harmless — it patches the AIProjectClient class globally, but the
+    code path is never exercised.
+    """
+    os.environ.setdefault("AZURE_EXPERIMENTAL_ENABLE_GENAI_TRACING", "true")
+
+    try:
+        from azure.ai.projects.telemetry import AIProjectInstrumentor
+    except ImportError as exc:
+        logger.warning(
+            "AIProjectInstrumentor unavailable (%s); Foundry-hosted agent "
+            "spans will not be unified with the Agent Framework trace.",
+            exc,
+        )
+        return
+
+    try:
+        AIProjectInstrumentor().instrument(
+            # Don't capture prompt / response content into spans by default —
+            # keeps spans small and honours ENABLE_SENSITIVE_DATA=false.
+            enable_content_recording=False,
+            # Inject traceparent on outbound Foundry HTTP so server-side
+            # spans join the same trace as our workflow.run span.
+            enable_trace_context_propagation=True,
+        )
+    except Exception:  # noqa: BLE001 — telemetry must never crash the app.
+        logger.exception("Failed to enable AIProjectInstrumentor; continuing without it.")
+        return
+
+    logger.info(
+        "AIProjectInstrumentor enabled (Foundry GenAI spans + trace context propagation)",
+    )
+
+
 def configure_telemetry(app: FastAPI) -> None:
     """Set up OTEL providers and instrument FastAPI.
 
@@ -104,7 +159,9 @@ def configure_telemetry(app: FastAPI) -> None:
 
     1. If ``APPLICATIONINSIGHTS_CONNECTION_STRING`` is set (and the optional
        ``azure-monitor-opentelemetry`` package is installed), spans/logs/metrics
-       are exported to Azure Application Insights.
+       are exported to Azure Application Insights, and the Azure AI Projects
+       GenAI instrumentor is enabled so Foundry-hosted agent calls share the
+       same trace as the surrounding Agent Framework workflow.
     2. Otherwise, ``configure_otel_providers()`` from Agent Framework runs
        (honours ``OTEL_EXPORTER_OTLP_ENDPOINT``, ``VS_CODE_EXTENSION_PORT``,
        and ``ENABLE_CONSOLE_EXPORTERS`` — covers local dev / AI Toolkit / OTLP
@@ -116,7 +173,11 @@ def configure_telemetry(app: FastAPI) -> None:
         logger.info("OpenTelemetry is disabled (OTEL_ENABLED=false)")
         return
 
-    if not _try_configure_azure_monitor():
+    if _try_configure_azure_monitor():
+        # Only meaningful when we have a real exporter wired up — the
+        # instrumentor needs OTEL spans to actually have somewhere to go.
+        _try_instrument_azure_ai_projects()
+    else:
         # Fallback path: OTLP / AI Toolkit / local dev. Reads
         # OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_SERVICE_NAME, ENABLE_INSTRUMENTATION,
         # and ENABLE_SENSITIVE_DATA from env vars automatically.
