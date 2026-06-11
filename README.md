@@ -1,3 +1,4 @@
+
 # Children's Story Studio — Multi-Agent Orchestration
 
 **Children's Story Studio** is a full-stack application that uses [Microsoft Agent Framework](https://github.com/microsoft/agent-framework) to orchestrate multiple AI agents that collaboratively generate illustrated children's stories. It is designed to serve two purposes:
@@ -6,6 +7,7 @@
 2. **Engineering Sandbox** — A well-structured starting point that engineers can clone, experiment with, and extend with new agents and multi-modal AI capabilities.
 
 ![Children's Story Studio Demo](docs/storystudio.gif)
+<img width="512" height="720" alt="storystudio" src="https://github.com/user-attachments/assets/1d19c2fe-a56e-4d97-964a-ef765addde10" />
 
 ## Branches in this Repo
 
