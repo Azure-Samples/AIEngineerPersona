@@ -6,8 +6,9 @@
 1. **Multi-Agent Orchestration Example** — A real-world reference implementation showing how to build agent workflows with Microsoft Agent Framework, including conditional branching, revision loops, and real-time progress streaming.
 2. **Engineering Sandbox** — A well-structured starting point that engineers can clone, experiment with, and extend with new agents and multi-modal AI capabilities.
 
-![Children's Story Studio Demo](docs/storystudio.gif)
-<img width="512" height="720" alt="storystudio" src="https://github.com/user-attachments/assets/1d19c2fe-a56e-4d97-964a-ef765addde10" />
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Azure-Samples/AIEngineerPersona/main/docs/storystudio.gif" alt="Children's Story Studio Demo" width="512" />
+</p>
 
 ## Branches in this Repo
 
