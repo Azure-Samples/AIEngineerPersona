@@ -3,7 +3,7 @@ workflow.py — Constructs the children's story multi-agent workflow.
 
 Base graph topology (always present):
 
-            ┌─────────────────────────────────────────────┐
+            ┌──────────────────────────────────────────────┐
             │  (RevisionSignal — revision loop back-edge)  │
             ▼                                              │
    ┌─────────────────┐                                     │
